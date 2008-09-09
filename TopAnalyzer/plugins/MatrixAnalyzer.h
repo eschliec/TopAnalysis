@@ -3,7 +3,7 @@
 /**
  *  class:   MatrixAnalyzer.h
  * @author: Lukas Kreczko, Uni Hamburg (lkreczko@mail.desy.de)
- * version $Id: MatrixAnalyzer.h,v 1.8 2008/08/22 10:43:25 kreczko Exp $
+ * version $Id: MatrixAnalyzer.h,v 1.9 2008/09/08 08:44:42 kreczko Exp $
 
  ________________________________________________________________**/
 #include "FWCore/Framework/interface/Event.h"
@@ -26,6 +26,7 @@
 #include "TopAnalysis/TopAnalyzer/plugins/LeptonCounter.h"
 
 #include "DataFormats/RecoCandidate/interface/RecoCandidate.h"
+#include <TGraphAsymmErrors.h>
 
 class MatrixAnalyzer: public edm::EDAnalyzer {
 
@@ -40,7 +41,7 @@ private:
 	virtual void endJob();
 	virtual void setEnv();
 	virtual void getBefore();
-	virtual double getHist(TString, TString, int);
+	virtual TH1F* getHist(TString, TString);
 
 	template<typename T1, typename T2> void log(T1 msg, T2 from, bool debug) {
 		if (debug && debug_ || !debug)
@@ -71,6 +72,7 @@ private:
 	TH1F *overall_, *binnedOverall_, *binnedSimpleOverall_;
 
 	TH1F *eff_, *binnedEff_;
+	TGraphAsymmErrors *eff2_, *binnedEff2_;
 
 	TFile *f_;
 

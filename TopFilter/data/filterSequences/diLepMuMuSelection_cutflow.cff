@@ -1,0 +1,61 @@
+# ----------------------------
+# initialize analyzers
+# ----------------------------
+  module diMuonRaw = analyzeMuon from "TopAnalysis/TopAnalyzer/data/MuonAnalyzer.cfi"
+  module diMuonNon = analyzeMuon from "TopAnalysis/TopAnalyzer/data/MuonAnalyzer.cfi"
+  module diMuonLep = analyzeMuon from "TopAnalysis/TopAnalyzer/data/MuonAnalyzer.cfi"
+  module diMuonIso = analyzeMuon from "TopAnalysis/TopAnalyzer/data/MuonAnalyzer.cfi"
+  module diMuonJet = analyzeMuon from "TopAnalysis/TopAnalyzer/data/MuonAnalyzer.cfi"
+
+  module diJetsRaw = analyzeJets from "TopAnalysis/TopAnalyzer/data/JetAnalyzer.cfi"
+  module diJetsNon = analyzeJets from "TopAnalysis/TopAnalyzer/data/JetAnalyzer.cfi"
+  module diJetsLep = analyzeJets from "TopAnalysis/TopAnalyzer/data/JetAnalyzer.cfi"
+  module diJetsIso = analyzeJets from "TopAnalysis/TopAnalyzer/data/JetAnalyzer.cfi"
+  module diJetsJet = analyzeJets from "TopAnalysis/TopAnalyzer/data/JetAnalyzer.cfi"
+
+# ----------------------------
+# configure analyzers
+# ----------------------------
+
+# muon sample
+  replace diMuonRaw.input = allLayer1Muons
+  replace diMuonNon.input = selectedLayer1Muons
+  replace diMuonLep.input = selectedLayer1Muons
+  replace diMuonIso.input = selectedLayer1Muons
+  replace diMuonJet.input = selectedLayer1Muons
+
+# jet sample
+  replace diJetsRaw.input = allLayer1Jets
+  replace diJetsNon.input = selectedLayer1Jets
+  replace diJetsLep.input = selectedLayer1Jets
+  replace diJetsIso.input = selectedLayer1Jets
+  replace diJetsJet.input = selectedLayer1Jets
+
+# ----------------------------
+# initialize filters
+# ----------------------------
+  include "TopAnalysis/TopFilter/data/diLepMuMuSelection_fin.cff"
+  include "TopAnalysis/TopFilter/data/semiLepMuonSelection_fin.cff"
+  
+  include "TopAnalysis/TopFilter/data/singleFilters/PtEventFilter.cfi"
+  include "TopAnalysis/TopFilter/data/singleFilters/EtaEventFilter.cfi"
+  include "TopAnalysis/TopFilter/data/singleFilters/IsolationEventFilter.cfi"
+
+# ----------------------------
+# configure filters
+# ----------------------------
+  
+
+#
+  sequence makeDiMuonKinematic = {filterDiMuonEta, filterDiMuonPt, 
+                                    diMuonLep, diJetsLep}
+  sequence makeDiMuonIsolation = {filterDiMuonTrkIsolation, 
+                                    filterDiMuonCalIsolation,
+                                    filterDiMuonJetIsolation, 
+                                    diMuonIso, diJetsIso}
+  sequence makeDiJetsKinematic = {filterDiJetsEta, filterDiJetsPt, 
+                                    diMuonJet, diJetsJet}
+
+  sequence makeDiReference     = {diMuonRaw, diJetsRaw, diMuonNon, diJetsNon}
+  sequence makeDiMuonSelection = {makeDiMuonKinematic,  makeDiMuonIsolation}
+  sequence makeDiJetsSelection = {makeDiJetsKinematic}

@@ -6,45 +6,33 @@ block DiMuonPtCut ={
 
 block DiJetsPtCut ={
   string name = "diJetsPtCut"
-  vdouble minPt = {    5.,     5.}
+  vdouble minPt = {   50.,    50.}
   vdouble maxPt = {99999., 99999.}
 }
 
 block DiMuonEtaCut ={
   string name = "diMuonEtaCut"
-  vdouble minEta = {-2.5, -2.5}
-  vdouble maxEta = { 2.5,  2.5}
+  vdouble minEta = {-2.4, -2.4}
+  vdouble maxEta = { 2.4,  2.4}
 }
 
 block DiJetsEtaCut ={
   string name = "diJetsEtaCut"
-  vdouble minEta  = {-3.25, -3.25}
-  vdouble maxEta  = { 3.25,  3.25}
+  vdouble minEta  = {-2.4, -2.4}
+  vdouble maxEta  = { 2.4,  2.4}
 }
 
-<<<<<<< diLepMuMuSelection_fin.cff
 block DiCombIsolationCut ={
   uint32 mode = 2
   string name = "combinedIsolationCut"
   vdouble isolation = { 0.92 }
-=======
-block DiTrkIsolationCut ={
-  uint32 mode = 0
-  string name = "diTrackIsolationCut"
-  vdouble isolation = { 999.}
-}
-
-block DiCalIsolationCut ={
-  uint32 mode = 1
-  string name = "diCalIsolationCut"
-  vdouble isolation = { 999.}
->>>>>>> 1.3
 }
 
 block DiJetIsolationCut ={
   string name = "diJetIsolationCut"
   InputTag jets = allLayer1Jets
-  vdouble isolation = {   0.}
+  vdouble isolation = {0.5}
+  vdouble minJetPt  = {20.}
 }
 
 

@@ -22,16 +22,9 @@ module filterSemiMuonJetIsolation = MuonJetIsolationEventFilter{
 #
 # isolation filters for dileptonic(mu/mu)
 #
-module filterDiMuonTrkIsolation = MuonIsolationEventFilter{
+module filterDiMuonCombIsolation = MuonIsolationEventFilter{
   VInputTag input = {selectedLayer1Muons}
-  PSet cuts = { using DiTrkIsolationCut }
-  InputTag weight = eventWeight
-}
-
-module filterDiMuonCalIsolation = MuonIsolationEventFilter{
-  VInputTag input = {selectedLayer1Muons}
-  PSet cuts = { using DiCalIsolationCut }
-  InputTag weight = eventWeight
+  PSet cuts = { using DiCombIsolationCut }
 }
 
 module filterDiMuonJetIsolation = MuonJetIsolationEventFilter{
@@ -39,3 +32,5 @@ module filterDiMuonJetIsolation = MuonJetIsolationEventFilter{
   PSet cuts = { using DiJetIsolationCut }
   InputTag weight = eventWeight
 }
+
+

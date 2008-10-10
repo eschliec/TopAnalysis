@@ -22,6 +22,12 @@ block DiJetsEtaCut ={
   vdouble maxEta  = { 3.25,  3.25}
 }
 
+<<<<<<< diLepMuMuSelection_fin.cff
+block DiCombIsolationCut ={
+  uint32 mode = 2
+  string name = "combinedIsolationCut"
+  vdouble isolation = { 0.92 }
+=======
 block DiTrkIsolationCut ={
   uint32 mode = 0
   string name = "diTrackIsolationCut"
@@ -32,6 +38,7 @@ block DiCalIsolationCut ={
   uint32 mode = 1
   string name = "diCalIsolationCut"
   vdouble isolation = { 999.}
+>>>>>>> 1.3
 }
 
 block DiJetIsolationCut ={
@@ -39,3 +46,5 @@ block DiJetIsolationCut ={
   InputTag jets = allLayer1Jets
   vdouble isolation = {   0.}
 }
+
+

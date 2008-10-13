@@ -91,6 +91,15 @@ public:
 		weight_ = weight;
 	}
 
+	void normalize() {
+		map<string, TH1F*>::iterator iter;
+		for (iter = histos_.begin(); iter != histos_.end(); ++iter) {
+			TH1F *hist = iter->second;
+			double allEvents = hist->Integral();
+			if(allEvents != 0) hist->Scale(1/allEvents);
+		}
+	}
+
 private:
 	//for 2D correlation plots
 	CorrelationMonitor *mon;

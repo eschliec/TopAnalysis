@@ -59,6 +59,11 @@ void IsolationAnalyzer::beginJob(const edm::EventSetup&) {
 	helper_->addHistogram("SumJet1ET2TimesMuEt", 80, 60., 500);
 	helper_->addHistogram("Sum4JetsMuEt", 100, 100., 600);
 	helper_->addHistogram("VectorSumJetsMu", 60, 0., 300.);
+	helper_->addHistogram("MET", 100, 0., 500.);
+	NameScheme nam("var");
+	ofstream off(hist_.c_str(), std::ios::out);
+	recoMETUncorrectedMET_ = fs->make<TH1F> (nam.name(off, "recoMETUncorrectedMET"),
+			nam.name("recoMETUncorrectedMET"), 200, -100., 100.);
 }
 
 IsolationAnalyzer::~IsolationAnalyzer() {
@@ -169,7 +174,6 @@ void IsolationAnalyzer::analyze(const edm::Event& evt, const edm::EventSetup& se
 			if (i == 0) {
 				//leading muon
 				vec += mu.p4();
-				helper_->fill("invariantMassJ3andJ4", mt34);
 				helper_->fill("METTimesleadingJetEt", jet1Et * met->et());
 				helper_->fill("deltaPhiMetleadingMuon", deltaPhi(met->phi(), mu.phi()));
 				helper_->fill("deltaPhiMetJet1", deltaPhi(met->phi(), jet1Phi));
@@ -187,9 +191,12 @@ void IsolationAnalyzer::analyze(const edm::Event& evt, const edm::EventSetup& se
 				helper_->fill("DeltaPhiMuonJet3", deltaPhi(mu.phi(), jet3Phi));
 				helper_->fill("DeltaPhiMuonJet4", deltaPhi(mu.phi(), jet4Phi));
 				helper_->fill("DeltaPhiMuonJet12", deltaPhi(mu.phi(), jet1Phi) + deltaPhi(mu.phi(), jet2Phi));
+				helper_->fill("invariantMassJ3andJ4", mt34);
 				helper_->fill("Sum4JetsMuEt", jet1Et + jet2Et + jet3Et + jet4Et + mu.et());
 				helper_->fill("SumJet1ET2TimesMuEt", jet1Et + 2 * mu.et());
 				helper_->fill("VectorSumJetsMu", vec.pt());
+				helper_->fill("MET", met->et());
+				recoMETUncorrectedMET_->Fill(met->et() - met->uncorrectedPt(), weight);
 			}
 			if (i == 2) {
 				//2nd leading muon
@@ -227,6 +234,7 @@ void IsolationAnalyzer::analyze(const edm::Event& evt, const edm::EventSetup& se
 
 void IsolationAnalyzer::endJob() {
 	helper_->makeSummaryPlots();
+	helper_->normalize();
 	if (ttbarMC_) {
 		helperTbar_->makeSummaryPlots();
 	}

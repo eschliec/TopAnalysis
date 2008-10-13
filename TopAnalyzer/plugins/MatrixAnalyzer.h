@@ -3,7 +3,7 @@
 /**
  *  class:   MatrixAnalyzer.h
  * @author: Lukas Kreczko, Uni Hamburg (lkreczko@mail.desy.de)
- * version $Id: MatrixAnalyzer.h,v 1.8 2008/08/22 10:43:25 kreczko Exp $
+ * version $Id: MatrixAnalyzer.h,v 1.9 2008/09/08 08:44:42 kreczko Exp $
 
  ________________________________________________________________**/
 #include "FWCore/Framework/interface/Event.h"
@@ -26,6 +26,7 @@
 #include "TopAnalysis/TopAnalyzer/plugins/LeptonCounter.h"
 
 #include "DataFormats/RecoCandidate/interface/RecoCandidate.h"
+#include "DataFormats/PatCandidates/interface/Jet.h"
 
 class MatrixAnalyzer: public edm::EDAnalyzer {
 
@@ -39,8 +40,8 @@ private:
 	virtual void analyze(const edm::Event&, const edm::EventSetup&);
 	virtual void endJob();
 	virtual void setEnv();
-	virtual void getBefore();
-	virtual double getHist(TString, TString, int);
+//	virtual void getBefore();
+//	virtual double getHist(TString, TString, int);
 
 	template<typename T1, typename T2> void log(T1 msg, T2 from, bool debug) {
 		if (debug && debug_ || !debug)
@@ -48,15 +49,16 @@ private:
 	}
 	int numberOfmatchedMuons(edm::Handle<edm::View<pat::Muon> >,
 			edm::Handle<edm::Association<reco::GenParticleCollection> >);
-	std::string hist_, pmodulename_;
-	bool before_, debug_;
-	int noBins_, beforeBin_, afterBin_;
+	std::string hist_;//, pmodulename_;
+	bool debug_;
+	int noBins_;//, beforeBin_, afterBin_;
 	double sampleweight_;
 	edm::InputTag muons_;
-	edm::InputTag var_;
-	std::vector<double> varBins_;
+	edm::InputTag var_, jets_;
+	std::vector<double> varBins1_, varBins2_, varBins3_, varBins4_;
 	std::string notNeededHists_;
 	typedef std::vector<pat::Muon> TopMuonCollection;
+	typedef std::vector<pat::Jet>  TopJetCollection;
 
 	std::map<int, TopMuonCollection> mothermap_;
 
@@ -75,7 +77,6 @@ private:
 	TFile *f_;
 
 	TH1F *varPlot_;
-	LeptonCounter *Counters_, *countersBefore_, *effCounter_, *effErrors_;
-	//TODO: try to find a way to store double directly in root file
+	LeptonCounter *Counters_;//, *countersBefore_, *effCounter_, *effErrors_;
 };
 #endif

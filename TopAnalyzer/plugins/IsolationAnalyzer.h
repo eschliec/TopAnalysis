@@ -45,8 +45,8 @@ private:
 	vector<double> ptBins_;
 	bool ttbarMC_;
 
-	TH1F *varCorrelationsCaloIso_;
-	TH1F *varCorrelationsTrackIso_;
+	TH1F *recoMETUncorrectedMET_;
+
 	IsolationHelper *helper_, *helperTbar_;
 	//for ttbar Binning
 	vector<IsolationHelper> ttBarHelper_;

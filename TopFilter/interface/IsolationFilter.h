@@ -95,8 +95,10 @@ bool IsolationFilter<Collection>::filter(const std::vector<Collection>& objs)
 	if( mode_==0 ) // trk isolation
 	  if( !(obj->trackIso()<iso_[idx]) ) passedOnce=false;
 	if( mode_==1 ) // cal isolation
-	  if( !(obj->caloIso() <iso_[idx]) ) passedOnce=false;
-	if( !(mode_==0 || mode_==1) ){
+	  if( !(obj->caloIso() <iso_[idx]) ) passedOnce=false;	  
+	if( mode_==2 ) // cal isolation
+	  if( !((obj->pt()/(obj->pt()+obj->trackIso()+obj->caloIso())) >iso_[idx]) ) passedOnce=false;	  
+	if( !(mode_==0 || mode_==1 || mode_ ==2) ){
 	  edm::LogWarning ( "UnknownIsoMode" ) << "Isolation mode: " << mode_ << "is not known";
 	  passedOnce=false;
 	}

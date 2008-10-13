@@ -25,6 +25,7 @@ module filterSemiMuonJetIsolation = MuonJetIsolationEventFilter{
 module filterDiMuonCombIsolation = MuonIsolationEventFilter{
   VInputTag input = {selectedLayer1Muons}
   PSet cuts = { using DiCombIsolationCut }
+  InputTag weight = eventWeight  
 }
 
 module filterDiMuonJetIsolation = MuonJetIsolationEventFilter{

@@ -35,6 +35,7 @@ class IsolationFilter {
   std::vector<double> iso_;  // isolation threshold(s)
   unsigned int mode_;        // choose 0: for trk isolation
                              // choose 1: for cal isolation
+			     // choose 2: for combined isolation
 
  private:
 
@@ -57,7 +58,9 @@ IsolationFilter<Collection>::IsolationFilter(const edm::ParameterSet& cfg):
     std::cout << ": ";
     if( mode_==0 ) std::cout << " Trk";
     if( mode_==1 ) std::cout << " Cal"; 
-    std::cout << "Isolation < " << iso_[idx] << std::endl;
+    if( mode_==2 ) std::cout << " Comb";
+    if( mode_<2) std::cout << "Isolation < " << iso_[idx] << std::endl;
+    else std::cout << "Isolation > " << iso_[idx] << std::endl;
   }
 }
 

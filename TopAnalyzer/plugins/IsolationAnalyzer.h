@@ -47,8 +47,8 @@ private:
 
 	TH1F *recoMETUncorrectedMET_;
 
-	IsolationHelper *helper_, *helperTbar_;
+	IsolationHelper *helper_;
 	//for ttbar Binning
-	vector<IsolationHelper> ttBarHelper_;
+	map<string, IsolationHelper*> ttBarHelper_;
 };
 #endif

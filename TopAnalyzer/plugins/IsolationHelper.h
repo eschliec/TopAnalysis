@@ -26,17 +26,19 @@ public:
 		trackBins_ = 10;
 	}
 
-	void makeSummaryPlots() {
+	void makeSummaryPlots(std::string prefix = "") {
 		//for each histo, make 2 plots for correlation
 		map<string, TH1F*>::iterator iter;
 		unsigned int x = 0;
+		string caloName = prefix + "caloCorrSummary";
+		string trackName = prefix + "trackCorrSummary";
 
 		//book histos for summary
 		NameScheme nam("var");
 		ofstream off(file_.c_str(), std::ios::out);
-		summaryCalo_ = fs_->make<TH1F> (nam.name(off, "caloCorrSummary"), nam.name("caloCorrSummary"), histos_.size(),
+		summaryCalo_ = fs_->make<TH1F> (nam.name(off, caloName.c_str()), nam.name(caloName.c_str()), histos_.size(),
 				-1., 1.);
-		summaryTrack_ = fs_->make<TH1F> (nam.name(off, "trackCorrSummary"), nam.name("trackCorrSummary"),
+		summaryTrack_ = fs_->make<TH1F> (nam.name(off, trackName.c_str()), nam.name(trackName.c_str()),
 				histos_.size(), -1., 1.);
 
 		for (iter = histos_.begin(); iter != histos_.end(); ++iter) {

@@ -91,6 +91,8 @@ void IsolationAnalyzer::beginJob(const edm::EventSetup&) {
 	helper_->addHistogram("Sum4JetsMuEt", 100, 100., 600);
 	helper_->addHistogram("VectorSumJetsMu", 60, 0., 300.);
 	helper_->addHistogram("MET", 100, 0., 500.);
+	helper_->addHistogram("deltaPhiTtbar", 80, -4., 4.);
+	helper_->addHistogram("TriJetTMass", 108, 60., 600); //5GeV Schritte
 	NameScheme nam("var");
 	ofstream off(hist_.c_str(), std::ios::out);
 	recoMETUncorrectedMET_ = fs->make<TH1F> (nam.name(off, "recoMETUncorrectedMET"), nam.name("recoMETUncorrectedMET"),
@@ -134,8 +136,7 @@ void IsolationAnalyzer::analyze(const edm::Event& evt, const edm::EventSetup& se
 		double jet1pt, jet2pt, jet3pt, jet4pt;
 		double jet1Et, jet2Et, jet3Et, jet4Et;
 		double dpTde = 10000.;
-		unsigned int jetno = getClosestJet(jets, met);
-		unsigned int x = 1;
+		pat::Jet closMETJet = getClosestJet(jets, *met);
 
 		jet1pt = jet->pt();
 		jet1Et = jet->et();
@@ -143,9 +144,7 @@ void IsolationAnalyzer::analyze(const edm::Event& evt, const edm::EventSetup& se
 		jet1Phi = jet->phi();
 
 		vec = jet->p4();
-		if (x == jetno)
-			dpTde = fabs(deltaPhi(met->phi(), jet->phi())) * fabs(met->eta() - jet->eta());
-		x++;
+
 		++jet;
 		jet2pt = jet->pt();
 		jet2Et = jet->et();
@@ -153,9 +152,6 @@ void IsolationAnalyzer::analyze(const edm::Event& evt, const edm::EventSetup& se
 		jet2Phi = jet->phi();
 		vec += jet->p4();
 
-		if (x == jetno)
-			dpTde = fabs(deltaPhi(met->phi(), jet->phi())) * fabs(met->eta() - jet->eta());
-		x++;
 		++jet;
 		jet3pt = jet->pt();
 		jet3Et = jet->et();
@@ -163,19 +159,12 @@ void IsolationAnalyzer::analyze(const edm::Event& evt, const edm::EventSetup& se
 		jet3Phi = jet->phi();
 		vec += jet->p4();
 
-		if (x == jetno)
-			dpTde = fabs(deltaPhi(met->phi(), jet->phi())) * fabs(met->eta() - jet->eta());
-		x++;
 		++jet;
 		jet4pt = jet->pt();
 		jet4Et = jet->et();
 		jet4Eta = jet->eta();
 		jet4Phi = jet->phi();
 		vec += jet->p4();
-
-		if (x == jetno)
-			dpTde = fabs(deltaPhi(met->phi(), jet->phi())) * fabs(met->eta() - jet->eta());
-		x++;
 
 		//how big is the minimal deltaPhi between MET and one of the 4 jets
 		double mindp;
@@ -185,10 +174,20 @@ void IsolationAnalyzer::analyze(const edm::Event& evt, const edm::EventSetup& se
 		//transversal mass of jet 3+4
 		double mt34 = sqrt((jet3Et + jet4Et) * (jet3Et + jet4Et) - (jet3pt + jet4pt) * (jet3pt + jet4pt));
 		//transversal mass of jet 1+3+4 (jet1 could be switched with jet2)
-		double mt3Jet = sqrt((jet1Et + jet3Et + jet4Et) * (jet1Et + jet3Et + jet4Et) - (jet1pt + jet3pt + jet4pt)
+		double mt3Jet1 = sqrt((jet1Et + jet3Et + jet4Et) * (jet1Et + jet3Et + jet4Et) - (jet1pt + jet3pt + jet4pt)
 				* (jet1pt + jet3pt + jet4pt));
-		cout << mt34 << endl;
-		cout << mt3Jet << endl;
+		double mt3Jet2 = sqrt((jet2Et + jet3Et + jet4Et) * (jet2Et + jet3Et + jet4Et) - (jet2pt + jet3pt + jet4pt)
+				* (jet2pt + jet3pt + jet4pt));
+		double mt3Jet = 0.;
+		//TODO: make W-mass as config parameter
+		if(fabs(mt3Jet1-80) < fabs(mt3Jet2-80) ){
+			//mt3Jet1 closer to W mass
+			mt3Jet = mt3Jet1;
+		}
+		else mt3Jet = mt3Jet2;
+
+		if(&closMETJet)
+				dpTde = fabs(deltaPhi(met->phi(), closMETJet.phi())) * fabs(met->eta() - closMETJet.eta());
 
 		//set the event-weight
 		helper_->setWeight(weight);
@@ -204,6 +203,33 @@ void IsolationAnalyzer::analyze(const edm::Event& evt, const edm::EventSetup& se
 			if (i == 0) {
 				//leading muon
 				vec += mu.p4();
+				//complicated variable:
+				double phi1, phi2, phi3, phi4, phi5, phi6, phi7, phi8;
+				//get closest jet to mu (bjet from semileptonic t-decay)
+				pat::Jet closestMuJet = getClosestJet(jets, mu);
+				//get 4th jet + closest (hadronic W)
+				phi1 = jet3Phi + (0.5*deltaPhi(jet4Phi, jet3Phi));
+				phi2 = jet4Phi + (0.5*deltaPhi(jet3Phi, jet4Phi));
+				if(phi1 == phi2) cout << "it's working!" << endl;
+
+				pat::Jet closest34Jet = getClosestJetInDeltaPhi(jets, phi1);
+				phi3 = phi1 + 0.5* deltaPhi(closest34Jet.phi(), phi1);
+				phi4 = closest34Jet.phi() + 0.5* deltaPhi(phi1, closest34Jet.phi());
+				if(phi3 == phi4) cout << "it's really working!" << endl;
+
+				phi5 = mu.phi() + 0.5* deltaPhi(met->phi(),mu.phi());
+				phi6 = met->phi() + 0.5* deltaPhi(mu.phi(), met->phi());
+				if(phi5 == phi6) cout << "it's really, really working!" << endl;
+
+				phi7 = phi5 + 0.5 * deltaPhi(closestMuJet.phi(),phi5);
+				phi8 = closestMuJet.phi() + 0.5 * deltaPhi(phi5, closestMuJet.phi());
+				if(phi7 == phi8) cout << "katsching!" << endl;
+				cout << "<" << phi1 << "," << phi2 << ">" << endl;
+				cout << "<" << phi3 << "," << phi4 << ">" << endl;
+				cout << "<" << phi5 << "," << phi6 << ">" << endl;
+				cout << "<" << phi7 << "," << phi8 << ">" << endl;
+				cout << "here <" << deltaPhi(jet3Phi, jet4Phi) << "," << deltaPhi(jet4Phi, jet3Phi) << ">" << endl;
+				//fill histogramms
 				helper_->fill("METTimesleadingJetEt", jet1Et * met->et());
 				helper_->fill("deltaPhiMetleadingMuon", deltaPhi(met->phi(), mu.phi()));
 				helper_->fill("deltaPhiMetJet1", deltaPhi(met->phi(), jet1Phi));
@@ -226,6 +252,8 @@ void IsolationAnalyzer::analyze(const edm::Event& evt, const edm::EventSetup& se
 				helper_->fill("SumJet1ET2TimesMuEt", jet1Et + 2 * mu.et());
 				helper_->fill("VectorSumJetsMu", vec.pt());
 				helper_->fill("MET", met->et());
+				helper_->fill("TriJetTMass", mt3Jet);
+				helper_->fill("deltaPhiTtbar", deltaPhi(phi8, phi4));
 				recoMETUncorrectedMET_->Fill(met->et() - met->uncorrectedPt(), weight);
 			}
 			if (i == 1) {
@@ -324,22 +352,43 @@ void IsolationAnalyzer::endJob() {
 		}
 	}
 }
-
-unsigned int IsolationAnalyzer::getClosestJet(edm::Handle<TopJetCollection> & j, const pat::MET* &r) {
-	unsigned int i = 0;
+template <class T>
+pat::Jet IsolationAnalyzer::getClosestJet(edm::Handle<TopJetCollection> & j, T r) {
+	pat::Jet closestJet;
 	if (j->size() >= 4) {
 		double dr2 = 999.;
 		TopJetCollection::const_iterator jet = j->begin();
+		//only the four highest jets
 		for (unsigned x = 0; x < 4; x++) {
 			if (jet == j->end())
 				break;
-			double temp = deltaR2(*jet, *r);
+			double temp = deltaR2(*jet, r);
 			if (temp < dr2) {
 				dr2 = temp;
-				i = x + 1;
+				closestJet = *jet;
 			}
 			++jet;
 		}
 	}
-	return i;
+	return closestJet;
+}
+
+pat::Jet IsolationAnalyzer::getClosestJetInDeltaPhi(edm::Handle<TopJetCollection> & j, double phi){
+	pat::Jet closestJet;
+		if (j->size() >= 4) {
+			double dr2 = 999.;
+			TopJetCollection::const_iterator jet = j->begin();
+			//only the four highest jets
+			for (unsigned x = 0; x < 4; x++) {
+				if (jet == j->end())
+					break;
+				double temp = fabs(deltaPhi(jet->phi(), phi));
+				if (temp < dr2) {
+					dr2 = temp;
+					closestJet = *jet;
+				}
+				++jet;
+			}
+		}
+		return closestJet;
 }

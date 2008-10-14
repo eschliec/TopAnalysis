@@ -33,7 +33,10 @@ private:
 	virtual void beginJob(const edm::EventSetup&);
 	virtual void analyze(const edm::Event&, const edm::EventSetup&);
 	virtual void endJob();
-	virtual unsigned int getClosestJet(edm::Handle<TopJetCollection>&, const pat::MET* &);
+	template <class T>
+	pat::Jet getClosestJet(edm::Handle<TopJetCollection>&, T);
+	virtual pat::Jet getClosestJetInDeltaPhi(edm::Handle<TopJetCollection> &, double phi);
+
 
 
 	std::string hist_;

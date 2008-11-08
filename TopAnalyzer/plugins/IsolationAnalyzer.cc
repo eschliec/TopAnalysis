@@ -44,7 +44,7 @@ void IsolationAnalyzer::beginJob(const edm::EventSetup&) {
 			stringstream pres;
 			pres << "Ttbar_ " << bin << "-" << nextBin << "_";
 			string pre = pres.str();
-			helper->addHistogram(pre + "invariantMassJ3andJ4", 50, 0., 200.);
+			helper->addHistogram(pre + "invariantMassJ3andJ4", 40, 0., 80.);
 			helper->addHistogram(pre + "minDeltaPhiMETJets", 100, 0., 4.);
 			helper->addHistogram(pre + "deltaPhiMetJet1", 80, -4., 4.);
 			helper->addHistogram(pre + "deltaPhiMetJet2", 80, -4., 4.);
@@ -54,10 +54,10 @@ void IsolationAnalyzer::beginJob(const edm::EventSetup&) {
 			helper->addHistogram(pre + "deltaPhiMetMuons", 80, -4., 4.);
 			helper->addHistogram(pre + "DeltaPhiTimesDeltaEta", 50, -10., 10.);
 			helper->addHistogram(pre + "METTimesleadingJetEt", 70, 0., 7000.);
-			helper->addHistogram(pre + "Jet3EtOverJet1EtJet3Et", 30, 0., 6.);
-			helper->addHistogram(pre + "Jet3EtOverJet2EtJet3Et", 30, 0., 6.);
-			helper->addHistogram(pre + "Jet4EtOverJet1EtJet4Et", 30, 0., 6.);
-			helper->addHistogram(pre + "Jet4EtOverJet2EtJet3Et", 30, 0., 6.);
+			helper->addHistogram(pre + "Jet3EtOverJet1EtJet3Et", 25, 0., 0.5);
+			helper->addHistogram(pre + "Jet3EtOverJet2EtJet3Et", 25, 0., 0.5);
+			helper->addHistogram(pre + "Jet4EtOverJet1EtJet4Et", 25, 0., 0.5);
+			helper->addHistogram(pre + "Jet4EtOverJet2EtJet3Et", 25, 0., 0.5);
 			helper->addHistogram(pre + "JetEtSum34", 150, 0., 300.);
 			helper->addHistogram(pre + "DeltaPhiMuonJet3", 80, -4., 4.);
 			helper->addHistogram(pre + "DeltaPhiMuonJet4", 80, -4., 4.);
@@ -65,7 +65,7 @@ void IsolationAnalyzer::beginJob(const edm::EventSetup&) {
 			helper->addHistogram(pre + "SumJet1ET2TimesMuEt", 80, 60., 500);
 			helper->addHistogram(pre + "Sum4JetsMuEt", 100, 100., 600);
 			helper->addHistogram(pre + "VectorSumJetsMu", 60, 0., 300.);
-			helper->addHistogram(pre + "MET", 100, 0., 500.);
+			helper->addHistogram(pre + "MET", 70, 0., 350.);
 			ttBarHelper_.insert(make_pair(name.str(), helper));
 		}
 	}
@@ -89,12 +89,13 @@ void IsolationAnalyzer::beginJob(const edm::EventSetup&) {
 	helper_->addHistogram("DeltaPhiMuonJet12", 80, -4., 4.);
 	helper_->addHistogram("SumJet1ET2TimesMuEt", 80, 60., 500);
 	helper_->addHistogram("Sum4JetsMuEt", 100, 100., 600);
-	helper_->addHistogram("VectorSumJetsMu", 60, 0., 300.);
-	helper_->addHistogram("MET", 100, 0., 500.);
+	helper_->addHistogram("VectorSumJetsMu", 70, 0., 350.);
+	helper_->addHistogram("MET", 70, 0., 350.);
 	helper_->addHistogram("deltaPhiTtbar", 80, -4., 4.);
-	helper_->addHistogram("TriJetTMass", 108, 60., 600); //5GeV Schritte
+	helper_->addHistogram("fabsDeltaPhiTtbar", 80, 0, 4.);
+	helper_->addHistogram("TriJetTMass", 70, 60., 350); //5GeV Schritte
 	NameScheme nam("var");
-	ofstream off(hist_.c_str(), std::ios::out);
+	ofstream off(hist_.c_str(), std::ios::app);
 	recoMETUncorrectedMET_ = fs->make<TH1F> (nam.name(off, "recoMETUncorrectedMET"), nam.name("recoMETUncorrectedMET"),
 			200, -100., 100.);
 }
@@ -180,7 +181,7 @@ void IsolationAnalyzer::analyze(const edm::Event& evt, const edm::EventSetup& se
 				* (jet2pt + jet3pt + jet4pt));
 		double mt3Jet = 0.;
 		//TODO: make W-mass as config parameter
-		if(fabs(mt3Jet1-80) < fabs(mt3Jet2-80) ){
+		if(fabs(mt3Jet1-170) < fabs(mt3Jet2-170) ){
 			//mt3Jet1 closer to W mass
 			mt3Jet = mt3Jet1;
 		}
@@ -231,13 +232,14 @@ void IsolationAnalyzer::analyze(const edm::Event& evt, const edm::EventSetup& se
 				cout << "here <" << deltaPhi(jet3Phi, jet4Phi) << "," << deltaPhi(jet4Phi, jet3Phi) << ">" << endl;
 				//fill histogramms
 				helper_->fill("METTimesleadingJetEt", jet1Et * met->et());
+				helper_->fill("minDeltaPhiMETJets", mindp);
 				helper_->fill("deltaPhiMetleadingMuon", deltaPhi(met->phi(), mu.phi()));
 				helper_->fill("deltaPhiMetJet1", deltaPhi(met->phi(), jet1Phi));
 				helper_->fill("deltaPhiMetJet2", deltaPhi(met->phi(), jet2Phi));
 				helper_->fill("deltaPhiMetJet3", deltaPhi(met->phi(), jet3Phi));
 				helper_->fill("deltaPhiMetJet4", deltaPhi(met->phi(), jet4Phi));
 				helper_->fill("deltaPhiMetleadingMuon", deltaPhi(met->phi(), mu.phi()));
-				helper_->fill("DeltaPhiTimesDeltaEta", deltaPhi(met->phi(), jet1Phi) * (met->eta() * jet1Eta));
+				helper_->fill("DeltaPhiTimesDeltaEta", deltaPhi(met->phi(), jet1Phi) * fabs(met->eta() - jet1Eta));
 				helper_->fill("METTimesleadingJetEt", met->et() * jet1Et);
 				helper_->fill("Jet3EtOverJet1EtJet3Et", jet3Et / (jet3Et + jet1Et));
 				helper_->fill("Jet3EtOverJet2EtJet3Et", jet3Et / (jet3Et + jet2Et));
@@ -254,6 +256,7 @@ void IsolationAnalyzer::analyze(const edm::Event& evt, const edm::EventSetup& se
 				helper_->fill("MET", met->et());
 				helper_->fill("TriJetTMass", mt3Jet);
 				helper_->fill("deltaPhiTtbar", deltaPhi(phi8, phi4));
+				helper_->fill("fabsDeltaPhiTtbar", fabs(deltaPhi(phi8, phi4)));
 				recoMETUncorrectedMET_->Fill(met->et() - met->uncorrectedPt(), weight);
 			}
 			if (i == 1) {
@@ -347,9 +350,12 @@ void IsolationAnalyzer::endJob() {
 		map<string, IsolationHelper*>::iterator iter;
 		for (iter = ttBarHelper_.begin(); iter != ttBarHelper_.end(); ++iter) {
 			IsolationHelper *helper = iter->second;
-			helper->makeSummaryPlots();
+			helper->makeSummaryPlots("Ttbar");
 			helper->normalize();
 		}
+	}
+	if(recoMETUncorrectedMET_->Integral() != 0){
+		recoMETUncorrectedMET_->Scale(1/recoMETUncorrectedMET_->Integral());
 	}
 }
 template <class T>

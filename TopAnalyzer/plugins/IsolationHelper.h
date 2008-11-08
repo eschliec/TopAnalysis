@@ -35,7 +35,8 @@ public:
 
 		//book histos for summary
 		NameScheme nam("var");
-		ofstream off(file_.c_str(), std::ios::out);
+		//open the file and don't delete the content (append)
+		ofstream off(file_.c_str(), std::ios::app);
 		summaryCalo_ = fs_->make<TH1F> (nam.name(off, caloName.c_str()), nam.name(caloName.c_str()), histos_.size(),
 				-1., 1.);
 		summaryTrack_ = fs_->make<TH1F> (nam.name(off, trackName.c_str()), nam.name(trackName.c_str()),
@@ -55,7 +56,16 @@ public:
 
 	void addHistogram(std::string name, unsigned int numberOfBins, double min, double max) {
 		NameScheme nam("var");
-		ofstream off(file_.c_str(), std::ios::out);
+		ios_base::openmode mode;
+		//rewrite the file when the first histogramm is written
+		if(histos_.size() == 0) {
+			mode = std::ios::out;
+		}
+		else{//otherwise append the histogramm to the hist file
+			mode =  std::ios::app;
+			cout << "hierjeztzt" << endl;
+		}
+		ofstream off(file_.c_str(), mode);
 		TH1F *hist = fs_->make<TH1F> (nam.name(off, name.c_str()), nam.name(name.c_str()), numberOfBins, min, max);
 		histos_.insert(make_pair(name, hist));
 		//adding correlation histogramms

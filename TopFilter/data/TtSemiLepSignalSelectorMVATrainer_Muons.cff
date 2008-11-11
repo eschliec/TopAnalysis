@@ -1,0 +1,30 @@
+## provide a sequence for the training
+## remark: do not use this sequence if you want to call your trainer after an event filter
+##         since the SaveFile module should be called in an unfiltered path!
+
+
+# include MVA trainer cfi
+  include "TopAnalysis/TopFilter/data/TtSemiLepSignalSelectorMVATrainer_Muons.cfi"
+
+# add module for mva save file
+  module mvaTtSemiLepSignalSelectorSaveFile = TtSemiLepSignalSelectorMVASaveFile {
+    string ttSemiLepSignalSelectorMVA = "TopAnalysis/TopFilter/data/TtSemiLepSignalSelector_Muons.mva"
+  }
+
+# add looper for different training processes
+#  looper = TtSemiLepSignalSelectorMVATrainerLooper {
+#    VPSet trainers = {
+#      {
+#        string calibrationRecord = "ttSemiLepSignalSelectorMVA"
+#        untracked string trainDescription = "TopAnalysis/TopFilter/data/TtSemiLepSignalSelectorMVATrainer_Muons.xml"
+#        untracked bool loadState = false
+#        untracked bool saveState = true
+#        untracked bool monitoring= true
+#      }
+#    }
+#  }
+
+# provide a sequence for the training
+# remark: do not use this sequence if you want to call your trainer after an event filter
+#         since the SaveFile module should be called in an unfiltered path!
+  sequence makeMVATraining = { trainTtSemiLepSignalSelectorMVA, mvaTtSemiLepSignalSelectorSaveFile }

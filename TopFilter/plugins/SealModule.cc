@@ -10,6 +10,8 @@ typedef SimpleEventFilter<EtaFilter> EtaEventFilter;
 #include "TopAnalysis/TopFilter/plugins/SpecificEventFilter.h"
 #include "TopAnalysis/TopFilter/interface/IsolationFilterFwd.h"
 #include "TopAnalysis/TopFilter/interface/JetIsolationFilterFwd.h"
+#include "TopAnalysis/TopFilter/plugins/TtSemiLepSignalSelectorMVATrainer.h"
+#include "TopAnalysis/TopFilter/plugins/TtSemiLepSignalSelectorMVAComputer.h"
 
 typedef SpecificEventFilter<std::vector<pat::Muon>, MuonIsolationFilter> MuonIsolationEventFilter;
 typedef SpecificEventFilter<std::vector<pat::Electron>, ElecIsolationFilter> ElecIsolationEventFilter;
@@ -33,3 +35,5 @@ DEFINE_FWK_MODULE( MuonIsolationEventFilter );
 DEFINE_FWK_MODULE( ElecIsolationEventFilter );
 DEFINE_FWK_MODULE( MuonJetIsolationEventFilter );
 DEFINE_FWK_MODULE( ElecJetIsolationEventFilter );
+DEFINE_FWK_MODULE( TtSemiLepSignalSelectorMVATrainer );
+DEFINE_FWK_MODULE( TtSemiLepSignalSelectorMVAComputer );

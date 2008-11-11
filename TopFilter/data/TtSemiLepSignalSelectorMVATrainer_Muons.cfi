@@ -1,0 +1,29 @@
+module trainTtSemiLepSignalSelectorMVA = TtSemiLepSignalSelectorMVATrainer{
+  InputTag leptons  = selectedLayer1Muons
+  InputTag jets     = selectedLayer1Jets
+#  InputTag matching = ttSemiJetPartonMatch
+  InputTag METs     = selectedLayer1METs
+
+# ------------------------------------------------
+# maximum number of jets to be considered
+# (has to be >= 4, can be set to -1 if you
+# want to take all)
+# ------------------------------------------------
+  int32 nJetsMax = 5
+
+# ------------------------------------------------
+# select semileptonic signal channel
+# (all others are taken as background for training)
+# 1: electron, 2: muon, 3: tau
+# ------------------------------------------------
+  int32 lepChannel = 2
+  double minMuonPt = 20.
+  #high values for isolation free analysis
+  double caloIso = 10.
+  double trackIso = 10
+  double jetIso = 0.
+  double maxEtaMuon = 2.1
+  double maxEtaJets = 2.4
+  double minJetEt = 20.
+  double minLeadingJetEt = 20.
+  }

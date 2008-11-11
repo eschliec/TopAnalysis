@@ -5,6 +5,12 @@
 <use name=FWCore/ParameterSet>
 <use name=FWCore/Framework>
 <use name=FWCore/Utilities>
+<use name=PhysicsTools/MVAComputer>
+<use name=PhysicsTools/MVATrainer>
+<use name=DataFormats/PatCandidates>
+<use name=CondCore/PluginSystem>
+<use name=TopQuarkAnalysis/TopTools>
+<use name=AnalysisDataFormats/TopObjects>
 
 <library file=*.cc name=TopAnalysisTopFilterPlugins>
   <flags EDM_PLUGIN=1>

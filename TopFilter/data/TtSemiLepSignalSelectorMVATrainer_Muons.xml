@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
+<MVATrainer>
+	<general>
+		<option name="id">TtSemiSignalSelectorMVATrainer
+		</option>
+		<option name="trainfiles">train_%1$s%2$s.%3$s</option>
+        </general>
+
+        <input id="input">
+                <var name="dphiMETJet4" multiple="false" optional="false"/>
+                <var name="dphiMETLepton" multiple="false" optional="false"/>
+                <var name="METTimesLeadingJet" multiple="false" optional="false"/>
+                <var name="sumEtJet3And4" multiple="false" optional="false"/>
+                <var name="sumAllJetsEtAndLepton" multiple="false" optional="false"/>
+                <var name="vecSumAllJetsAndLepton" multiple="false" optional="false"/>
+                <var name="sumEtleadingJetAnd2TimesLeptonPt" multiple="false" optional="false"/>
+                <var name="dphiMETJet2" multiple="false" optional="false"/>
+               
+        </input>
+
+        <processor id="norm" name="ProcNormalize">
+                <input>
+                        <var source="input" name="dphiMETJet4"/>
+                        <var source="input" name="dphiMETLepton"/>
+                        <var source="input" name="METTimesLeadingJet"/>
+                        <var source="input" name="sumEtJet3And4"/>
+                        <var source="input" name="sumAllJetsEtAndLepton"/>
+                        <var source="input" name="vecSumAllJetsAndLepton"/>
+                        <var source="input" name="sumEtleadingJetAnd2TimesLeptonPt"/>
+                        <var source="input" name="dphiMETJet2"/>
+                </input>
+                <config>
+                        <pdf/>
+                        <pdf/>
+                        <pdf/>
+                        <pdf/> 
+                        <pdf/>
+                        <pdf/> 
+                        <pdf/>
+                        <pdf/>
+                </config>
+                <output>
+                        <var name="var1"/>
+                        <var name="var2"/>
+                        <var name="var3"/>
+                        <var name="var4"/> 
+                        <var name="var5"/> 
+                        <var name="var6"/> 
+                        <var name="var7"/>
+                        <var name="var8"/>
+                </output>
+        </processor>
+
+        
+        <processor id="rot" name="ProcMatrix">
+		<input>
+                        <var source="norm" name="var1"/>
+                        <var source="norm" name="var2"/>
+                        <var source="norm" name="var3"/>
+                        <var source="norm" name="var4"/>
+                        <var source="norm" name="var5"/>
+                        <var source="norm" name="var6"/>
+                        <var source="norm" name="var7"/>
+                        <var source="norm" name="var8"/>
+		</input>
+		<config>
+			<fill signal="true" background="true"/>
+		</config>
+		<output>
+			<var name="rot1"/>
+			<var name="rot2"/>
+			<var name="rot3"/>
+			<var name="rot4"/>
+			<var name="rot5"/>
+			<var name="rot6"/>
+			<var name="rot7"/>
+            <var name="rot8"/>
+		</output>
+	</processor>
+
+
+	<processor id="likelihood" name="ProcLikelihood">
+		<!-- <input> -->
+<!-- 			 <var source="norm" name="var1"/> -->
+<!-- 			 <var source="norm" name="var2"/> -->
+<!-- 			 <var source="norm" name="var3"/> -->
+<!-- 			 <var source="norm" name="var4"/>  -->
+<!-- 			 <var source="norm" name="var5"/>  -->
+<!-- 			 <var source="norm" name="var6"/>  -->
+<!-- 			 <var source="norm" name="var7"/>  -->
+<!--                          <var source="norm" name="var8"/> -->
+<!--                          <var source="norm" name="var9"/> -->
+<!--                          <var source="norm" name="var10"/>  -->
+<!-- 			 <var source="norm" name="var11"/>  -->
+<!-- 			 <var source="norm" name="var12"/>  -->
+<!--                          <var source="norm" name="var13"/> -->
+<!--                          <var source="norm" name="var14"/>  -->
+<!--                          <var source="norm" name="var15"/>  -->
+<!-- 		</input> -->
+                <input>
+			 <var source="rot" name="rot1"/>
+			 <var source="rot" name="rot2"/>
+			 <var source="rot" name="rot3"/>
+			 <var source="rot" name="rot4"/> 
+			 <var source="rot" name="rot5"/> 
+			 <var source="rot" name="rot6"/> 
+			 <var source="rot" name="rot7"/> 
+             <var source="rot" name="rot8"/>
+		</input>
+		<config>
+			<sigbkg smooth="3"/>
+			<sigbkg smooth="3"/>
+			<sigbkg smooth="3"/>
+            <sigbkg smooth="3"/> 
+ 			<sigbkg smooth="3"/> 
+ 			<sigbkg smooth="3"/> 
+            <sigbkg smooth="3"/>
+            <sigbkg smooth="3"/>
+		</config>
+		<output>
+			<var name="discriminator"/>
+		</output>
+	</processor>
+
+        <output>
+                <var source="likelihood" name="discriminator"/>
+        </output>
+
+</MVATrainer>

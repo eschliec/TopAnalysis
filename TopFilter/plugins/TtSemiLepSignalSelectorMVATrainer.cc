@@ -14,11 +14,7 @@ typedef std::vector<pat::Jet> TopJetCollection;
 TtSemiLepSignalSelectorMVATrainer::TtSemiLepSignalSelectorMVATrainer(const edm::ParameterSet& cfg) :
 	leptons_(cfg.getParameter<edm::InputTag> ("leptons")), jets_(cfg.getParameter<edm::InputTag> ("jets")), METs_(
 			cfg.getParameter<edm::InputTag> ("METs")), nJetsMax_(cfg.getParameter<int> ("nJetsMax")), lepChannel_(
-			cfg.getParameter<int> ("lepChannel")), minMuonPt_(cfg.getParameter<double> ("minMuonPt")), caloIso_(
-			cfg.getParameter<double> ("caloIso")), trackIso_(cfg.getParameter<double> ("trackIso")), jetIso_(
-			cfg.getParameter<double> ("jetIso")), maxEtaMuon_(cfg.getParameter<double> ("maxEtaMuon")), maxEtaJets_(
-			cfg.getParameter<double> ("maxEtaJets")), minJetEt_(cfg.getParameter<double> ("minJetEt")),
-			minLeadingJetEt_(cfg.getParameter<double> ("minLeadingJetEt")) {
+			cfg.getParameter<int> ("lepChannel")) {
 }
 
 TtSemiLepSignalSelectorMVATrainer::~TtSemiLepSignalSelectorMVATrainer() {
@@ -53,14 +49,6 @@ void TtSemiLepSignalSelectorMVATrainer::analyze(const edm::Event& evt, const edm
 	//lepton cuts
 	if (leptons->size() != 1)
 		return;
-	if (leptons->begin()->caloIso() >= caloIso_)
-		return;
-	if (leptons->begin()->trackIso() >= trackIso_)
-		return;
-	if (leptons->begin()->pt() <= minMuonPt_)
-		return;
-	if (fabs(leptons->begin()->eta()) >= maxEtaMuon_)
-		return;
 
 	lepton = &(*leptons)[0];
 
@@ -69,30 +57,22 @@ void TtSemiLepSignalSelectorMVATrainer::analyze(const edm::Event& evt, const edm
 	if (!jet_handle.isValid())
 		return;
 	const TopJetCollection jets = *jet_handle;
-	if (jets.begin()->et() <= minLeadingJetEt_)
-		return;
 
 	double dRmin = 9999.;
-	TopJetCollection seljets;
 	for (std::vector<pat::Jet>::const_iterator it = jets.begin(); it != jets.end(); it++) {
-		if (it->et() > minJetEt_ && fabs(it->eta()) < maxEtaJets_) {
-			double tmpdR = deltaR(it->eta(), it->phi(), lepton->eta(), lepton->phi());
-			if (tmpdR < dRmin)
-				dRmin = tmpdR;
-			seljets.push_back(*it);
-		}
+		double tmpdR = deltaR(it->eta(), it->phi(), lepton->eta(), lepton->phi());
+		if (tmpdR < dRmin)
+			dRmin = tmpdR;
 	}
-	//jets more far from lepton than dRmin
-	if (dRmin >= jetIso_)
-		return;
 
 	// skip events with less than 4 jets
-	if (seljets.size() < 4)
+	if (jets.size() < 4)
 		return;
 
+	//at last one lepton
 	if (!(leptons->size() == 0)) {
 
-		TtSemiLepSignalSelector selection(seljets, lepton, MET);
+		TtSemiLepSignalSelector selection(jets, lepton, MET);
 
 		if (genEvt->isSemiLeptonic() && genEvt->semiLeptonicChannel() == lepChannel_) {
 			evaluateTtSemiLepSignalSelector(mvaComputer, selection, weight, true, true);

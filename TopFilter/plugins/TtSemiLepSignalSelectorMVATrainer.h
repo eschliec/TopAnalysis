@@ -34,15 +34,6 @@ private:
 	unsigned int nJetsMax_;
 	int lepChannel_;
 
-	double minMuonPt_;
-	double caloIso_;
-	double trackIso_;
-	double jetIso_;
-	double maxEtaMuon_;
-	double maxEtaJets_;
-	double minJetEt_;
-	double minLeadingJetEt_;
-
 	PhysicsTools::MVAComputerCache mvaComputer;
 };
 #endif

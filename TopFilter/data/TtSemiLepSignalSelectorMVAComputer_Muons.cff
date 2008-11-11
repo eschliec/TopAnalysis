@@ -1,0 +1,7 @@
+# include MVA computer cfi
+  include "TopAnalysis/TopFilter/data/TtSemiLepSignalSelectorMVAComputer_Muons.cfi"
+
+# provide mva training file
+  es_source = TtSemiLepSignalSelectorMVAFileSource {
+    FileInPath ttSemiLepSignalSelectorMVA = "TopAnalysis/TopFilter/data/TtSemiLepSignalSelector_Muons.mva"    
+  }  

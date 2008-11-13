@@ -7,11 +7,8 @@
 #include "FWCore/Framework/interface/Frameworkfwd.h"
 #include "FWCore/Framework/interface/MakerMacros.h"
 #include "FWCore/Framework/interface/ESHandle.h"
-#include "FWCore/ServiceRegistry/interface/Service.h"
 #include "FWCore/ParameterSet/interface/InputTag.h"
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
-#include "PhysicsTools/UtilAlgos/interface/TFileService.h"
-
 #include "PhysicsTools/MVAComputer/interface/HelperMacros.h"
 #include "PhysicsTools/MVAComputer/interface/MVAComputerCache.h"
 
@@ -29,7 +26,6 @@ public:
 
 private:
 
-	virtual void beginJob(const edm::EventSetup&);
 	virtual void produce(edm::Event& evt, const edm::EventSetup& setup);
 	virtual void endJob();
 

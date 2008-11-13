@@ -79,11 +79,7 @@ void TtSemiLepSignalSelectorMVAComputer::produce(edm::Event& evt, const edm::Eve
 
 	evt.put(pOutDisc, "DiscSel");
 }
-
-void TtSemiLepSignalSelectorMVAComputer::beginJob(const edm::EventSetup&) {
-}
-
-void TtSemiLepSignalSelectorMVAComputer::endJob() {
+void TtSemiLepSignalSelectorMVAComputer::endJob(){
 }
 
 // implement the plugins for the computer container

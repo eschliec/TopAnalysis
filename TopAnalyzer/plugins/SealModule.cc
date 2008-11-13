@@ -42,7 +42,7 @@ typedef EventShapeAnalyzer<std::vector<pat::Electron> > EventShapeAnalyzerElec;
 #include "TopAnalysis/TopAnalyzer/plugins/LeptonNumberAnalyzer.h"
 #include "TopAnalysis/TopAnalyzer/plugins/MatrixAnalyzer.h"
 #include "TopAnalysis/TopAnalyzer/plugins/IsolationAnalyzer.h"
-
+#include "TopAnalysis/TopAnalyzer/plugins/DiscAnalyzer.h"
 //
 // plugins
 //
@@ -57,3 +57,4 @@ DEFINE_FWK_MODULE(EventShapeAnalyzerElec);
 DEFINE_FWK_MODULE(LeptonNumberAnalyzer);
 DEFINE_FWK_MODULE(IsolationAnalyzer);
 DEFINE_FWK_MODULE(MatrixAnalyzer);
+DEFINE_FWK_MODULE(DiscAnalyzer);

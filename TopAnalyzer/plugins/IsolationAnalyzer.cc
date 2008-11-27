@@ -313,7 +313,6 @@ void IsolationAnalyzer::analyze(const edm::Event& evt, const edm::EventSetup& se
 									helper->fill("deltaPhiMetJet2", deltaPhi(met->phi(), jet2Phi));
 									helper->fill("deltaPhiMetJet3", deltaPhi(met->phi(), jet3Phi));
 									helper->fill("deltaPhiMetJet4", deltaPhi(met->phi(), jet4Phi));
-									helper->fill("deltaPhiMetleadingMuon", deltaPhi(met->phi(), mu.phi()));
 									helper->fill("DeltaPhiTimesDeltaEta", deltaPhi(met->phi(), jet1Phi) * (met->eta()
 											* jet1Eta));
 									helper->fill("METTimesleadingJetEt", met->et() * jet1Et);

@@ -8,10 +8,10 @@ double maxRatio = 10.
 
 int32 numberOfMuonBins = 30
 double minNmuon = 0.
-double maxNmuon = 30.
+double maxNmuon = 50.
 
 int32 numberOfElecBins = 30
 double minNelec = 0.
-double maxNelec = 30.
+double maxNelec = 10.
 
 }

@@ -4,7 +4,10 @@ module matrixmodule = MatrixAnalyzer {
 #-------------------------------------------------
         InputTag muons = allLayer1Muons
         InputTag var = selectedLayer1METs
-#InputTag jets = selectedLayer1TopJets
+        InputTag jets = selectedLayer1Jets
+        InputTag mva = DiscSel
+        string mvaModule = "findTtSemiLepSignalSelectorMVA"        
+        PSet bins = { using VarBins }
 
 #-------------------------------------------------
 # files for output
@@ -15,13 +18,7 @@ module matrixmodule = MatrixAnalyzer {
 #
 # steerables
 #
-                bool before = false
-                bool make = false
+bool before = false
+bool make = false
 
-                #additional
-                #name of the previous module
-                string pmn = ""
-#binning for the variable you want to see the dependencie from.
-#last bin in the config is only for histogramm, there is no upper limit coded for the last bin
-vdouble varBins= {0.0, 20.0, 40.0, 60.0, 100.0, 150.0, 300.}
 }

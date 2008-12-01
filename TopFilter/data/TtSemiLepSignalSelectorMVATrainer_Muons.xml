@@ -12,15 +12,15 @@
                 <var name="METTimesLeadingJet" multiple="false" optional="false"/>
                 <var name="sumEtJet3And4" multiple="false" optional="false"/>
                 <var name="sumAllJetsEtAndLepton" multiple="false" optional="false"/>
-                <var name="vecSumAllJetsAndLepton" multiple="false" optional="false"/>
+                <var name="vecSumAllJetsAndLepton" multiple="false" optional="false"/>  
                 <var name="sumEtleadingJetAnd2TimesLeptonPt" multiple="false" optional="false"/>
                 <var name="dphiMETJet2" multiple="false" optional="false"/>
-               
+                <var name="MET" multiple="false" optional="false"/>
+                <var name="dphiMuJ1J2" multiple="false" optional="false"/>               
         </input>
-
         <processor id="norm" name="ProcNormalize">
                 <input>
-                        <var source="input" name="dphiMETJet4"/>
+<!--                        <var source="input" name="dphiMETJet4"/>-->
                         <var source="input" name="dphiMETLepton"/>
                         <var source="input" name="METTimesLeadingJet"/>
                         <var source="input" name="sumEtJet3And4"/>
@@ -28,6 +28,8 @@
                         <var source="input" name="vecSumAllJetsAndLepton"/>
                         <var source="input" name="sumEtleadingJetAnd2TimesLeptonPt"/>
                         <var source="input" name="dphiMETJet2"/>
+                        <var source="input" name="MET"/>
+                        <var source="input" name="dphiMuJ1J2"/>
                 </input>
                 <config>
                         <pdf/>
@@ -38,6 +40,8 @@
                         <pdf/> 
                         <pdf/>
                         <pdf/>
+                        <pdf/>
+<!--                        <pdf/>-->
                 </config>
                 <output>
                         <var name="var1"/>
@@ -48,6 +52,8 @@
                         <var name="var6"/> 
                         <var name="var7"/>
                         <var name="var8"/>
+                        <var name="var9"/>
+<!--                        <var name="var0"/>-->
                 </output>
         </processor>
 
@@ -62,11 +68,13 @@
                         <var source="norm" name="var6"/>
                         <var source="norm" name="var7"/>
                         <var source="norm" name="var8"/>
+                        <var source="norm" name="var9"/>
+<!--                        <var source="norm" name="var0"/>-->
 		</input>
 		<config>
 			<fill signal="true" background="true"/>
 		</config>
-		<output>
+		<output> 
 			<var name="rot1"/>
 			<var name="rot2"/>
 			<var name="rot3"/>
@@ -75,29 +83,14 @@
 			<var name="rot6"/>
 			<var name="rot7"/>
             <var name="rot8"/>
+            <var name="rot9"/>
+<!--            <var name="rot0"/>-->
 		</output>
 	</processor>
 
 
 	<processor id="likelihood" name="ProcLikelihood">
-		<!-- <input> -->
-<!-- 			 <var source="norm" name="var1"/> -->
-<!-- 			 <var source="norm" name="var2"/> -->
-<!-- 			 <var source="norm" name="var3"/> -->
-<!-- 			 <var source="norm" name="var4"/>  -->
-<!-- 			 <var source="norm" name="var5"/>  -->
-<!-- 			 <var source="norm" name="var6"/>  -->
-<!-- 			 <var source="norm" name="var7"/>  -->
-<!--                          <var source="norm" name="var8"/> -->
-<!--                          <var source="norm" name="var9"/> -->
-<!--                          <var source="norm" name="var10"/>  -->
-<!-- 			 <var source="norm" name="var11"/>  -->
-<!-- 			 <var source="norm" name="var12"/>  -->
-<!--                          <var source="norm" name="var13"/> -->
-<!--                          <var source="norm" name="var14"/>  -->
-<!--                          <var source="norm" name="var15"/>  -->
-<!-- 		</input> -->
-                <input>
+		<input>
 			 <var source="rot" name="rot1"/>
 			 <var source="rot" name="rot2"/>
 			 <var source="rot" name="rot3"/>
@@ -106,6 +99,8 @@
 			 <var source="rot" name="rot6"/> 
 			 <var source="rot" name="rot7"/> 
              <var source="rot" name="rot8"/>
+             <var source="rot" name="rot9"/> 
+<!--             <var source="rot" name="rot0"/>-->
 		</input>
 		<config>
 			<sigbkg smooth="3"/>
@@ -116,11 +111,14 @@
  			<sigbkg smooth="3"/> 
             <sigbkg smooth="3"/>
             <sigbkg smooth="3"/>
+            <sigbkg smooth="3"/>
+<!--            <sigbkg smooth="3"/>-->
 		</config>
 		<output>
 			<var name="discriminator"/>
 		</output>
 	</processor>
+	
 
         <output>
                 <var source="likelihood" name="discriminator"/>

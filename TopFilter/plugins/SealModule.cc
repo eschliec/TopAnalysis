@@ -1,10 +1,13 @@
 // simple event filter expansions
 #include "TopAnalysis/TopFilter/interface/PtFilter.h"
 #include "TopAnalysis/TopFilter/interface/EtaFilter.h"
+#include "TopAnalysis/TopFilter/interface/DoubleFilter.h"
 #include "TopAnalysis/TopFilter/plugins/SimpleEventFilter.h"
+#include "TopAnalysis/TopFilter/plugins/SimpleFilter.h"
 
 typedef SimpleEventFilter<PtFilter > PtEventFilter;
 typedef SimpleEventFilter<EtaFilter> EtaEventFilter;
+typedef SimpleFilter<DoubleFilter> DoubleEventFilter;
 
 // specific event filter expansions
 #include "TopAnalysis/TopFilter/plugins/SpecificEventFilter.h"
@@ -37,3 +40,4 @@ DEFINE_FWK_MODULE( MuonJetIsolationEventFilter );
 DEFINE_FWK_MODULE( ElecJetIsolationEventFilter );
 DEFINE_FWK_MODULE( TtSemiLepSignalSelectorMVATrainer );
 DEFINE_FWK_MODULE( TtSemiLepSignalSelectorMVAComputer );
+DEFINE_FWK_MODULE( DoubleEventFilter );

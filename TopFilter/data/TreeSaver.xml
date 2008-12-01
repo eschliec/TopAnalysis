@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
+<MVATrainer>
+	<general>
+		<option name="trainfiles">train_%1$s%2$s.%3$s</option>
+        </general>
+
+        <input id="input">
+                <var name="dphiMETJet4" multiple="false" optional="false"/>
+                <var name="dphiMETLepton" multiple="false" optional="false"/>
+                <var name="METTimesLeadingJet" multiple="false" optional="false"/>
+                <var name="sumEtJet3And4" multiple="false" optional="false"/>
+                <var name="sumAllJetsEtAndLepton" multiple="false" optional="false"/>
+                <var name="vecSumAllJetsAndLepton" multiple="false" optional="false"/>  
+                <var name="sumEtleadingJetAnd2TimesLeptonPt" multiple="false" optional="false"/>
+                <var name="dphiMETJet2" multiple="false" optional="false"/>
+                <var name="MET" multiple="false" optional="false"/>
+                <var name="dphiMuJ1J2" multiple="false" optional="false"/>               
+        </input>
+<!--   Don't forget to checkout TreeSaver.cc from PhysicsTools/MVATrainer/src/     -->
+<processor id="save" name="TreeSaver">
+		<input>
+			<var source="input" name="dphiMETJet4"/>
+            <var source="input" name="dphiMETLepton"/>
+            <var source="input" name="METTimesLeadingJet"/>
+            <var source="input" name="sumEtJet3And4"/>
+            <var source="input" name="sumAllJetsEtAndLepton"/>
+            <var source="input" name="vecSumAllJetsAndLepton"/>
+            <var source="input" name="sumEtleadingJetAnd2TimesLeptonPt"/>
+            <var source="input" name="dphiMETJet2"/>
+            <var source="input" name="MET"/>
+            <var source="input" name="dphiMuJ1J2"/>
+		</input>
+		<config>
+		</config>
+		<output>
+		</output>
+	</processor>
+ 
+         <output>
+               <var source="input" name="dphiMETLepton"/>
+        </output>
+
+</MVATrainer>

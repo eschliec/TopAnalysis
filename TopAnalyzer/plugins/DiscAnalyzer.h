@@ -41,6 +41,14 @@ public:
 		disc_->Fill(disc, weight);
 	}
 
+	void endJob(){
+		//normalize to 1
+		if(disc_->Integral() != 0)
+		{
+			disc_->Scale(1/disc_->Integral());
+		}
+	}
+
 private:
 	TH1F *disc_;
 

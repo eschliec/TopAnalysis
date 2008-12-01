@@ -3,7 +3,7 @@
 /**
  *  class:   MatrixAnalyzer.h
  * @author: Lukas Kreczko, Uni Hamburg (lkreczko@mail.desy.de)
- * version $Id: MatrixAnalyzer.h,v 1.9 2008/09/08 08:44:42 kreczko Exp $
+ * version $Id: MatrixAnalyzer.h,v 1.9.4.1 2008/10/13 13:04:23 kreczko Exp $
 
  ________________________________________________________________**/
 #include "FWCore/Framework/interface/Event.h"
@@ -54,29 +54,36 @@ private:
 	int noBins_;//, beforeBin_, afterBin_;
 	double sampleweight_;
 	edm::InputTag muons_;
-	edm::InputTag var_, jets_;
-	std::vector<double> varBins1_, varBins2_, varBins3_, varBins4_;
-	std::string notNeededHists_;
+	edm::InputTag var_, jets_, mva_;
+	edm::ParameterSet bins_;
+	//std::vector<double> varBins1_, varBins2_, varBins3_, varBins4_;
+	std::string mvamodule_;
+	//std::string notNeededHists_;
 	typedef std::vector<pat::Muon> TopMuonCollection;
 	typedef std::vector<pat::Jet>  TopJetCollection;
+	std::vector<double> varBins_, mvaDiscBins_;
 
 	std::map<int, TopMuonCollection> mothermap_;
 
-	TH1F *background_, *binnedBkg_, *binnedSimpleBkg_;
+	TH1F *nVSmet_, *nVSmetSimple_, *nVSdisc_, *nVSdiscSimple_;
 
-	TH1F *lep_, *binnedSemiLep_, *binnedSimpleSemiLep_;
+//	TH1F *background_, *binnedBkg_, *binnedSimpleBkg_;
+//
+//	TH1F *lep_, *binnedSemiLep_, *binnedSimpleSemiLep_;
+//
+//	TH1F *llep_, *binnedDiLep_, *binnedSimpleDiLep_;
+//
+//	TH1F * multilep_, *binnedMultiLep_, *binnedSimpleMultiLep_;
+//
+//	TH1F *overall_, *binnedOverall_, *binnedSimpleOverall_;
+//
+//	TH1F *eff_, *binnedEff_;
+//
+//	TFile *f_;
 
-	TH1F *llep_, *binnedDiLep_, *binnedSimpleDiLep_;
 
-	TH1F * multilep_, *binnedMultiLep_, *binnedSimpleMultiLep_;
-
-	TH1F *overall_, *binnedOverall_, *binnedSimpleOverall_;
-
-	TH1F *eff_, *binnedEff_;
-
-	TFile *f_;
 
 	TH1F *varPlot_;
-	LeptonCounter *Counters_;//, *countersBefore_, *effCounter_, *effErrors_;
+	LeptonCounter *Counters_;
 };
 #endif

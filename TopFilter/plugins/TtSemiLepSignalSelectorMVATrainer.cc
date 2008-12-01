@@ -58,16 +58,13 @@ void TtSemiLepSignalSelectorMVATrainer::analyze(const edm::Event& evt, const edm
 		return;
 	const TopJetCollection jets = *jet_handle;
 
-	double dRmin = 9999.;
-	for (std::vector<pat::Jet>::const_iterator it = jets.begin(); it != jets.end(); it++) {
-		double tmpdR = deltaR(it->eta(), it->phi(), lepton->eta(), lepton->phi());
-		if (tmpdR < dRmin)
-			dRmin = tmpdR;
-	}
+//	double dRmin = 9999.;
+//	for (std::vector<pat::Jet>::const_iterator it = jets.begin(); it != jets.end(); it++) {
+//		double tmpdR = deltaR(it->eta(), it->phi(), lepton->eta(), lepton->phi());
+//		if (tmpdR < dRmin)
+//			dRmin = tmpdR;
+//	}
 
-	// skip events with less than 4 jets
-	if (jets.size() < 4)
-		return;
 
 	//at last one lepton
 	if (!(leptons->size() == 0)) {
@@ -76,7 +73,7 @@ void TtSemiLepSignalSelectorMVATrainer::analyze(const edm::Event& evt, const edm
 
 		if (genEvt->isSemiLeptonic() && genEvt->semiLeptonicChannel() == lepChannel_) {
 			evaluateTtSemiLepSignalSelector(mvaComputer, selection, weight, true, true);
-		} else {
+		} else if (genEvt->isFullHadronic()){
 			evaluateTtSemiLepSignalSelector(mvaComputer, selection, weight, true, false);
 		}
 

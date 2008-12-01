@@ -1,0 +1,10 @@
+#binning for the variable you want to see the dependencie from.
+#last bin in the config is only for histogramm, there is no upper limit coded for the last bin
+block VarBins = {
+vdouble jet1Bins = {20., 25., 30., 35., 40., 45., 50., 55., 60., 65., 70., 75.}
+vdouble jet2Bins = {20., 25., 30., 35., 40., 45., 50., 55., 60., 60., 60., 60.}
+vdouble jet3Bins = {20., 20., 20., 20., 20., 20., 20., 20., 20., 20., 25., 30.}
+vdouble jet4Bins = {20., 20., 20., 20., 20., 20., 20., 20., 20., 20., 25., 30.}
+vdouble metBins = {0., 20., 40., 60., 100., 150., 300.}
+vdouble mvaDiscBins = {0., 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9}
+}

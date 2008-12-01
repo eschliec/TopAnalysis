@@ -1,0 +1,12 @@
+module doublefilter = DoubleEventFilter{
+string name = "weight"
+VInputTag input = {eventWeight}
+PSet cuts = { using DoubleCut }
+InputTag weight = eventWeight
+}
+
+block DoubleCut = {
+  string name = "DoubleCut"
+  vdouble min = {-2.4}
+  vdouble max = { 2.4}
+}

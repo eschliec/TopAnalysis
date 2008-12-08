@@ -3,7 +3,7 @@
 /**
  *  class:   MatrixAnalyzer.h
  * @author: Lukas Kreczko, Uni Hamburg (lkreczko@mail.desy.de)
- * version $Id: MatrixAnalyzer.h,v 1.9.4.1 2008/10/13 13:04:23 kreczko Exp $
+ * version $Id: MatrixAnalyzer.h,v 1.9.4.2 2008/12/01 17:03:51 kreczko Exp $
 
  ________________________________________________________________**/
 #include "FWCore/Framework/interface/Event.h"
@@ -62,24 +62,13 @@ private:
 	typedef std::vector<pat::Muon> TopMuonCollection;
 	typedef std::vector<pat::Jet>  TopJetCollection;
 	std::vector<double> varBins_, mvaDiscBins_;
+	bool useMVA_;
+	std::string module_;
+	std::string discinput_;
 
 	std::map<int, TopMuonCollection> mothermap_;
 
 	TH1F *nVSmet_, *nVSmetSimple_, *nVSdisc_, *nVSdiscSimple_;
-
-//	TH1F *background_, *binnedBkg_, *binnedSimpleBkg_;
-//
-//	TH1F *lep_, *binnedSemiLep_, *binnedSimpleSemiLep_;
-//
-//	TH1F *llep_, *binnedDiLep_, *binnedSimpleDiLep_;
-//
-//	TH1F * multilep_, *binnedMultiLep_, *binnedSimpleMultiLep_;
-//
-//	TH1F *overall_, *binnedOverall_, *binnedSimpleOverall_;
-//
-//	TH1F *eff_, *binnedEff_;
-//
-//	TFile *f_;
 
 
 

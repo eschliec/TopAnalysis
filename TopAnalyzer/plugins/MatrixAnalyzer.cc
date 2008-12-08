@@ -9,7 +9,10 @@ MatrixAnalyzer::MatrixAnalyzer(const edm::ParameterSet& cfg) :
 	muons_(cfg.getParameter<edm::InputTag> ("muons")),
 	var_(cfg.getParameter<edm::InputTag> ("var")),
 	jets_(cfg.getParameter<edm::InputTag> ("jets")),
-	bins_( cfg.getParameter<edm::ParameterSet> ("bins" ) ){
+	bins_(cfg.getParameter<edm::ParameterSet> ("bins" )),
+	useMVA_(cfg.getParameter<bool> ("useMVA")),
+	module_(cfg.getParameter<std::string> ("modulename")),
+	discinput_(cfg.getParameter<std::string> ("discriminator")) {
 	varBins_ = bins_.getParameter<std::vector<double> >( "metBins" );
 	mvaDiscBins_ = bins_.getParameter<std::vector<double> >( "mvaDiscBins" );
 	debug_ = true;
@@ -27,13 +30,15 @@ MatrixAnalyzer::MatrixAnalyzer(const edm::ParameterSet& cfg) :
 		Counters_->addCounter(tmp.str());
 		Counters_->addCounter(tmp.str() + "simple");
 	}
-
-	for (unsigned int x = 0; x < mvaDiscBins_.size() - 1; x++) {
-		std::stringstream tmp;
-		tmp << "mva" << mvaDiscBins_.at(x);
-		Counters_->addCounter(tmp.str());
-		Counters_->addCounter(tmp.str() + "simple");
+	if (useMVA_) {
+		for (unsigned int x = 0; x < mvaDiscBins_.size() - 1; x++) {
+			std::stringstream tmp;
+			tmp << "mva" << mvaDiscBins_.at(x);
+			Counters_->addCounter(tmp.str());
+			Counters_->addCounter(tmp.str() + "simple");
+		}
 	}
+
 	Counters_->addCounter("weighted");
 
 	Counters_->addCounter("simple");
@@ -61,13 +66,17 @@ void MatrixAnalyzer::beginJob(const edm::EventSetup&) {
 	//make histograms
 	nVSmet_ = fs->make<TH1F> (nam.name(hist, "nVSmet"), nam.name("numberOfeventsVSmet"), varBins_.size() - 1,
 			&varBins_[0]);
-	nVSdisc_ = fs->make<TH1F> (nam.name(hist, "nVSdisc"), nam.name("numberOfeventsVSmvaDiscriminator"),
-			mvaDiscBins_.size() - 1, &mvaDiscBins_[0]);
+	if (useMVA_) {
+		nVSdisc_ = fs->make<TH1F> (nam.name(hist, "nVSdisc"), nam.name("numberOfeventsVSmvaDiscriminator"),
+				mvaDiscBins_.size() - 1, &mvaDiscBins_[0]);
+		nVSdiscSimple_ = fs->make<TH1F> (nam.name(hist, "nVSdiscSimple"), nam.name(
+				"numberOfeventsVSmvaDiscriminatorSimple"), mvaDiscBins_.size() - 1, &mvaDiscBins_[0]);
+	}
+
 
 	nVSmetSimple_ = fs->make<TH1F> (nam.name(hist, "nVSmetSimple"), nam.name("numberOfeventsVSmetSimple"),
 			varBins_.size() - 1, &varBins_[0]);
-	nVSdiscSimple_ = fs->make<TH1F> (nam.name(hist, "nVSdiscSimple"),
-			nam.name("numberOfeventsVSmvaDiscriminatorSimple"), mvaDiscBins_.size() - 1, &mvaDiscBins_[0]);
+
 	varPlot_ = fs->make<TH1F> (nam.name(hist, var_.label().c_str()), nam.name(var_.label().c_str()), 250, 0, 500);
 }
 
@@ -75,8 +84,11 @@ void MatrixAnalyzer::analyze(const edm::Event& evt,
 		const edm::EventSetup& setup) {
 
 	edm::Handle<double> disc_handle;
-	evt.getByLabel("findTtSemiLepSignalSelectorMVA", "DiscSel", disc_handle);
-	double disc = *disc_handle;
+	double disc = 0.;
+	if (useMVA_){
+		evt.getByLabel(module_, discinput_, disc_handle);
+		disc = *disc_handle;
+	}
 
 	edm::Handle<reco::GenParticleCollection> genParticles;
 	evt.getByLabel("genParticles", genParticles);
@@ -137,8 +149,8 @@ void MatrixAnalyzer::analyze(const edm::Event& evt,
 			}
 		}
 	}
-
-	for (unsigned int i = 0; i < mvaDiscBins_.size() - 1; i++) {
+	if (useMVA_) {
+		for (unsigned int i = 0; i < mvaDiscBins_.size() - 1; i++) {
 			bool pass = disc >= mvaDiscBins_[i] && (disc < mvaDiscBins_[i + 1] || i == mvaDiscBins_.size() - 2);
 
 			if (pass) {
@@ -148,21 +160,19 @@ void MatrixAnalyzer::analyze(const edm::Event& evt,
 				if (muons->size() < 1) {
 					Counters_->addPureHadronic(tmp.str() + "simple");
 					Counters_->addPureHadronic(tmp.str(), sampleweight_);
-				}
-				else if (muons->size() == 1) {
+				} else if (muons->size() == 1) {
 					Counters_->addSemiLeptonic(tmp.str() + "simple");
 					Counters_->addSemiLeptonic(tmp.str(), sampleweight_);
-				}
-				else if (muons->size() == 2) {
+				} else if (muons->size() == 2) {
 					Counters_->addDiLeptonic(tmp.str() + "simple");
-					Counters_->addDiLeptonic(tmp.str(),sampleweight_);
-				}
-				else if (muons->size() > 2) {
+					Counters_->addDiLeptonic(tmp.str(), sampleweight_);
+				} else if (muons->size() > 2) {
 					Counters_->addMultiLeptonic(tmp.str() + "simple");
 					Counters_->addMultiLeptonic(tmp.str(), sampleweight_);
 				}
 			}
 		}
+	}
 
 	if (muons->size() < 1) {
 		Counters_->addPureHadronic("simple");
@@ -202,12 +212,12 @@ void MatrixAnalyzer::setEnv() {
 		nVSmetSimple_->SetBinContent(bbin, _ss);
 
 	}
-
-	for (unsigned int i = 0; i < mvaDiscBins_.size() - 1; i++) {
+	if (useMVA_) {
+		for (unsigned int i = 0; i < mvaDiscBins_.size() - 1; i++) {
 			std::stringstream tmp;
 			tmp << "mva" << mvaDiscBins_.at(i);
 			double s, _ss;//, b, d, m, o, _sb, _sd, _sm, _so;
-			int bbin = i+1;
+			int bbin = i + 1;
 
 			s = Counters_->getSemiLeptonic(tmp.str());
 			_ss = Counters_->getSemiLeptonic(tmp.str() + "simple");
@@ -215,6 +225,7 @@ void MatrixAnalyzer::setEnv() {
 			nVSdisc_->SetBinContent(bbin, s);
 			nVSdiscSimple_->SetBinContent(bbin, _ss);
 		}
+	}
 }
 
 int MatrixAnalyzer::numberOfmatchedMuons(

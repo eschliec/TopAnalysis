@@ -8,7 +8,7 @@ module matrixmodule = MatrixAnalyzer {
         InputTag mva = DiscSel
         string mvaModule = "makeMVA"        
         PSet bins = { using VarBins }
-        string modulename = "findTtSemiLepSignalSelectorMVA"
+        string modulename = "makeMVA"
 		string discriminator = "DiscSel"
 
 #-------------------------------------------------

@@ -2,7 +2,7 @@
 
 #include "TopAnalysis/TopFilter/plugins/TtSemiLepSignalSelectorMVATrainer.h"
 #include "TopAnalysis/TopUtils/interface/TtSemiLepSignalSelectorEval.h"
-#include "TopQuarkAnalysis/TopTools/interface/TtSemiEvtPartons.h"
+#include "TopQuarkAnalysis/TopTools/interface/TtSemiLepEvtPartons.h"
 
 #include "DataFormats/PatCandidates/interface/Jet.h"
 #include "DataFormats/PatCandidates/interface/Muon.h"
@@ -73,9 +73,11 @@ void TtSemiLepSignalSelectorMVATrainer::analyze(const edm::Event& evt, const edm
 
 		if (genEvt->isSemiLeptonic() && genEvt->semiLeptonicChannel() == lepChannel_) {
 			evaluateTtSemiLepSignalSelector(mvaComputer, selection, weight, true, true);
-		} else if (genEvt->isFullHadronic()){
+		} else{
 			evaluateTtSemiLepSignalSelector(mvaComputer, selection, weight, true, false);
 		}
+		//wjets:
+		//evaluateTtSemiLepSignalSelector(mvaComputer, selection, weight, true, true);
 
 	} else
 		return;

@@ -1,7 +1,7 @@
 #include "PhysicsTools/JetMCUtils/interface/combination.h"
 
 #include "TopAnalysis/TopFilter/plugins/TtSemiLepSignalSelectorMVAComputer.h"
-#include "TopQuarkAnalysis/TopTools/interface/TtSemiEvtPartons.h"
+#include "TopQuarkAnalysis/TopTools/interface/TtSemiLepEvtPartons.h"
 #include "TopAnalysis/TopUtils/interface/TtSemiLepSignalSelectorEval.h"
 
 #include "DataFormats/RecoCandidate/interface/RecoCandidate.h"

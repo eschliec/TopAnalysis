@@ -20,6 +20,7 @@ hist_(cfg.getParameter<std::string> ("hist")), muons_(cfg.getParameter<edm::Inpu
 		cfg.getParameter<edm::InputTag> ("missingEt")), ttgen_(cfg.getParameter<edm::InputTag> ("genEvent")),
 jets_(cfg.getParameter<edm::InputTag> ("jets")), ptBins_(cfg.getParameter<std::vector<double> > ("ptBins")),
 ttbarMC_(cfg.getParameter<bool> ("ttbarMC")) {
+	ttbarMC_ = false;
 }
 
 void IsolationAnalyzer::beginJob(const edm::EventSetup&) {
@@ -33,6 +34,7 @@ void IsolationAnalyzer::beginJob(const edm::EventSetup&) {
 
 	helper_ = new IsolationHelper(fs, hist_);
 
+	//disable ttbarMC for now
 	if (ttbarMC_) {
 		//for each ptBin new IsolationHelper
 		for (unsigned int x = 0; x < ptBins_.size() - 1; x++) {

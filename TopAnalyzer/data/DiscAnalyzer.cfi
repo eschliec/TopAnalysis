@@ -1,1 +1,5 @@
-module analyzeDisc = DiscAnalyzer{}
+module analyzeDisc = DiscAnalyzer{
+string modulename = "findTtSemiLepSignalSelectorMVA"
+string discriminator = "DiscSel"
+string histfile = "analyzeDisc.hist"
+}

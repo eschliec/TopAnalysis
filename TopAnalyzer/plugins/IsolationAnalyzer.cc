@@ -213,25 +213,25 @@ void IsolationAnalyzer::analyze(const edm::Event& evt, const edm::EventSetup& se
 				//get 4th jet + closest (hadronic W)
 				phi1 = jet3Phi + (0.5*deltaPhi(jet4Phi, jet3Phi));
 				phi2 = jet4Phi + (0.5*deltaPhi(jet3Phi, jet4Phi));
-				if(phi1 == phi2) cout << "it's working!" << endl;
+//				if(phi1 == phi2) cout << "it's working!" << endl;
 
 				pat::Jet closest34Jet = getClosestJetInDeltaPhi(jets, phi1);
 				phi3 = phi1 + 0.5* deltaPhi(closest34Jet.phi(), phi1);
 				phi4 = closest34Jet.phi() + 0.5* deltaPhi(phi1, closest34Jet.phi());
-				if(phi3 == phi4) cout << "it's really working!" << endl;
+//				if(phi3 == phi4) cout << "it's really working!" << endl;
 
 				phi5 = mu.phi() + 0.5* deltaPhi(met->phi(),mu.phi());
 				phi6 = met->phi() + 0.5* deltaPhi(mu.phi(), met->phi());
-				if(phi5 == phi6) cout << "it's really, really working!" << endl;
+//				if(phi5 == phi6) cout << "it's really, really working!" << endl;
 
 				phi7 = phi5 + 0.5 * deltaPhi(closestMuJet.phi(),phi5);
 				phi8 = closestMuJet.phi() + 0.5 * deltaPhi(phi5, closestMuJet.phi());
-				if(phi7 == phi8) cout << "katsching!" << endl;
-				cout << "<" << phi1 << "," << phi2 << ">" << endl;
-				cout << "<" << phi3 << "," << phi4 << ">" << endl;
-				cout << "<" << phi5 << "," << phi6 << ">" << endl;
-				cout << "<" << phi7 << "," << phi8 << ">" << endl;
-				cout << "here <" << deltaPhi(jet3Phi, jet4Phi) << "," << deltaPhi(jet4Phi, jet3Phi) << ">" << endl;
+//				if(phi7 == phi8) cout << "katsching!" << endl;
+//				cout << "<" << phi1 << "," << phi2 << ">" << endl;
+//				cout << "<" << phi3 << "," << phi4 << ">" << endl;
+//				cout << "<" << phi5 << "," << phi6 << ">" << endl;
+//				cout << "<" << phi7 << "," << phi8 << ">" << endl;
+//				cout << "here <" << deltaPhi(jet3Phi, jet4Phi) << "," << deltaPhi(jet4Phi, jet3Phi) << ">" << endl;
 				//fill histogramms
 				helper_->fill("METTimesleadingJetEt", jet1Et * met->et());
 				helper_->fill("minDeltaPhiMETJets", mindp);

@@ -1,5 +1,5 @@
 replace PoolSource.fileNames = {
-  "file:file:/scratch/current/cms/store/csa07AllEventsSkim/TopAnalysis/B16X/ttbarInclusive/semiDiLepMuSelection_Ttbar_1.root",
+  "file:/scratch/current/cms/store/csa07AllEventsSkim/TopAnalysis/B16X/ttbarInclusive/semiDiLepMuSelection_Ttbar_1.root",
   "file:/scratch/current/cms/store/csa07AllEventsSkim/TopAnalysis/B16X/ttbarInclusive/semiDiLepMuSelection_Ttbar_2.root",
   "file:/scratch/current/cms/store/csa07AllEventsSkim/TopAnalysis/B16X/ttbarInclusive/semiDiLepMuSelection_Ttbar_3.root",
   "file:/scratch/current/cms/store/csa07AllEventsSkim/TopAnalysis/B16X/ttbarInclusive/semiDiLepMuSelection_Ttbar_4.root",

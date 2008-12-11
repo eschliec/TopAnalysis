@@ -14,6 +14,13 @@
 #include "TopAnalysis/TopAnalyzer/plugins/IsolationHelper.h"
 
 class DiscAnalyzer: public edm::EDAnalyzer {
+private:
+	TH1F *disc_, *discNorm_;
+	std::string module_;
+	std::string discinput_;
+	std::string hist_;
+	IsolationHelper *helper_;
+
 public:
 	DiscAnalyzer(const edm::ParameterSet& cfg) :
 		module_(cfg.getParameter<std::string> ("modulename")), discinput_(cfg.getParameter<std::string> (
@@ -57,13 +64,6 @@ public:
 			discNorm_->Scale(1 / discNorm_->Integral());
 		}
 	}
-
-private:
-	TH1F *disc_, *discNorm_;
-	std::string module_;
-	std::string discinput_;
-	std::string hist_;
-	IsolationsHelper helper_;
 
 };
 #endif

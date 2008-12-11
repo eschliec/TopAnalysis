@@ -1,3 +1,6 @@
+#ifndef IsolationHelper_h
+#define IsolationHelper_h
+
 #include "TopAnalysis/TopAnalyzer/plugins/CorrelationMonitor.h"
 #include "FWCore/ServiceRegistry/interface/Service.h"
 #include "PhysicsTools/UtilAlgos/interface/TFileService.h"
@@ -135,3 +138,5 @@ private:
 	double caloIso_, trackIso_, weight_;
 	std::string file_;
 };
+#endif
+

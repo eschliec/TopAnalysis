@@ -111,6 +111,7 @@ IsolationAnalyzer::~IsolationAnalyzer() {
 
 void IsolationAnalyzer::analyze(const edm::Event& evt, const edm::EventSetup& setup) {
 
+	edm::Handle<double> disc_handle;
 	double disc = 0.;
 	if (useMVA_) {
 		evt.getByLabel(module_, discinput_, disc_handle);

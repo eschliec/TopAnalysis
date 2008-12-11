@@ -40,7 +40,7 @@ public:
 
 		helper_ = new IsolationHelper(fs, hist_);
 		helper_->addHistogram("MVA_disc", 25, 0., 1.);
-		//disc_ = fs->make<TH1F> ("MVA_disc", "MVA_disc", 25, 0., 1.);
+		disc_ = fs->make<TH1F> ("MVA_disc", "MVA_disc", 25, 0., 1.);
 		discNorm_ = fs->make<TH1F> ("norm_MVA_disc", "norm_MVA_disc", 25, 0., 1.);
 	}
 	void analyze(const edm::Event& evt, const edm::EventSetup& setup) {

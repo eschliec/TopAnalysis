@@ -19,7 +19,10 @@ IsolationAnalyzer::IsolationAnalyzer(const edm::ParameterSet& cfg) :
 hist_(cfg.getParameter<std::string> ("hist")), muons_(cfg.getParameter<edm::InputTag> ("muons")), met_(
 		cfg.getParameter<edm::InputTag> ("missingEt")), ttgen_(cfg.getParameter<edm::InputTag> ("genEvent")),
 jets_(cfg.getParameter<edm::InputTag> ("jets")), ptBins_(cfg.getParameter<std::vector<double> > ("ptBins")),
-ttbarMC_(cfg.getParameter<bool> ("ttbarMC")) {
+ttbarMC_(cfg.getParameter<bool> ("ttbarMC")),
+useMVA_(cfg.getParameter<bool> ("useMVA")),
+module_(cfg.getParameter<std::string> ("modulename")),
+discinput_(cfg.getParameter<std::string> ("discriminator")){
 	ttbarMC_ = false;
 }
 
@@ -96,6 +99,7 @@ void IsolationAnalyzer::beginJob(const edm::EventSetup&) {
 	helper_->addHistogram("deltaPhiTtbar", 80, -4., 4.);
 	helper_->addHistogram("fabsDeltaPhiTtbar", 80, 0, 4.);
 	helper_->addHistogram("TriJetTMass", 70, 60., 350); //5GeV Schritte
+	if (useMVA_) helper_->addHistogram("MVAdisc", 25, 0., 1.);
 	NameScheme nam("var");
 	ofstream off(hist_.c_str(), std::ios::app);
 	recoMETUncorrectedMET_ = fs->make<TH1F> (nam.name(off, "recoMETUncorrectedMET"), nam.name("recoMETUncorrectedMET"),
@@ -106,6 +110,12 @@ IsolationAnalyzer::~IsolationAnalyzer() {
 }
 
 void IsolationAnalyzer::analyze(const edm::Event& evt, const edm::EventSetup& setup) {
+
+	double disc = 0.;
+	if (useMVA_) {
+		evt.getByLabel(module_, discinput_, disc_handle);
+		disc = *disc_handle;
+	}
 
 	const pat::MET *met;
 	reco::Particle::LorentzVector vec;
@@ -260,6 +270,7 @@ void IsolationAnalyzer::analyze(const edm::Event& evt, const edm::EventSetup& se
 				helper_->fill("deltaPhiTtbar", deltaPhi(phi8, phi4));
 				helper_->fill("fabsDeltaPhiTtbar", fabs(deltaPhi(phi8, phi4)));
 				recoMETUncorrectedMET_->Fill(met->et() - met->uncorrectedPt(), weight);
+				if (useMVA_) helper_->fill("MVAdisc", disc);
 			}
 			if (i == 1) {
 				//2nd leading muon

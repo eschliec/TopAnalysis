@@ -9,6 +9,10 @@ InputTag jets = selectedLayer1Jets
 
 #pt-bins for reconstructed top
 vdouble ptBins= {0.0, 80.0, 170.0, 250.0, 9999.0}
+
 bool ttbarMC = false
 string hist = "Isolation.hist"
+string modulename = "makeMVA"
+string discriminator = "DiscSel"
+bool useMVA = false
 }

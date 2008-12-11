@@ -46,7 +46,9 @@ private:
 	edm::InputTag jets_;
 
 	vector<double> ptBins_;
-	bool ttbarMC_;
+	bool ttbarMC_, useMVA_;
+	std::string module_;
+	std::string discinput_;
 
 	TH1F *recoMETUncorrectedMET_;
 

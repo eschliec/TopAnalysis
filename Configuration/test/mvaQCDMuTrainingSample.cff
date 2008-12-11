@@ -1,5 +1,0 @@
-replace PoolSource.fileNames = {
-  "dcap:dcache-ses-cms.desy.de/pnfs/desy.de/cms/analysis/top/rwolf/QCD/semiDiLepMuSelection_QcdMu_1.root",
-  "dcap:dcache-ses-cms.desy.de/pnfs/desy.de/cms/analysis/top/rwolf/QCD/semiDiLepMuSelection_QcdMu_2.root",
-  "dcap:dcache-ses-cms.desy.de/pnfs/desy.de/cms/analysis/top/rwolf/QCD/semiDiLepMuSelection_QcdMu_3.root"
-  }

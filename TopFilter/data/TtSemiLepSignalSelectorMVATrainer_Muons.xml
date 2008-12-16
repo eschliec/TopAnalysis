@@ -16,7 +16,12 @@
                 <var name="sumEtleadingJetAnd2TimesLeptonPt" multiple="false" optional="false"/>
                 <var name="dphiMETJet2" multiple="false" optional="false"/>
                 <var name="MET" multiple="false" optional="false"/>
-                <var name="dphiMuJ1J2" multiple="false" optional="false"/>               
+                <var name="dphiMuJ1J2" multiple="false" optional="false"/>    
+                <var name="leptonPt" multiple="false" optional="false"/>
+                <var name="aplanarity" multiple="false" optional="false"/> 
+                <var name="sphericity" multiple="false" optional="false"/> 
+                <var name="circularity" multiple="false" optional="false"/> 
+                <var name="isotropy" multiple="false" optional="false"/>               
         </input>
         <processor id="norm" name="ProcNormalize">
                 <input>
@@ -30,12 +35,23 @@
                         <var source="input" name="dphiMETJet2"/>
                         <var source="input" name="MET"/>
                         <var source="input" name="dphiMuJ1J2"/>
+                        <var source="input" name="leptonPt"/>
+            			<var source="input" name="aplanarity"/>
+            			<var source="input" name="sphericity"/>
+            			<var source="input" name="dphiMETJet2"/>
+            			<var source="input" name="circularity"/>
+            			<var source="input" name="isotropy"/>
                 </input>
                 <config>
                         <pdf/>
                         <pdf/>
                         <pdf/>
                         <pdf/> 
+                        <pdf/>
+                        <pdf/> 
+                        <pdf/>
+                        <pdf/>
+                        <pdf/>
                         <pdf/>
                         <pdf/> 
                         <pdf/>
@@ -53,6 +69,11 @@
                         <var name="var7"/>
                         <var name="var8"/>
                         <var name="var9"/>
+                        <var name="var10"/> 
+                        <var name="var11"/> 
+                        <var name="var12"/>
+                        <var name="var13"/>
+                        <var name="var14"/>
 <!--                        <var name="var0"/>-->
                 </output>
         </processor>
@@ -69,6 +90,11 @@
                         <var source="norm" name="var7"/>
                         <var source="norm" name="var8"/>
                         <var source="norm" name="var9"/>
+                        <var source="norm" name="var10"/> 
+                        <var source="norm" name="var11"/> 
+                        <var source="norm" name="var12"/>
+                        <var source="norm" name="var13"/>
+                        <var source="norm" name="var14"/>
 <!--                        <var source="norm" name="var0"/>-->
 		</input>
 		<config>
@@ -84,6 +110,11 @@
 			<var name="rot7"/>
             <var name="rot8"/>
             <var name="rot9"/>
+            <var name="rot10"/>
+			<var name="rot11"/>
+			<var name="rot12"/>
+            <var name="rot13"/>
+            <var name="rot14"/>
 <!--            <var name="rot0"/>-->
 		</output>
 	</processor>
@@ -99,7 +130,12 @@
 			 <var source="rot" name="rot6"/> 
 			 <var source="rot" name="rot7"/> 
              <var source="rot" name="rot8"/>
-             <var source="rot" name="rot9"/> 
+             <var source="rot" name="rot9"/>
+             <var source="rot" name="rot10"/>
+			 <var source="rot" name="rot11"/>
+			 <var source="rot" name="rot12"/>
+             <var source="rot" name="rot13"/>
+             <var source="rot" name="rot14"/> 
 <!--             <var source="rot" name="rot0"/>-->
 		</input>
 		<config>
@@ -108,6 +144,11 @@
 			<sigbkg smooth="3"/>
             <sigbkg smooth="3"/> 
  			<sigbkg smooth="3"/> 
+ 			<sigbkg smooth="3"/> 
+            <sigbkg smooth="3"/>
+            <sigbkg smooth="3"/>
+            <sigbkg smooth="3"/>
+            <sigbkg smooth="3"/> 
  			<sigbkg smooth="3"/> 
             <sigbkg smooth="3"/>
             <sigbkg smooth="3"/>

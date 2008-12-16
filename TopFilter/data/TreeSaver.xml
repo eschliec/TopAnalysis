@@ -14,7 +14,11 @@
                 <var name="sumEtleadingJetAnd2TimesLeptonPt" multiple="false" optional="false"/>
                 <var name="dphiMETJet2" multiple="false" optional="false"/>
                 <var name="MET" multiple="false" optional="false"/>
-                <var name="dphiMuJ1J2" multiple="false" optional="false"/>               
+                <var name="leptonPt" multiple="false" optional="false"/>
+                <var name="aplanarity" multiple="false" optional="false"/> 
+                <var name="sphericity" multiple="false" optional="false"/> 
+                <var name="circularity" multiple="false" optional="false"/> 
+                <var name="isotropy" multiple="false" optional="false"/>                
         </input>
 <!--   Don't forget to checkout TreeSaver.cc from PhysicsTools/MVATrainer/src/     -->
 <processor id="save" name="TreeSaver">
@@ -28,7 +32,12 @@
             <var source="input" name="sumEtleadingJetAnd2TimesLeptonPt"/>
             <var source="input" name="dphiMETJet2"/>
             <var source="input" name="MET"/>
-            <var source="input" name="dphiMuJ1J2"/>
+            <var source="input" name="leptonPt"/>
+            <var source="input" name="aplanarity"/>
+            <var source="input" name="sphericity"/>
+            <var source="input" name="dphiMETJet2"/>
+            <var source="input" name="circularity"/>
+            <var source="input" name="isotropy"/>
 		</input>
 		<config>
 		</config>

@@ -38,7 +38,6 @@
                         <var source="input" name="leptonPt"/>
             			<var source="input" name="aplanarity"/>
             			<var source="input" name="sphericity"/>
-            			<var source="input" name="dphiMETJet2"/>
             			<var source="input" name="circularity"/>
             			<var source="input" name="isotropy"/>
                 </input>

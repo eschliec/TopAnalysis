@@ -50,31 +50,38 @@ class MuonKinematic{
       delete isoJet40_;
       delete isoTrkPt_;
       delete isoCalPt_;
+      delete isoRelPt_;
       delete isoTrkN_;
-      delete isoCalN_;
+      delete isoEcalN_;
+      delete isoHcalN_;
+      delete dREcalPt_;
+      delete dREcalN_;
+      delete dRHcalPt_;
+      delete dRHcalN_;
       delete dRTrkPt_;
       delete dRTrkN_;
-      delete dRCalPt_;
-      delete dRCalN_;
       delete ptVsTrkIso_;
       delete ptVsCalIso_;
     }
   };
-  
+
   void book();
   void book(edm::Service<TFileService>&);
   void book(edm::Service<TFileService>&, ofstream&);
   void fill(const edm::Event&, const std::vector<pat::Muon>&, const double&);
   void fill(const std::vector<pat::Jet>& jets,
 	    const std::vector<pat::Muon>& muons, const double&);
-  void norm(){ 
-    dRTrkPt_->Scale(1./dRTrkPt_->GetEntries()); 
-    dRTrkN_ ->Scale(1./dRTrkN_ ->GetEntries()); 
-    dRCalPt_->Scale(1./dRCalPt_->GetEntries()); 
-    dRCalN_ ->Scale(1./dRCalN_ ->GetEntries()); 
+  void norm(){
+    double totalNumberOfMuons = en_->GetEntries();
+    dREcalPt_->Scale( 1./totalNumberOfMuons );
+    dREcalN_ ->Scale( 1./totalNumberOfMuons );
+    dRHcalPt_->Scale( 1./totalNumberOfMuons );
+    dRHcalN_ ->Scale( 1./totalNumberOfMuons );
+    dRTrkPt_ ->Scale( 1./totalNumberOfMuons );
+    dRTrkN_  ->Scale( 1./totalNumberOfMuons );
   };
   void write(TFile&, const char*);
-  
+
  private:
 
   bool fwLite_;
@@ -96,12 +103,16 @@ class MuonKinematic{
   TH1F *isoJet40_;
   TH1F *isoTrkPt_;
   TH1F *isoCalPt_;
+  TH1F *isoRelPt_;
   TH1F *isoTrkN_;
-  TH1F *isoCalN_;
+  TH1F *isoEcalN_;
+  TH1F *isoHcalN_;
+  TH1F *dREcalPt_;
+  TH1F *dREcalN_;
+  TH1F *dRHcalPt_;
+  TH1F *dRHcalN_;
   TH1F *dRTrkPt_;
-  TH1F *dRCalPt_;
   TH1F *dRTrkN_;
-  TH1F *dRCalN_;
 
   TH2F *ptVsTrkIso_;
   TH2F *ptVsCalIso_;

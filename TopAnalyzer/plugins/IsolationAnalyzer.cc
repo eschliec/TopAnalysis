@@ -1,6 +1,5 @@
 #include "TopAnalysis/TopAnalyzer/plugins/IsolationAnalyzer.h"
 #include "DataFormats/Math/interface/deltaPhi.h"
-#include "DataFormats/Math/interface/deltaR.h"
 #include "FWCore/MessageLogger/interface/MessageLogger.h"
 #include "AnalysisDataFormats/TopObjects/interface/TtGenEvent.h"
 #include <math.h>
@@ -98,11 +97,14 @@ void IsolationAnalyzer::beginJob(const edm::EventSetup&) {
 	helper_->addHistogram("MET", 70, 0., 350.);
 	helper_->addHistogram("deltaPhiTtbar", 80, -4., 4.);
 	helper_->addHistogram("fabsDeltaPhiTtbar", 80, 0, 4.);
+	helper_->addHistogram("deltaPhiJet1Jet2", 80, 0, 4.);
 	helper_->addHistogram("TriJetTMass", 70, 60., 350); //5GeV Schritte
 	if (useMVA_) helper_->addHistogram("MVAdisc", 25, 0., 1.);
 	NameScheme nam("var");
 	ofstream off(hist_.c_str(), std::ios::app);
 	recoMETUncorrectedMET_ = fs->make<TH1F> (nam.name(off, "recoMETUncorrectedMET"), nam.name("recoMETUncorrectedMET"),
+			200, -100., 100.);
+	genMetRecoDiff_= fs->make<TH1F> (nam.name(off, "recoMETGenMET"), nam.name("recoMETGenMET"),
 			200, -100., 100.);
 }
 
@@ -206,14 +208,17 @@ void IsolationAnalyzer::analyze(const edm::Event& evt, const edm::EventSetup& se
 		//set the event-weight
 		helper_->setWeight(weight);
 		//now the muons
+		double jetIso = getJetIso(jets, muons, 20);
 		unsigned int size = muons->size();
 		for (unsigned int i = 0; i < size; ++i) {
 			pat::Muon mu = (pat::Muon) (*muons)[i];
 			double caloIso = mu.caloIso();
 			double trackIso = mu.trackIso();
+
 			//set isolation
 			helper_->setCaloIso(caloIso);
 			helper_->setTrackIso(trackIso);
+			helper_->setJetIso(jetIso);
 			if (i == 0) {
 				//leading muon
 				vec += mu.p4();
@@ -270,13 +275,16 @@ void IsolationAnalyzer::analyze(const edm::Event& evt, const edm::EventSetup& se
 				helper_->fill("TriJetTMass", mt3Jet);
 				helper_->fill("deltaPhiTtbar", deltaPhi(phi8, phi4));
 				helper_->fill("fabsDeltaPhiTtbar", fabs(deltaPhi(phi8, phi4)));
+				helper_->fill("deltaPhiJet1Jet2", fabs(deltaPhi(jet1Phi, jet2Phi)));
 				recoMETUncorrectedMET_->Fill(met->et() - met->uncorrectedPt(), weight);
+				double genMetreco = (met->et() - met->genMET()->et())/met->et();
+				genMetRecoDiff_->Fill(genMetreco, weight);
 				if (useMVA_) helper_->fill("MVAdisc", disc);
 			}
 			if (i == 1) {
 				//2nd leading muon
 			}
-			helper_->fill("deltaPhiMetMuons", deltaPhi(met->phi(), mu.phi()), caloIso, trackIso, weight);
+			helper_->fill("deltaPhiMetMuons", deltaPhi(met->phi(), mu.phi()));
 
 			if (ttbarMC_) {
 				TtGenEvent event = *genEvt;

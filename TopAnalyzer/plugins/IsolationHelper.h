@@ -22,11 +22,14 @@ public:
 		trackMin_ = 0.;
 		caloMax_ = 10.;
 		trackMax_ = 10.;
+		jetMin_ = 0.;
+		jetMax_ = 3.5;
 		caloIso_ = 1000.;
 		trackIso_ = 1000.;
 
 		caloBins_ = 10;
 		trackBins_ = 10;
+		jetBins_ = 35;
 	}
 
 	void makeSummaryPlots(std::string prefix = "") {
@@ -76,14 +79,16 @@ public:
 		//adding correlation histogramms
 		mon->addHist(name + "VScalo", numberOfBins, min, max, caloBins_, caloMin_, caloMax_);
 		mon->addHist(name + "VStrack", numberOfBins, min, max, trackBins_, trackMin_, trackMax_);
+		mon->addHist(name + "VSjetiso", numberOfBins, min, max, jetBins_, jetMin_, jetMax_);
 	}
 
-	void fill(std::string name, double var, double caloIso, double trackIso, double weight) {
+	void fill(std::string name, double var, double caloIso, double trackIso, double jetIso, double weight) {
 		map<string, TH1F*>::iterator iter = histos_.find(name);
 		if (iter != histos_.end()) {
 			iter->second->Fill(var, weight);
 			mon->fill(name + "VScalo", var, caloIso, weight);
 			mon->fill(name + "VStrack", var, trackIso, weight);
+			mon->fill(name + "VSjetiso", var, jetIso, weight);
 		}
 		map<string, TH1F*>::iterator itern = normhistos_.find(name);
 		if (itern != normhistos_.end()) {
@@ -97,6 +102,7 @@ public:
 			iter->second->Fill(var, weight_);
 			mon->fill(name + "VScalo", var, caloIso_, weight_);
 			mon->fill(name + "VStrack", var, trackIso_, weight_);
+			mon->fill(name + "VSjetiso", var, jetIso_, weight_);
 		}
 		map<string, TH1F*>::iterator itern = normhistos_.find(name);
 		if (itern != normhistos_.end()) {
@@ -111,6 +117,11 @@ public:
 	void setTrackIso(double trackIso) {
 		trackIso_ = trackIso;
 	}
+
+	void setJetIso(double jetiso){
+		jetIso_ = jetiso;
+	}
+
 
 	void setWeight(double weight) {
 		weight_ = weight;
@@ -133,9 +144,9 @@ private:
 	std::map<string, TH1F*> histos_, normhistos_;
 	TH1F * summaryCalo_, *summaryTrack_;
 	edm::Service<TFileService> fs_;
-	unsigned int caloBins_, trackBins_;
-	double caloMin_, caloMax_, trackMin_, trackMax_;
-	double caloIso_, trackIso_, weight_;
+	unsigned int caloBins_, trackBins_, jetBins_;
+	double caloMin_, caloMax_, trackMin_, trackMax_, jetMin_, jetMax_;
+	double caloIso_, trackIso_, jetIso_, weight_;
 	std::string file_;
 };
 #endif

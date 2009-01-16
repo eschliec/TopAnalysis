@@ -90,18 +90,20 @@ void IsolationAnalyzer::beginJob(const edm::EventSetup&) {
 	helper_->addHistogram("JetEtSum34", 150, 0., 300.);
 	helper_->addHistogram("DeltaPhiMuonJet3", 80, -4., 4.);
 	helper_->addHistogram("DeltaPhiMuonJet4", 80, -4., 4.);
-	helper_->addHistogram("DeltaPhiMuonJet12", 80, -4., 4.);
+	helper_->addHistogram("DeltaPhiMuonJet12", 80, -7., 7.);
 	helper_->addHistogram("SumJet1ET2TimesMuEt", 80, 60., 500);
 	helper_->addHistogram("Sum4JetsMuEt", 100, 100., 600);
 	helper_->addHistogram("VectorSumJetsMu", 70, 0., 350.);
 	helper_->addHistogram("MET", 70, 0., 350.);
 	helper_->addHistogram("deltaPhiTtbar", 80, -4., 4.);
 	helper_->addHistogram("fabsDeltaPhiTtbar", 80, 0, 4.);
-	helper_->addHistogram("deltaPhiJet1Jet2", 80, 0, 4.);
+	helper_->addHistogram("deltaPhiJet1Jet2", 80, -4, 4.);
 	helper_->addHistogram("TriJetTMass", 70, 60., 350); //5GeV Schritte
 	if (useMVA_) helper_->addHistogram("MVAdisc", 25, 0., 1.);
 	NameScheme nam("var");
 	ofstream off(hist_.c_str(), std::ios::app);
+	sumDeltaPhiMuvsdeltaPhiJ1J2_ =  fs->make<TH2F> (nam.name(off, "dPhiSumMuTwoJestvsdPhij1j2"), nam.name("dPhiSumMuTwoJestvsdPhij1j2"), 80, -7., 7.,
+				80, -4., 4.);
 	recoMETUncorrectedMET_ = fs->make<TH1F> (nam.name(off, "recoMETUncorrectedMET"), nam.name("recoMETUncorrectedMET"),
 			200, -100., 100.);
 	genMetRecoDiff_= fs->make<TH1F> (nam.name(off, "recoMETGenMET"), nam.name("recoMETGenMET"),
@@ -275,7 +277,8 @@ void IsolationAnalyzer::analyze(const edm::Event& evt, const edm::EventSetup& se
 				helper_->fill("TriJetTMass", mt3Jet);
 				helper_->fill("deltaPhiTtbar", deltaPhi(phi8, phi4));
 				helper_->fill("fabsDeltaPhiTtbar", fabs(deltaPhi(phi8, phi4)));
-				helper_->fill("deltaPhiJet1Jet2", fabs(deltaPhi(jet1Phi, jet2Phi)));
+				helper_->fill("deltaPhiJet1Jet2", deltaPhi(jet1Phi, jet2Phi));
+				sumDeltaPhiMuvsdeltaPhiJ1J2_->Fill(deltaPhi(jet1Phi, jet2Phi), deltaPhi(jet1Phi, jet2Phi), weight);
 				recoMETUncorrectedMET_->Fill(met->et() - met->uncorrectedPt(), weight);
 				double genMetreco = (met->et() - met->genMET()->et())/met->et();
 				genMetRecoDiff_->Fill(genMetreco, weight);

@@ -65,6 +65,7 @@ private:
 	std::string discinput_;
 
 	TH1F *recoMETUncorrectedMET_, *genMetRecoDiff_;
+	TH2F *sumDeltaPhiMuvsdeltaPhiJ1J2_;
 
 	IsolationHelper *helper_;
 	//for ttbar Binning

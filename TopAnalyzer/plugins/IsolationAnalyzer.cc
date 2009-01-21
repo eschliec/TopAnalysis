@@ -108,6 +108,8 @@ void IsolationAnalyzer::beginJob(const edm::EventSetup&) {
 			200, -100., 100.);
 	genMetRecoDiff_= fs->make<TH1F> (nam.name(off, "recoMETGenMET"), nam.name("recoMETGenMET"),
 			200, -100., 100.);
+	norm_genMetRecoDiff_ = fs->make<TH1F> (nam.name(off, "norm_recoMETGenMET"), nam.name("recoMETGenMET"),
+			51, -1., 50.);
 }
 
 IsolationAnalyzer::~IsolationAnalyzer() {
@@ -280,8 +282,9 @@ void IsolationAnalyzer::analyze(const edm::Event& evt, const edm::EventSetup& se
 				helper_->fill("deltaPhiJet1Jet2", deltaPhi(jet1Phi, jet2Phi));
 				sumDeltaPhiMuvsdeltaPhiJ1J2_->Fill(deltaPhi(jet1Phi, jet2Phi), deltaPhi(jet1Phi, jet2Phi), weight);
 				recoMETUncorrectedMET_->Fill(met->et() - met->uncorrectedPt(), weight);
-				double genMetreco = (met->et() - met->genMET()->et())/met->et();
+				double genMetreco = (met->et() - met->genMET()->et());
 				genMetRecoDiff_->Fill(genMetreco, weight);
+				norm_genMetRecoDiff_->Fill(genMetreco/met->genMET()->et(), weight);
 				if (useMVA_) helper_->fill("MVAdisc", disc);
 			}
 			if (i == 1) {

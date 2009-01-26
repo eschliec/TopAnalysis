@@ -1,4 +1,3 @@
-#include "TopAnalysis/TopAnalyzer/plugins/IsolationAnalyzer.h"
 #include "DataFormats/Math/interface/deltaPhi.h"
 #include "FWCore/MessageLogger/interface/MessageLogger.h"
 #include "AnalysisDataFormats/TopObjects/interface/TtGenEvent.h"
@@ -280,7 +279,7 @@ void IsolationAnalyzer::analyze(const edm::Event& evt, const edm::EventSetup& se
 				helper_->fill("deltaPhiTtbar", deltaPhi(phi8, phi4));
 				helper_->fill("fabsDeltaPhiTtbar", fabs(deltaPhi(phi8, phi4)));
 				helper_->fill("deltaPhiJet1Jet2", deltaPhi(jet1Phi, jet2Phi));
-				sumDeltaPhiMuvsdeltaPhiJ1J2_->Fill(deltaPhi(jet1Phi, jet2Phi), deltaPhi(jet1Phi, jet2Phi), weight);
+				sumDeltaPhiMuvsdeltaPhiJ1J2_->Fill(deltaPhi(mu.phi(), jet1Phi) + deltaPhi(mu.phi(), jet2Phi), deltaPhi(jet1Phi, jet2Phi), weight);
 				recoMETUncorrectedMET_->Fill(met->et() - met->uncorrectedPt(), weight);
 				double genMetreco = (met->et() - met->genMET()->et());
 				genMetRecoDiff_->Fill(genMetreco, weight);

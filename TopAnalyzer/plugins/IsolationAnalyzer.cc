@@ -1,3 +1,4 @@
+#include "TopAnalysis/TopAnalyzer/plugins/IsolationAnalyzer.h"
 #include "DataFormats/Math/interface/deltaPhi.h"
 #include "FWCore/MessageLogger/interface/MessageLogger.h"
 #include "AnalysisDataFormats/TopObjects/interface/TtGenEvent.h"

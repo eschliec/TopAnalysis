@@ -2,6 +2,7 @@
 #include "DataFormats/Math/interface/deltaPhi.h"
 #include "FWCore/MessageLogger/interface/MessageLogger.h"
 #include "AnalysisDataFormats/TopObjects/interface/TtGenEvent.h"
+#include "TopQuarkAnalysis/TopTools/interface/EventShapeVariables.h"
 #include <math.h>
 
 using std::cout;
@@ -99,6 +100,8 @@ void IsolationAnalyzer::beginJob(const edm::EventSetup&) {
 	helper_->addHistogram("fabsDeltaPhiTtbar", 80, 0, 4.);
 	helper_->addHistogram("deltaPhiJet1Jet2", 80, -4, 4.);
 	helper_->addHistogram("TriJetTMass", 70, 60., 350); //5GeV Schritte
+	helper_->fill( "muon_pt", 24,   0., 120.);
+	helper_->fill( "circularity", 100,   0., 1.);
 	if (useMVA_) helper_->addHistogram("MVAdisc", 25, 0., 1.);
 	NameScheme nam("var");
 	ofstream off(hist_.c_str(), std::ios::app);
@@ -146,6 +149,7 @@ void IsolationAnalyzer::analyze(const edm::Event& evt, const edm::EventSetup& se
 	met = &(*metH)[0];
 
 	double weight = *weightHandle;
+	std::vector<TVector3> p;
 
 	if (jets->size() >= 4) {
 		//get the first four jets
@@ -162,6 +166,8 @@ void IsolationAnalyzer::analyze(const edm::Event& evt, const edm::EventSetup& se
 		jet1Et = jet->et();
 		jet1Eta = jet->eta();
 		jet1Phi = jet->phi();
+		TVector3 jet1(jet->px(),jet->py(),jet->pz());
+		p.push_back(jet1);
 
 		vec = jet->p4();
 
@@ -171,6 +177,8 @@ void IsolationAnalyzer::analyze(const edm::Event& evt, const edm::EventSetup& se
 		jet2Eta = jet->eta();
 		jet2Phi = jet->phi();
 		vec += jet->p4();
+		TVector3 jet2(jet->px(),jet->py(),jet->pz());
+		p.push_back(jet2);
 
 		++jet;
 		jet3pt = jet->pt();
@@ -178,13 +186,18 @@ void IsolationAnalyzer::analyze(const edm::Event& evt, const edm::EventSetup& se
 		jet3Eta = jet->eta();
 		jet3Phi = jet->phi();
 		vec += jet->p4();
+		TVector3 jet3(jet->px(),jet->py(),jet->pz());
+		p.push_back(jet3);
 
 		++jet;
 		jet4pt = jet->pt();
 		jet4Et = jet->et();
 		jet4Eta = jet->eta();
 		jet4Phi = jet->phi();
-		vec += jet->p4();
+		TVector3 jet4(jet->px(),jet->py(),jet->pz());
+		p.push_back(jet4);
+		vec += lepton->p4();
+
 
 		//how big is the minimal deltaPhi between MET and one of the 4 jets
 		double mindp;
@@ -224,6 +237,9 @@ void IsolationAnalyzer::analyze(const edm::Event& evt, const edm::EventSetup& se
 			helper_->setTrackIso(trackIso);
 			helper_->setJetIso(jetIso);
 			if (i == 0) {
+				TVector3 lep(mu.px(),mu.py(),mu.pz());
+				p.push_back(lep);
+				EventShapeVariables eventshape;
 				//leading muon
 				vec += mu.p4();
 				//complicated variable:
@@ -280,6 +296,9 @@ void IsolationAnalyzer::analyze(const edm::Event& evt, const edm::EventSetup& se
 				helper_->fill("deltaPhiTtbar", deltaPhi(phi8, phi4));
 				helper_->fill("fabsDeltaPhiTtbar", fabs(deltaPhi(phi8, phi4)));
 				helper_->fill("deltaPhiJet1Jet2", deltaPhi(jet1Phi, jet2Phi));
+				helper_->fill( "muon_pt", mu.pt());
+				helper_->fill( "circularity", eventshape.circularity(p));
+
 				sumDeltaPhiMuvsdeltaPhiJ1J2_->Fill(deltaPhi(mu.phi(), jet1Phi) + deltaPhi(mu.phi(), jet2Phi), deltaPhi(jet1Phi, jet2Phi), weight);
 				recoMETUncorrectedMET_->Fill(met->et() - met->uncorrectedPt(), weight);
 				double genMetreco = (met->et() - met->genMET()->et());

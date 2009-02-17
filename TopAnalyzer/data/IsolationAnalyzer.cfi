@@ -11,7 +11,7 @@ InputTag jets = selectedLayer1Jets
 vdouble ptBins= {0.0, 80.0, 170.0, 250.0, 9999.0}
 
 bool ttbarMC = false
-string hist = "Isolation.hist"
+string hist = "Isolation.xml"
 string modulename = "makeMVA"
 string discriminator = "DiscSel"
 bool useMVA = false

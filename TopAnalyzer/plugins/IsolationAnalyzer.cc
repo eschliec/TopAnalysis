@@ -200,13 +200,6 @@ void IsolationAnalyzer::analyze(const edm::Event& evt, const edm::EventSetup& se
 	double weight = *weightHandle;
 
 	met = &(*metH)[0];
-//	reco::GenParticleCollection::const_iterator genP = genParticles->begin();
-//	while(genP !=genParticles->end()){
-//		if (genP->pdgId() == 24 && genP->status() == 2){
-//			realWPt_->Fill(genP->pt(), weight);
-//		}
-//		genP++;
-//	}
 	std::vector<TVector3> p;
 
 	if (jets->size() >= 4) {

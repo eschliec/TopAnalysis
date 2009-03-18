@@ -64,7 +64,7 @@ private:
 	std::string module_;
 	std::string discinput_;
 
-	TH1F *recoMETUncorrectedMET_, *genMetRecoDiff_, *norm_genMetRecoDiff_;
+	TH1F *recoMETUncorrectedMET_, *genMetRecoDiff_, *norm_genMetRecoDiff_, *realWPt_;
 	TH2F *sumDeltaPhiMuvsdeltaPhiJ1J2_;
 
 	IsolationHelper *helper_;

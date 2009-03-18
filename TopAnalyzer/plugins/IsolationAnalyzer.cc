@@ -24,8 +24,9 @@ double newWeightPt(double var, bool signalLike = true) {
 }
 double newWeightDphiMuJ1J2(double var, bool signalLike = true) {
 	var = fabs(var);
-	double y1 = (1 / M_PI / M_PI) * var * var - 2 / M_PI * var + 1;
-	double y2 = 1 - y1;
+	//double y1 = (1 / M_PI / M_PI) * var * var - 2 / M_PI * var + 1;
+	double y1 = (1 / M_PI / M_PI) * var * var - 5 / M_PI / 2 * var + 2;
+	double y2 = -(1 / M_PI / M_PI) * var * var + 2 / M_PI * var;
 	double ret = 1.;
 	if (signalLike)
 		ret = y1;
@@ -48,7 +49,7 @@ double newWeightDphiMETMu(double var, bool signalLike = true) {
 
 double newWeightCirc(double var, bool signalLike = true) {
 	double y1 = var * var - 2 * var + 1;
-	double y2 = 1-y1;
+	double y2 = 1 - y1;
 	double ret = 1.;
 	if (signalLike)
 		ret = y2;
@@ -157,8 +158,10 @@ void IsolationAnalyzer::beginJob(const edm::EventSetup&) {
 	recoMETUncorrectedMET_ = fs->make<TH1F> (nam.name(off, "recoMETUncorrectedMET"), nam.name("recoMETUncorrectedMET"),
 			200, -100., 100.);
 	genMetRecoDiff_ = fs->make<TH1F> (nam.name(off, "recoMETGenMET"), nam.name("recoMETGenMET"), 200, -100., 100.);
-	norm_genMetRecoDiff_
-			= fs->make<TH1F> (nam.name(off, "norm_recoMETGenMET"), nam.name("recoMETGenMET"), 51, -1., 50.);
+	norm_genMetRecoDiff_ = fs->make<TH1F> (nam.name(off, "normed_recoMETGenMET"), nam.name("recoMETGenMET"), 1000,
+			-50., 50.);
+	realWPt_ = fs->make<TH1F> (nam.name(off, "var_realWPt"), nam.name("var_realWPt"), 200,
+			0., 100.);
 }
 
 IsolationAnalyzer::~IsolationAnalyzer() {
@@ -192,9 +195,18 @@ void IsolationAnalyzer::analyze(const edm::Event& evt, const edm::EventSetup& se
 	edm::Handle<TopJetCollection> jets;
 	evt.getByLabel(jets_, jets);
 
-	met = &(*metH)[0];
-
+	edm::Handle<reco::GenParticleCollection> genParticles;
+	evt.getByLabel("genParticles", genParticles);
 	double weight = *weightHandle;
+
+	met = &(*metH)[0];
+//	reco::GenParticleCollection::const_iterator genP = genParticles->begin();
+//	while(genP !=genParticles->end()){
+//		if (genP->pdgId() == 24 && genP->status() == 2){
+//			realWPt_->Fill(genP->pt(), weight);
+//		}
+//		genP++;
+//	}
 	std::vector<TVector3> p;
 
 	if (jets->size() >= 4) {
@@ -306,14 +318,13 @@ void IsolationAnalyzer::analyze(const edm::Event& evt, const edm::EventSetup& se
 
 				phi7 = phi5 + 0.5 * deltaPhi(closestMuJet.phi(), phi5);
 				phi8 = closestMuJet.phi() + 0.5 * deltaPhi(phi5, closestMuJet.phi());
-				//				if(phi7 == phi8) cout << "katsching!" << endl;
-				//				cout << "<" << phi1 << "," << phi2 << ">" << endl;
-				//				cout << "<" << phi3 << "," << phi4 << ">" << endl;
-				//				cout << "<" << phi5 << "," << phi6 << ">" << endl;
-				//				cout << "<" << phi7 << "," << phi8 << ">" << endl;
-				//				cout << "here <" << deltaPhi(jet3Phi, jet4Phi) << "," << deltaPhi(jet4Phi, jet3Phi) << ">" << endl;
+
 				//fill histogramms
-				helper_->setWeight(weight * newWeightCirc(eventshape.circularity(p)));
+				//helper_->setWeight(weight*newWeightCirc(eventshape.circularity(p), false));
+				//helper_->setWeight(weight*newWeightPt(mu.pt(), false));
+				helper_->setWeight(weight*newWeightDphiMuJ1J2(deltaPhi(mu.phi(), jet1Phi) + deltaPhi(mu.phi(), jet2Phi),true));
+				//helper_->setWeight(weight*newWeightDphiMETMu(deltaPhi(met->phi(), mu.phi()),true));
+
 				helper_->fill("METTimesleadingJetEt", jet1Et * met->et());
 				helper_->fill("minDeltaPhiMETJets", mindp);
 				helper_->fill("deltaPhiMetleadingMuon", deltaPhi(met->phi(), mu.phi()));

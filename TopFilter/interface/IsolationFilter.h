@@ -175,10 +175,10 @@ bool IsolationFilter<Collection>::filter(const std::vector<Collection>& objs)
 	break;
       case kRelCombIso:
 	if( idx<min_.size() ) // check for min iso as long as vector is long enough
-	  if( !( obj->caloIso()+obj->trackIso()/(obj->pt() )>min_[idx]) ) 
+	  if( !( (obj->caloIso()+obj->trackIso())/(obj->pt() )>min_[idx]) ) 
 	    passedOnce=false;
 	if( idx<max_.size() ) // check for max iso as long as vector is long enough
-	  if( !( obj->caloIso()+obj->trackIso()/(obj->pt() )<max_[idx]) ) 
+	  if( !( (obj->caloIso()+obj->trackIso())/(obj->pt() )<max_[idx]) ) 
 	    passedOnce=false;
 	break;
       default:

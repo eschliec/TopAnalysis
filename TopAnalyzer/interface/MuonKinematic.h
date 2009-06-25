@@ -18,6 +18,7 @@
 #include "PhysicsTools/UtilAlgos/interface/TFileService.h"
 
 #include "DataFormats/Math/interface/deltaR.h"
+#include "DataFormats/Math/interface/angle.h"
 #include "DataFormats/TrackReco/interface/Track.h"
 #include "DataFormats/PatCandidates/interface/Jet.h"
 #include "DataFormats/CaloTowers/interface/CaloTower.h"
@@ -51,6 +52,7 @@ class MuonKinematic{
       delete isoTrkPt_;
       delete isoCalPt_;
       delete isoRelPt_;
+      delete isoRelComb_;
       delete isoTrkN_;
       delete isoEcalN_;
       delete isoHcalN_;
@@ -64,7 +66,7 @@ class MuonKinematic{
       delete ptVsCalIso_;
     }
   };
-  
+
   void book();
   void book(edm::Service<TFileService>&);
   void book(edm::Service<TFileService>&, ofstream&);
@@ -73,15 +75,15 @@ class MuonKinematic{
 	    const std::vector<pat::Muon>& muons, const double&);
   void norm(){
     double totalNumberOfMuons = en_->GetEntries();
-    dREcalPt_->Scale( 1./totalNumberOfMuons ); 
-    dREcalN_ ->Scale( 1./totalNumberOfMuons ); 
-    dRHcalPt_->Scale( 1./totalNumberOfMuons ); 
-    dRHcalN_ ->Scale( 1./totalNumberOfMuons ); 
-    dRTrkPt_ ->Scale( 1./totalNumberOfMuons ); 
-    dRTrkN_  ->Scale( 1./totalNumberOfMuons ); 
+    dREcalPt_->Scale( 1./totalNumberOfMuons );
+    dREcalN_ ->Scale( 1./totalNumberOfMuons );
+    dRHcalPt_->Scale( 1./totalNumberOfMuons );
+    dRHcalN_ ->Scale( 1./totalNumberOfMuons );
+    dRTrkPt_ ->Scale( 1./totalNumberOfMuons );
+    dRTrkN_  ->Scale( 1./totalNumberOfMuons );
   };
   void write(TFile&, const char*);
-  
+
  private:
 
   bool fwLite_;
@@ -104,6 +106,7 @@ class MuonKinematic{
   TH1F *isoTrkPt_;
   TH1F *isoCalPt_;
   TH1F *isoRelPt_;
+  TH1F *isoRelComb_;
   TH1F *isoTrkN_;
   TH1F *isoEcalN_;
   TH1F *isoHcalN_;

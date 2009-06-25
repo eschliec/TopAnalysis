@@ -1,7 +1,7 @@
 #include "TopAnalysis/TopAnalyzer/interface/MuonKinematic.h"
 
 /// constructor for FWLite analyzer
-MuonKinematic::MuonKinematic(): 
+MuonKinematic::MuonKinematic():
   fwLite_(true ), jets_() { }
 
 /// constructor for full FW analyzer
@@ -15,17 +15,17 @@ void
 MuonKinematic::fill(const edm::Event& evt, const std::vector<pat::Muon>& muons, const double& weight=1.)
 {
   if(muons.begin()==muons.end()) return;
-  
+
   // jet isolation
-  edm::Handle<std::vector<pat::Jet> > jets; 
+  edm::Handle<std::vector<pat::Jet> > jets;
   evt.getByLabel(jets_, jets);
-  
+
   fill(*jets, muons, weight);
 }
 
 /// fill interface for FWLite analyzer
 void
-MuonKinematic::fill(const std::vector<pat::Jet>& jets, 
+MuonKinematic::fill(const std::vector<pat::Jet>& jets,
 		    const std::vector<pat::Muon>& muons, const double& weight=1.)
 {
   std::vector<pat::Muon>::const_iterator muon=muons.begin();
@@ -34,7 +34,7 @@ MuonKinematic::fill(const std::vector<pat::Jet>& jets,
     // basic kinematics
     //---------------------------------------------
     en_ ->Fill( muon->energy(), weight );
-    pt_ ->Fill( muon->et(),     weight );    
+    pt_ ->Fill( muon->et(),     weight );
     eta_->Fill( muon->eta(),    weight );
     phi_->Fill( muon->phi(),    weight );
 
@@ -50,7 +50,7 @@ MuonKinematic::fill(const std::vector<pat::Jet>& jets,
     double minDR_30=-1.;
     double minDR_35=-1.;
     double minDR_40=-1.;
-    for(std::vector<pat::Jet>::const_iterator jet = jets.begin(); 
+    for(std::vector<pat::Jet>::const_iterator jet = jets.begin();
 	jet!=jets.end(); ++jet) {
       double dR=deltaR(muon->eta(), muon->phi(), jet->eta(), jet->phi());
       if(  minDR   <0 || dR<minDR   )                   minDR   =dR;
@@ -72,43 +72,43 @@ MuonKinematic::fill(const std::vector<pat::Jet>& jets,
     if( minDR_30>=0 ) isoJet30_->Fill( minDR_30, weight );
     if( minDR_35>=0 ) isoJet35_->Fill( minDR_35, weight );
     if( minDR_40>=0 ) isoJet40_->Fill( minDR_40, weight );
-    
+
     //---------------------------------------------
     // track & calo isolation
     //---------------------------------------------
-    const pat::IsoDeposit *trackDep=0, *ecalDep=0, *hcalDep=0;  
+    const pat::IsoDeposit *trackDep=0, *ecalDep=0, *hcalDep=0;
     trackDep = muon->trackerIsoDeposit();
     ecalDep  = muon->ecalIsoDeposit();
     hcalDep  = muon->hcalIsoDeposit();
 
     // fill enegry flow and object flow histograms
     for(int bin = 1; bin <= dRTrkN_->GetNbinsX(); ++bin){
-      dRTrkN_  ->Fill( dRTrkN_  ->GetBinCenter(bin), 
+      dRTrkN_  ->Fill( dRTrkN_  ->GetBinCenter(bin),
 		       trackDep ->countWithin  (dRTrkN_  ->GetBinLowEdge(bin)+dRTrkN_  ->GetBinWidth(bin)) -
-		       trackDep ->countWithin  (dRTrkN_  ->GetBinLowEdge(bin)) 
+		       trackDep ->countWithin  (dRTrkN_  ->GetBinLowEdge(bin))
 		       );
-      dREcalN_ ->Fill( dREcalN_ ->GetBinCenter(bin), 
+      dREcalN_ ->Fill( dREcalN_ ->GetBinCenter(bin),
 		       ecalDep  ->countWithin  (dREcalN_ ->GetBinLowEdge(bin)+dREcalN_ ->GetBinWidth(bin)) -
-		       ecalDep  ->countWithin  (dREcalN_ ->GetBinLowEdge(bin)) 
+		       ecalDep  ->countWithin  (dREcalN_ ->GetBinLowEdge(bin))
 		       );
-      dRHcalN_ ->Fill( dRHcalN_ ->GetBinCenter(bin),  
+      dRHcalN_ ->Fill( dRHcalN_ ->GetBinCenter(bin),
 		       hcalDep  ->countWithin  (dRHcalN_ ->GetBinLowEdge(bin)+dRHcalN_ ->GetBinWidth(bin)) -
-		       hcalDep  ->countWithin  (dRHcalN_ ->GetBinLowEdge(bin)) 		       
+		       hcalDep  ->countWithin  (dRHcalN_ ->GetBinLowEdge(bin))
 		       );
-      dRTrkPt_ ->Fill( dRTrkPt_ ->GetBinCenter(bin), 
+      dRTrkPt_ ->Fill( dRTrkPt_ ->GetBinCenter(bin),
 		       trackDep ->depositWithin(dRTrkPt_ ->GetBinLowEdge(bin)+dRTrkPt_ ->GetBinWidth(bin)) -
-		       trackDep ->depositWithin(dRTrkPt_ ->GetBinLowEdge(bin)) 		       
+		       trackDep ->depositWithin(dRTrkPt_ ->GetBinLowEdge(bin))
 		       );
-      dREcalPt_->Fill( dREcalPt_->GetBinCenter(bin), 
+      dREcalPt_->Fill( dREcalPt_->GetBinCenter(bin),
 		       ecalDep  ->depositWithin(dREcalPt_->GetBinLowEdge(bin)+dREcalPt_->GetBinWidth(bin)) -
-		       ecalDep  ->depositWithin(dREcalPt_->GetBinLowEdge(bin)) 
+		       ecalDep  ->depositWithin(dREcalPt_->GetBinLowEdge(bin))
 		       );
-      dRHcalPt_->Fill( dRHcalPt_->GetBinCenter(bin), 
+      dRHcalPt_->Fill( dRHcalPt_->GetBinCenter(bin),
 		       hcalDep  ->depositWithin(dRHcalPt_->GetBinLowEdge(bin)+dRHcalPt_->GetBinWidth(bin)) -
-		       hcalDep  ->depositWithin(dRHcalPt_->GetBinLowEdge(bin)) 
+		       hcalDep  ->depositWithin(dRHcalPt_->GetBinLowEdge(bin))
 		       );
     }
-    // fill summed deposits 
+    // fill summed deposits
     double stdDR = 0.3;
     isoEcalN_->Fill( ecalDep ->countWithin(stdDR), weight );
     isoHcalN_->Fill( hcalDep ->countWithin(stdDR), weight );
@@ -117,16 +117,18 @@ MuonKinematic::fill(const std::vector<pat::Jet>& jets,
     isoCalPt_->Fill( muon->caloIso (), weight );
 
     double relIso = muon->pt() / ( muon->pt() + muon->trackIso() + muon->caloIso() );
+    double relCombIso = (muon->trackIso() + muon->caloIso())/muon->pt();
     isoRelPt_->Fill( relIso, weight );
+    isoRelComb_->Fill( relCombIso, weight );
 
-    // fill correlation plots   
+    // fill correlation plots
     ptVsTrkIso_->Fill( muon->pt(), muon->trackIso() );
     ptVsCalIso_->Fill( muon->pt(), muon->caloIso () );
   }
 }
 
 /// book for FWLite
-void 
+void
 MuonKinematic::book()
 {
   NameScheme kin("kin");
@@ -148,6 +150,7 @@ MuonKinematic::book()
   isoTrkPt_  = new TH1F(iso.name("isoTrkPt"), "isoTrkPt", 60,  -1.,  5.);
   isoCalPt_  = new TH1F(iso.name("isoCalPt"), "isoCalPt", 40, -10., 30.);
   isoRelPt_  = new TH1F(iso.name("isoRelPt"), "isoRelPt", 44,   0., 1.1);
+  isoRelComb_ = new TH1F(iso.name("isoRelComb" ), "isoRelComb" , 44,   0.,  1.1);
   isoTrkN_   = new TH1F(iso.name("isoTrkN" ), "isoTrkN" , 20,   0., 20.);
   isoEcalN_  = new TH1F(iso.name("isoEcalN"), "isoEcalN", 30,   0., 30.);
   isoHcalN_  = new TH1F(iso.name("isoHcalN"), "isoHcalN", 30,   0., 30.);
@@ -164,7 +167,7 @@ MuonKinematic::book()
 }
 
 /// book for full FW
-void 
+void
 MuonKinematic::book(edm::Service<TFileService>& fs)
 {
   NameScheme kin("kin");
@@ -186,6 +189,7 @@ MuonKinematic::book(edm::Service<TFileService>& fs)
   isoTrkPt_= fs->make<TH1F>(iso.name("isoTrkPt"), "muon trk. isol. [GeV]"         , 20,   0., 10.);
   isoCalPt_= fs->make<TH1F>(iso.name("isoCalPt"), "muon cal. isol. [GeV]"         , 20,   0., 10.);
   isoRelPt_= fs->make<TH1F>(iso.name("isoRelPt"), "rel. comb. isol."              , 44,   0., 1.1);
+  isoRelComb_ =fs->make<TH1F>(iso.name("isoRelComb" ), "rel. comb. isol." , 44,   0.,  1.1);
   isoTrkN_ = fs->make<TH1F>(iso.name("isoTrkN" ), "N_{track}^{dR<0.3}"            , 20,   0., 20.);
   isoEcalN_= fs->make<TH1F>(iso.name("isoEcalN"), "N_{tower,ECAL}^{dR<0.3}"       , 30,   0., 30.);
   isoHcalN_= fs->make<TH1F>(iso.name("isoHcalN"), "N_{tower,HCAL}^{dR<0.3}"       , 30,   0., 30.);
@@ -202,7 +206,7 @@ MuonKinematic::book(edm::Service<TFileService>& fs)
 }
 
 /// book for full FW with output stream
-void 
+void
 MuonKinematic::book(edm::Service<TFileService>& fs, ofstream& file)
 {
   NameScheme kin("kin");
@@ -224,6 +228,7 @@ MuonKinematic::book(edm::Service<TFileService>& fs, ofstream& file)
   isoTrkPt_= fs->make<TH1F>(iso.name(file, "isoTrkPt"), "muon trk. isol. [GeV]"         , 20,   0., 10.);
   isoCalPt_= fs->make<TH1F>(iso.name(file, "isoCalPt"), "muon cal. isol. [GeV]"         , 20,   0., 10.);
   isoRelPt_= fs->make<TH1F>(iso.name(file, "isoRelPt"), "rel. comb. isol."              , 44,   0., 1.1);
+  isoRelComb_ =fs->make<TH1F>(iso.name("isoRelComb" ), "rel. comb. isol."		 , 44,   0.,  1.1);
   isoTrkN_ = fs->make<TH1F>(iso.name(file, "isoTrkN" ), "N_{track}^{dR<0.3}"            , 20,   0., 20.);
   isoEcalN_= fs->make<TH1F>(iso.name(file, "isoEcalN"), "N_{tower,ECAL}^{dR<0.3}"       , 30,   0., 30.);
   isoHcalN_= fs->make<TH1F>(iso.name(file, "isoHcalN"), "N_{tower,HCAL}^{dR<0.3}"       , 30,   0., 30.);
@@ -240,7 +245,7 @@ MuonKinematic::book(edm::Service<TFileService>& fs, ofstream& file)
 }
 
 /// write to file and free allocated space for FWLite
-void 
+void
 MuonKinematic::write(TFile& file, const char* directory)
 {
   file.cd( directory );
@@ -260,6 +265,7 @@ MuonKinematic::write(TFile& file, const char* directory)
   isoTrkPt_  ->Write( );
   isoCalPt_  ->Write( );
   isoRelPt_  ->Write( );
+  isoRelComb_->Write();
   isoTrkN_   ->Write( );
   isoEcalN_  ->Write( );
   isoHcalN_  ->Write( );

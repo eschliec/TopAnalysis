@@ -7,8 +7,6 @@ FullLepHypothesesAnalyzer::FullLepHypothesesAnalyzer(const edm::ParameterSet& cf
   hypoKey_         (cfg.getParameter<edm::InputTag>("hypoKey"         )),
   wgt_             (cfg.getParameter<edm::InputTag>("weight"          )),
   useWrongCharge_  (cfg.getParameter<bool>         ("alsoWrongCharge" )),
-  maxSumDRGenMatch_(cfg.getParameter<double>       ("maxSumDRGenMatch")),
-  minProbKinFit_   (cfg.getParameter<double>       ("minProbKinFit"   )),
   hist_            (cfg.getParameter<std::string>  ("hist"            ))
 {
   Nava = 0;
@@ -56,9 +54,6 @@ FullLepHypothesesAnalyzer::analyze(const edm::Event& evt, const edm::EventSetup&
   // fill histos related to quality of the TtFullLeptonicEvent
   // -----------------------
   fillQualityHistos(*FullLepEvt, hypoKey, weight);
-
-  //if( FullLepEvt->genMatchSumDR() > maxSumDRGenMatch_ )
-  //  return; // return if any of the quality criteria is not fulfilled
 
   // -----------------------
   // fill histos for basic kinematic variables

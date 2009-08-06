@@ -101,17 +101,17 @@ FullLepHypothesesAnalyzer::analyze(const edm::Event& evt, const edm::EventSetup&
   // with respect to the generator particles
   // -----------------------
   if( FullLepEvt->genEvent()->isFullLeptonic() ) {   
-    const reco::Candidate* genTop    = FullLepEvt->genTop();
-    const reco::Candidate* genWplus  = FullLepEvt->genWPlus();
-    const reco::Candidate* genB      = FullLepEvt->genB();
-    const reco::Candidate* genLepBar = FullLepEvt->genLeptonBar();
-    const reco::Candidate* genNu     = FullLepEvt->genNeutrino();
+    const reco::Candidate* genTop    = FullLepEvt->top();
+    const reco::Candidate* genWplus  = FullLepEvt->wPlus();
+    const reco::Candidate* genB      = FullLepEvt->b();
+    const reco::Candidate* genLepBar = FullLepEvt->leptonBar();
+    const reco::Candidate* genNu     = FullLepEvt->neutrino();
   
-    const reco::Candidate* genTopBar = FullLepEvt->genTopBar();
-    const reco::Candidate* genWminus = FullLepEvt->genWMinus();
-    const reco::Candidate* genBBar   = FullLepEvt->genBBar();
-    const reco::Candidate* genLep    = FullLepEvt->genLepton();
-    const reco::Candidate* genNuBar  = FullLepEvt->genNeutrinoBar();
+    const reco::Candidate* genTopBar = FullLepEvt->topBar();
+    const reco::Candidate* genWminus = FullLepEvt->wMinus();
+    const reco::Candidate* genBBar   = FullLepEvt->bBar();
+    const reco::Candidate* genLep    = FullLepEvt->lepton();
+    const reco::Candidate* genNuBar  = FullLepEvt->neutrinoBar();
 
     if(!FullLepEvt->isWrongCharge()){
       fillKinResHistos(TopKinRes_,    *Top,   *genTop,    weight);
@@ -501,12 +501,12 @@ FullLepHypothesesAnalyzer::fillQualityHistos(const TtFullLeptonicEvent& FullLepE
                                              const TtEvent::HypoClassKey& hypoKey, 
 					     const double& weight)
 {
-  bJetIdcs_   ->Fill(FullLepEvt.jetLepComb(hypoKey)[0] );
-  bBarJetIdcs_->Fill(FullLepEvt.jetLepComb(hypoKey)[1] );  
-  elec1Idcs_  ->Fill(FullLepEvt.jetLepComb(hypoKey)[2] );  
-  elec2Idcs_  ->Fill(FullLepEvt.jetLepComb(hypoKey)[3] );  
-  muon1Idcs_  ->Fill(FullLepEvt.jetLepComb(hypoKey)[4] );  
-  muon2Idcs_  ->Fill(FullLepEvt.jetLepComb(hypoKey)[5] ); 
+  bJetIdcs_   ->Fill(FullLepEvt.jetLeptonCombination(hypoKey)[0] );
+  bBarJetIdcs_->Fill(FullLepEvt.jetLeptonCombination(hypoKey)[1] );  
+  elec1Idcs_  ->Fill(FullLepEvt.jetLeptonCombination(hypoKey)[2] );  
+  elec2Idcs_  ->Fill(FullLepEvt.jetLeptonCombination(hypoKey)[3] );  
+  muon1Idcs_  ->Fill(FullLepEvt.jetLeptonCombination(hypoKey)[4] );  
+  muon2Idcs_  ->Fill(FullLepEvt.jetLeptonCombination(hypoKey)[5] ); 
   
   spectrum_->Fill(FullLepEvt.neutrino(hypoKey)->energy(), FullLepEvt.neutrinoBar(hypoKey)->energy());
     
@@ -528,9 +528,9 @@ FullLepHypothesesAnalyzer::fillQualityHistos(const TtFullLeptonicEvent& FullLepE
   const TtEvent::HypoClassKey kinKey = TtEvent::HypoClassKey(6);
    
   if(FullLepEvt.isHypoValid(genKey) && FullLepEvt.isHypoValid(kinKey)){
-    compare_->Fill(FullLepEvt.jetLepComb(genKey)[0]  , FullLepEvt.jetLepComb(kinKey)[0]  );
-    compare_->Fill(FullLepEvt.jetLepComb(genKey)[1]+4, FullLepEvt.jetLepComb(kinKey)[1]+4);   
-    compare_->Fill(FullLepEvt.jetLepComb(genKey)[4]+8, FullLepEvt.jetLepComb(kinKey)[4]+8);
-    compare_->Fill(FullLepEvt.jetLepComb(genKey)[5]+12, FullLepEvt.jetLepComb(kinKey)[5]+12);           
+    compare_->Fill(FullLepEvt.jetLeptonCombination(genKey)[0]  , FullLepEvt.jetLeptonCombination(kinKey)[0]  );
+    compare_->Fill(FullLepEvt.jetLeptonCombination(genKey)[1]+4, FullLepEvt.jetLeptonCombination(kinKey)[1]+4);   
+    compare_->Fill(FullLepEvt.jetLeptonCombination(genKey)[4]+8, FullLepEvt.jetLeptonCombination(kinKey)[4]+8);
+    compare_->Fill(FullLepEvt.jetLeptonCombination(genKey)[5]+12, FullLepEvt.jetLeptonCombination(kinKey)[5]+12);           
   }   
 }

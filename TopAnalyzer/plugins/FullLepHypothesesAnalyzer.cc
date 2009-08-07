@@ -7,6 +7,7 @@ FullLepHypothesesAnalyzer::FullLepHypothesesAnalyzer(const edm::ParameterSet& cf
   hypoKey_         (cfg.getParameter<edm::InputTag>("hypoKey"         )),
   wgt_             (cfg.getParameter<edm::InputTag>("weight"          )),
   useWrongCharge_  (cfg.getParameter<bool>         ("alsoWrongCharge" )),
+  wantSummary_     (cfg.getParameter<bool>         ("wantSummary"     )),  
   hist_            (cfg.getParameter<std::string>  ("hist"            ))
 {
   Nava = 0;
@@ -159,6 +160,8 @@ FullLepHypothesesAnalyzer::beginJob(const edm::EventSetup&)
 void
 FullLepHypothesesAnalyzer::endJob() 
 {
+  if(!wantSummary_) return;
+  
   std::cout << "++++++++++++++++++++++++++++++++" << std::endl;
   std::cout << "Summary for Hypothese " << hypoKey_ << std::endl;
   std::cout << "number of available events is " << Nava << std::endl;

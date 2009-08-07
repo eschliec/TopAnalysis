@@ -32,6 +32,7 @@ class FullLepHypothesesAnalyzer : public edm::EDAnalyzer {
   edm::InputTag hypoKey_;
   edm::InputTag wgt_;
   bool useWrongCharge_;
+  bool wantSummary_;  
   std::string hist_;
   
   int Nava;

@@ -37,7 +37,7 @@ typedef SemiLepEventFilter<std::vector<pat::Muon> > SemiLepMuonEventFilter;
 #include "TopAnalysis/TopFilter/plugins/FullLepHypothesesFilter.h"
 
 // filter to select evts with at least n objects of given type
-#include "TopAnalysis/TopFilter/plugins/FullLepObjectCountFilter.h"
+#include "TopAnalysis/TopFilter/plugins/ObjectCountFilter.h"
 
 // simple event filters
 DEFINE_FWK_MODULE( PtEventFilter            );
@@ -53,4 +53,4 @@ DEFINE_FWK_MODULE( DiMuonMassFilter    );
 // full event filters
 DEFINE_FWK_MODULE( SemiLepMuonEventFilter   );
 DEFINE_FWK_MODULE( FullLepHypothesesFilter  );
-DEFINE_FWK_MODULE( FullLepObjectCountFilter  );
+DEFINE_FWK_MODULE( ObjectCountFilter  );

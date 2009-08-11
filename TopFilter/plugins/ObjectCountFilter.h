@@ -1,5 +1,5 @@
-#ifndef FullLepObjectCountFilter_h
-#define FullLepObjectCountFilter_h
+#ifndef ObjectCountFilter_h
+#define ObjectCountFilter_h
 
 #include "FWCore/Framework/interface/Event.h"
 #include "FWCore/Framework/interface/EDFilter.h"
@@ -7,12 +7,12 @@
 #include "DataFormats/Candidate/interface/Candidate.h"
 #include "DataFormats/Common/interface/View.h"
 
-class FullLepObjectCountFilter : public edm::EDFilter {
+class ObjectCountFilter : public edm::EDFilter {
 
  public:
 
-  explicit FullLepObjectCountFilter(const edm::ParameterSet&);
-  ~FullLepObjectCountFilter(){};
+  explicit ObjectCountFilter(const edm::ParameterSet&);
+  ~ObjectCountFilter(){};
   
  private:
 

@@ -1,6 +1,6 @@
-#include "TopAnalysis/TopFilter/plugins/FullLepObjectCountFilter.h"
+#include "TopAnalysis/TopFilter/plugins/ObjectCountFilter.h"
 
-FullLepObjectCountFilter::FullLepObjectCountFilter(const edm::ParameterSet& cfg):
+ObjectCountFilter::ObjectCountFilter(const edm::ParameterSet& cfg):
   wgt_        (cfg.getParameter<edm::InputTag>( "weight"  )),
   name_       (cfg.getParameter<std::string>  ( "name"    )),  
   objects_    (cfg.getParameter<edm::InputTag>( "objects" )),
@@ -9,7 +9,7 @@ FullLepObjectCountFilter::FullLepObjectCountFilter(const edm::ParameterSet& cfg)
 {
 }
 
-bool FullLepObjectCountFilter::filter(edm::Event& evt, const edm::EventSetup& setup)
+bool ObjectCountFilter::filter(edm::Event& evt, const edm::EventSetup& setup)
 {
   edm::Handle<double> wgt;
   evt.getByLabel(wgt_, wgt);
@@ -29,14 +29,14 @@ bool FullLepObjectCountFilter::filter(edm::Event& evt, const edm::EventSetup& se
   return true;
 }
 
-void FullLepObjectCountFilter::beginJob(const edm::EventSetup& setup)
+void ObjectCountFilter::beginJob(const edm::EventSetup& setup)
 {   
   edm::LogVerbatim log("topFilter");  
   log << ::std::setw( 20 ) << ::std::left;  
   log << name_ << ": " << " n >= " << ::std::setw( 8 ) << ::std::right  <<  size_;   
 }
 
-void FullLepObjectCountFilter::endJob()
+void ObjectCountFilter::endJob()
 {
   edm::LogVerbatim log("topFilter");
 

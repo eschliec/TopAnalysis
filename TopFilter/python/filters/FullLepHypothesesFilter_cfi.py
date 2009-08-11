@@ -8,7 +8,7 @@ filterFullLepHypothesis = cms.EDAnalyzer("FullLepHypothesesFilter",
         
     ## cuts on muon muon mass
     qcdCut = cms.double(10.),
-    zCut   = cms.vdouble(80., 100.),
+    zCut   = cms.vdouble(82., 100.),
         
     ## b-tagging (if bDisc has two arguments both jets have 
     ## to pass the cuts, if only one number is given only one jet

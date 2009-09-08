@@ -25,3 +25,6 @@ typedef SingleObjectAnalyzer<TtGenEvent, TopKinematics> TopKinematicsGenAnalyzer
 typedef SingleObjectAnalyzer<TtSemiLeptonicEvent, TopKinematics> TopKinematicsRecAnalyzer;
 DEFINE_FWK_MODULE(TopKinematicsGenAnalyzer);
 DEFINE_FWK_MODULE(TopKinematicsRecAnalyzer);
+
+#include "TopAnalysis/TopAnalyzer/plugins/FullLepHypothesesAnalyzer.h"
+DEFINE_FWK_MODULE(FullLepHypothesesAnalyzer);

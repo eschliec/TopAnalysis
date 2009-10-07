@@ -2,7 +2,6 @@
 #define DiMuonMassFilter_h
 
 #include <memory>
-#include <string>
 #include <iostream>
 
 #include "FWCore/Framework/interface/Event.h"
@@ -15,8 +14,8 @@
 
    \brief   Plugin to veto events with two muons, which pass a Z to mu mu hypothesis
 
-   The class vetos events where the invariant mass of the two leading muons lies between 84 GeV 
-   and 98 GeV. The Z mass window is hard coded. Note that there is no selection of the muons 
+   The class vetos events where the invariant mass of the two leading muons lies between two values given in the
+   config-file or with an invariant mass lower than a certain value. Note that there is no selection of the muons 
    within the event filer. 
 **/
 
@@ -29,12 +28,17 @@ class DiMuonMassFilter : public edm::EDFilter {
   ~DiMuonMassFilter();
   
  private:
+  /// sanity check 
+  virtual void beginJob(const edm::EventSetup&);
   /// event veto
   virtual bool filter(edm::Event& event, const edm::EventSetup& setup);
   
  private:
   /// muon collection label
   edm::InputTag muons_;
+  double qcdCut_;
+  std::vector<double> zCut_;
+  
 };  
 
 #endif  

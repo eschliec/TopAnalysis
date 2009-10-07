@@ -11,3 +11,6 @@ DEFINE_FWK_MODULE(SemiLeptonicTopJetSelector);
 
 #include "TopAnalysis/TopFilter/plugins/SemiLeptonicTopMuonSelector.h"
 DEFINE_FWK_MODULE(SemiLeptonicTopMuonSelector);
+
+#include "TopAnalysis/TopFilter/plugins/FullLepHypothesesFilter.h"
+DEFINE_FWK_MODULE(FullLepHypothesesFilter);

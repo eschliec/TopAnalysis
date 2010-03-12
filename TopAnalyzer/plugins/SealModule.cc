@@ -114,6 +114,9 @@ DEFINE_FWK_MODULE(FullHadHypothesisAnalyzer);
 typedef DoubleObjectAnalyzer<TtFullHadronicEvent, edm::View<pat::Jet>, KinFitQuality> KinFitQualityAnalyzer;
 DEFINE_FWK_MODULE(KinFitQualityAnalyzer);
 
+#include "TopAnalysis/TopAnalyzer/interface/KinFitImprover.h"
+typedef DoubleObjectAnalyzer<TtFullHadronicEvent, edm::View<pat::Jet>, KinFitImprover> KinFitImproveAnalyzer;
+DEFINE_FWK_MODULE(KinFitImproveAnalyzer);
 
 /**
     Define modules needed for the analysis of the top quarks
@@ -141,3 +144,11 @@ DEFINE_FWK_MODULE(BTagsAnalyzer);
 #include "TopAnalysis/TopAnalyzer/interface/GenParticle.h"
 typedef SingleObjectAnalyzer<edm::View<reco::GenParticle>, GenParticle> GenParticleAnalyzer;
 DEFINE_FWK_MODULE(GenParticleAnalyzer);
+
+/**
+    Define modules needed for the analysis of trigger
+
+
+#include "TopAnalysis/TopAnalyzer/interface/JetTrigger.h"
+DEFINE_FWK_MODULE(JetTriggerAnalyzer);
+**/

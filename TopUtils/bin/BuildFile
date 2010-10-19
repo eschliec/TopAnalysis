@@ -1,9 +1,0 @@
-<use name=rootgpad>
-
-<environment>
- <bin file="resolutioncalculator.cc"> </bin>
-</environment>
-
-<environment>
- <bin file="resolhistowriter.cc"> </bin>
-</environment>

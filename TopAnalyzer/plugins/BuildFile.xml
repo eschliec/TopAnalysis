@@ -1,9 +1,0 @@
-<use   name="TopAnalysis/TopUtils"/>
-<use   name="TopAnalysis/TopAnalyzer"/>
-<use   name="FWCore/MessageLogger"/>
-<use   name="FWCore/ParameterSet"/>
-<use   name="FWCore/Framework"/>
-<use   name="FWCore/Utilities"/>
-<library   file="*.cc" name="TopAnalysisTopAnalyzerPlugins">
-  <flags   EDM_PLUGIN="1"/>
-</library>

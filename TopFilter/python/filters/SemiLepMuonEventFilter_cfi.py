@@ -3,18 +3,17 @@ import FWCore.ParameterSet.Config as cms
 ## define basic event filter
 filterSemiLepMuonEvent = cms.EDFilter("SemiLepMuonEventFilter",
     weight  = cms.InputTag("eventWeight"),
-    leptons = cms.VInputTag(cms.InputTag("selectedPatMuons")),
-    jets    = cms.VInputTag(cms.InputTag("selectedPatJets")),
+    leptons = cms.VInputTag(cms.InputTag("selectedLayer1Muons")),
+    jets    = cms.VInputTag(cms.InputTag("selectedLayer1Jets")),
 
     ## selection switches                                      
     lepEta = cms.bool(True),
     lepPt  = cms.bool(True),
     jetEta = cms.bool(True),
     jetPt  = cms.bool(True),                                      
-    trkIso = cms.bool(False),
-    calIso = cms.bool(False),
-    jetDist= cms.bool(False),
-    relComb = cms.bool(True),
+    trkIso = cms.bool(True),
+    calIso = cms.bool(True),
+    jetDist= cms.bool(True),
 
     ## predefine selection structure
     lepEtaFilter = cms.PSet(
@@ -55,15 +54,8 @@ filterSemiLepMuonEvent = cms.EDFilter("SemiLepMuonEventFilter",
         min  = cms.vdouble(  ),
         max  = cms.vdouble(  )
     ),
-    combIsoFilter = cms.PSet(
-        type = cms.uint32 ( 0),
-        mode = cms.uint32 ( 0),
-        name = cms.string (''),
-        min  = cms.vdouble(  ),
-        max  = cms.vdouble(  )
-    ),
     jetDistFilter = cms.PSet(
-        refs  = cms.InputTag("selectedPatJets"),
+        refs  = cms.InputTag("selectedLayer1Jets"),
         thresh= cms.vdouble( 0),
         mode  = cms.uint32( 0),
         name  = cms.string (''),
@@ -71,3 +63,5 @@ filterSemiLepMuonEvent = cms.EDFilter("SemiLepMuonEventFilter",
         max   = cms.vdouble(  )
     )
 )
+
+

@@ -1,44 +1,56 @@
 #ifndef JetResolution_h
 #define JetResolution_h
 
+#include <memory>
+#include <string>
+#include <vector>
+#include <fstream>
+#include <iostream>
+
+#include "TH1F.h"
+#include "TFile.h"
+
+#include "FWCore/Framework/interface/Event.h"
+#include "FWCore/ParameterSet/interface/InputTag.h"
+#include "FWCore/ParameterSet/interface/ParameterSet.h"
+#include "FWCore/ServiceRegistry/interface/Service.h"
+#include "PhysicsTools/UtilAlgos/interface/TFileService.h"
+
+#include "DataFormats/Math/interface/deltaPhi.h"
+#include "DataFormats/Math/interface/deltaR.h"
 #include "DataFormats/PatCandidates/interface/Jet.h"
-#include "TopAnalysis/TopAnalyzer/interface/ObjectResolution.h"
+#include "TopAnalysis/TopUtils/interface/NameScheme.h"
 
-/**
-   \class   JetResolution JetResolution.h "TopAnalysis/TopAnalyzer/interface/JetResolution.h"
 
-   \brief   Derived class to analyze the resolution of jets on reconstruction level using generator level information
-
-   The structure keeps histograms to derive the resolution of jets using generator level information. 
-   These histograms are to be filled from edm::View<pat::Jet>'s only(!). The class is derived from 
-   the ObjectResolution<Collection> interface, which makes it usable in fwfull or fwlite. It needs a 
-   dedicated constructor for fwlite to obtain the information of histogram binnings in pt, eta and 
-   phi of the jet.
-*/
-
-class JetResolution : public ObjectResolution<edm::View<pat::Jet> > {
-
- public:
-  /// default constructor for fw lite
-  explicit JetResolution(double matchDR, std::vector<double> binsPt, std::vector<double> binsEta, std::vector<double> binsPhi);
-  /// default constructor for full fw
-  explicit JetResolution(const edm::ParameterSet& configFile);
-  /// default destructor
-  ~JetResolution(){};
-  /// histogramm booking for fwlite (override of the base class with different binning)
-  void book();
-  /// histogramm booking for fwfull (override of the base class with different binning)
-  void book(edm::Service<TFileService>& fileService);
+class JetResolution{
   
-  /**
-     The following functions have to be implemented for any class
-     derived from SingleObject<Collection>
-  **/
-  /// histogram filling for fwlite and for fwfull
-  void fill(const edm::View<pat::Jet>& jets, const double& weight=1.);
+ public:
+  
+  explicit JetResolution(int, double, std::vector<double>);
+  explicit JetResolution(const edm::ParameterSet&);
+  ~JetResolution(){};
+
+  void book();
+  void book(edm::Service<TFileService>&);
+  void book(edm::Service<TFileService>&, ofstream&);
+  void fill(const edm::Event&, const std::vector<pat::Jet>&, const double&);
+  void fill(const std::vector<pat::Jet>&, const double&);
+  void norm(){};
+  void write(const char*, const char*);
 
  private:
-  /// there are no additional data memebers with respect to the base class
+
+  // additional evt content/steerings
+  int nJets_;
+  std::vector<double> binsPt_;
+  std::vector<double> binsEta_;
+  std::vector<double> binsPhi_;
+  double matchDR_;
+
+  TH1F *calPtAll_, *resPtAll_, *calEtaAll_, *resEtaAll_, *calPhiAll_, *resPhiAll_;
+  std::vector<TH1F*> relPtAll_, EtaAll_, PhiAll_;
+  std::vector<TH1F*> calPtJet_, resPtJet_, calEtaJet_, resEtaJet_, calPhiJet_, resPhiJet_;
+  std::vector< std::vector<TH1F*> > relPtJet_, EtaJet_, PhiJet_;
 };
 
 #endif

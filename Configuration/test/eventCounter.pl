@@ -1,4 +1,4 @@
-#!/usr/bin/env/ perl
+#!/usr/local/bin/perl -w
 
 # script to run over a list of input files (use of wildcard is allowed) and
 # to grep different cuts. These cuts are expected to be named AND ordered as:
@@ -15,26 +15,17 @@
 my @myfiles = @ARGV;
 
 # initialize error counters
-my $err1   = 0;
+my $err1 = 0;
 
 # initialize event counters
-my $nom1   = 0;
-my $nom2   = 0;
-my $nom3   = 0;
-my $nom4   = 0;
-my $nom5   = 0;
-my $nom6   = 0;
-my $nom7   = 0;
-my $nom8   = 0;
-
-my $denom1 = 0;
-my $denom2 = 0;
-my $denom3 = 0;
-my $denom4 = 0;
-my $denom5 = 0;
-my $denom6 = 0;
-my $denom7 = 0;
-my $denom8 = 0;
+my $num1 = 0;
+my $num2 = 0;
+my $num3 = 0;
+my $num4 = 0;
+my $num5 = 0;
+my $num6 = 0;
+my $num7 = 0;
+my $num8 = 0;
 
 # loop over each file and accumulate the event numbers
 foreach my $file (@myfiles) {
@@ -43,43 +34,67 @@ foreach my $file (@myfiles) {
     print "... processing file $file \n";
 
     # get the grep output from the shell
-
-    my @semiLepMuonEta = `grep semiLepMuonEta $file | grep 'out of'`;
-    my @semiLepMuonPt  = `grep semiLepMuonPt  $file | grep 'out of'`;
-    my @semiLepJetsEta = `grep semiLepJetsEta $file | grep 'out of'`;
-    my @semiLepJetsPt  = `grep semiLepJetsPt  $file | grep 'out of'`;
+    my @beforeMuonEtaCut = `grep -B 1 -A 8 muonEtaCut $file | grep 'Events Before Cut'`;
+    my @beforeMuonPtCut  = `grep -B 1 -A 8 muonPtCut  $file | grep 'Events Before Cut'`;
+    my @beforeJetsEtaCut = `grep -B 1 -A 8 jetsEtaCut $file | grep 'Events Before Cut'`;
+    my @beforeJetsPtCut  = `grep -B 1 -A 8 jetsPtCut  $file | grep 'Events Before Cut'`;
+    my @afterMuonEtaCut  = `grep -B 1 -A 8 muonEtaCut $file | grep 'Events After  Cut'`;
+    my @afterMuonPtCut   = `grep -B 1 -A 8 muonPtCut  $file | grep 'Events After  Cut'`;
+    my @afterJetsEtaCut  = `grep -B 1 -A 8 jetsEtaCut $file | grep 'Events After  Cut'`;
+    my @afterJetsPtCut   = `grep -B 1 -A 8 jetsPtCut  $file | grep 'Events After  Cut'`;
 
     # check the pattern and extract the numbers, if succesful
     # accumulate else voice error message ; first occurrence
     # semi leptonic second dileptonic preselection
     my $failed = 0;
-    if($semiLepMuonEta[0] =~ /\w\s+:\s+(\d+)\s+\(\s+(\d+\.?\d*)\)\s+\w+\s\w+\s+(\d+)\s+\(\s+(\d+\.?\d*)\)/) {
-      $nom1   = $nom1   + $1;
-      $denom1 = $denom1 + $3;
+    if($beforeMuonEtaCut[0] =~ /Events\sBefore\sCut\s\(Weighted\):\s+(\d+)\s\(\s+\d+\w/) {
+      $num1 = $num1 + $1;
     } else {
       $failed = 1;
-      print ">> ERROR: didn't find semiLepMuonEta from $file <<\n";
+      print ">> ERROR: could not get first number for muonEtaCut from $file <<\n";
     };
-    if($semiLepMuonPt[0]  =~ /\w\s+:\s+(\d+)\s+\(\s+(\d+\.?\d*)\)\s+\w+\s\w+\s+(\d+)\s+\(\s+(\d+\.?\d*)\)/) {
-      $nom2   = $nom2   + $1;
-      $denom2 = $denom2 + $3;
+    if($beforeMuonPtCut[0]  =~ /Events\sBefore\sCut\s\(Weighted\):\s+(\d+)\s\(\s+\d+\w/) {
+      $num3 = $num3 + $1;
     } else {
       $failed = 1;
-      print ">> ERROR: didn't find semiLepMuonPt  from $file <<\n";
+      print ">> ERROR: could not get first number for muonPtCut  from $file <<\n";
     };
-    if($semiLepJetsEta[0] =~ /\w\s+:\s+(\d+)\s+\(\s+(\d+\.?\d*)\)\s+\w+\s\w+\s+(\d+)\s+\(\s+(\d+\.?\d*)\)/) {
-      $nom3   = $nom3   + $1;
-      $denom3 = $denom3 + $3;
+    if($beforeJetsEtaCut[0] =~ /\sEvents\sBefore\sCut\s\(Weighted\):\s+(\d+)\s\(\s+\d+\w/) {
+      $num5 = $num5 + $1;
     } else {
       $failed = 1;
-      print ">> ERROR: didn't find semiLepJetsEta from $file <<\n";
+      print ">> ERROR: could not get first number for jetsEtaCut from $file <<\n";
     };
-    if($semiLepJetsPt[0]  =~ /\w\s+:\s+(\d+)\s+\(\s+(\d+\.?\d*)\)\s+\w+\s\w+\s+(\d+)\s+\(\s+(\d+\.?\d*)\)/) {
-      $nom4   = $nom4   + $1;
-      $denom4 = $denom4 + $3;
+    if($beforeJetsPtCut[0]  =~ /Events\sBefore\sCut\s\(Weighted\):\s+(\d+)\s\(\s+\d+\w/) {
+      $num7 = $num7 + $1;
     } else {
       $failed = 1;
-      print ">> ERROR: didn't find semiLepJetsPt  from $file <<\n";
+      print ">> ERROR: could not get first number for jetsPtCut  from $file <<\n";
+    };
+
+    if($afterMuonEtaCut[0]  =~ /Events\sAfter\s+Cut\s\(Weighted\):\s+(\d+)\s\(\s+\d+\w/) {
+      $num2 = $num2 + $1;
+    } else {
+      $failed = 1;
+      print ">> ERROR: could not get last  number for muonEtaCut from $file <<\n";
+    };
+    if($afterMuonPtCut[0]   =~ /Events\sAfter\s+Cut\s\(Weighted\):\s+(\d+)\s\(\s+\d+\w/) {
+      $num4 = $num4 + $1;
+    } else {
+      $failed = 1;
+      print ">> ERROR: Could not get last  number for muontPtCut  from $file <<\n";
+    };
+    if($afterJetsEtaCut[0]  =~ /Events\sAfter\s+Cut\s\(Weighted\):\s+(\d+)\s\(\s+\d+\w/) {
+      $num6 = $num6 + $1;  
+    } else {
+      $failed = 1;
+      print ">> ERROR: Could not get last  number for jetsEtaCut from $file <<\n";
+    };
+    if($afterJetsPtCut[0]   =~ /Events\sAfter\s+Cut\s\(Weighted\):\s+(\d+)\s\(\s+\d+\w/) { 
+      $num8 = $num8 + $1;  
+    } else {
+      $failed = 1;
+      print ">> ERROR: Could not get last  number for jetsPtCut  from $file <<\n";
     };
     if($failed == 1){ $err1 = $err1 + 1 }
   }; # end loop over files
@@ -95,10 +110,10 @@ print "----------------------------------------------";
 print "\n  Accumulated statistics:\n";
 print "----------------------------------------------";
 print "\n            \t before: \t after: \n";
-print "  muonEtaCut: \t $denom1 \t\t $nom1 \n";
-print "  muonPtCut : \t $denom2 \t\t $nom2 \n";
-print "  jetsEtaCut: \t $denom3 \t\t $nom3 \n";
-print "  jetsPtCut : \t $denom4 \t\t $nom4 \n";
+print "  muonEtaCut: \t $num1 \t $num2 \n";
+print "  muonPtCut : \t $num3 \t $num4 \n";
+print "  jetsEtaCut: \t $num5 \t $num6 \n";
+print "  jetsPtCut : \t $num7 \t $num8 \n";
 print "----------------------------------------------\n";
 
 exit;

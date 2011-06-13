@@ -51,8 +51,8 @@ process.load("Configuration.StandardSequences.MagneticField_cff")
 #-------------------------------------------------
 
 ## std sequence for tqaf layer1
-process.load("PhysicsTools.PatAlgos.patSequences_cff")
-process.p0 = cms.Path(process.patDefaultSequenceNoCleaning)
+process.load("TopQuarkAnalysis.TopObjectProducers.tqafLayer1_full_cff")
+process.p0 = cms.Path(process.tqafLayer1)
 
 ## add event weight information
 process.load("TopAnalysis.TopUtils.EventWeightPlain_cfi")

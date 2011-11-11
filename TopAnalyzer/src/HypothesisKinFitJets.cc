@@ -6,9 +6,7 @@ HypothesisKinFitJets::HypothesisKinFitJets()
 }
 
 /// default constructor for full fw
-HypothesisKinFitJets::HypothesisKinFitJets(const edm::ParameterSet& cfg) :
-  corrPerm_( cfg.getParameter<bool>   ("corrPerm") ),
-  maxChi2_ ( cfg.getParameter<double> ("maxChi2" ) )
+HypothesisKinFitJets::HypothesisKinFitJets(const edm::ParameterSet& cfg)
 {
 }
 
@@ -118,182 +116,156 @@ HypothesisKinFitJets::fill(const TtSemiLeptonicEvent& tops, const edm::View<pat:
     int lightQBar = tops.jetLeptonCombination("kKinFit")[TtSemiLepEvtPartons::LightQBar];
     int hadB      = tops.jetLeptonCombination("kKinFit")[TtSemiLepEvtPartons::HadB     ];
     int lepB      = tops.jetLeptonCombination("kKinFit")[TtSemiLepEvtPartons::LepB     ];
-
-    // get requested permutation 
-    bool permutation=true;
-    if(corrPerm_){
-      permutation=false;
-      // if jet parton match exists:
-      if(tops.isHypoValid("kGenMatch")){
-	// indices for all quarks from Kinfit Hypothesis and genmatch
-	int lepBIndex         = tops.jetLeptonCombination("kKinFit"  )[TtSemiLepEvtPartons::LepB     ];
-	int hadBIndex         = tops.jetLeptonCombination("kKinFit"  )[TtSemiLepEvtPartons::HadB     ];
-	int lightQIndex       = tops.jetLeptonCombination("kKinFit"  )[TtSemiLepEvtPartons::LightQ   ];
-	int lightQBarIndex    = tops.jetLeptonCombination("kKinFit"  )[TtSemiLepEvtPartons::LightQBar];
-	int lepBIndexGen      = tops.jetLeptonCombination("kGenMatch")[TtSemiLepEvtPartons::LepB     ];
-	int hadBIndexGen      = tops.jetLeptonCombination("kGenMatch")[TtSemiLepEvtPartons::HadB     ];
-	int lightQIndexGen    = tops.jetLeptonCombination("kGenMatch")[TtSemiLepEvtPartons::LightQ   ];
-	int lightQBarIndexGen = tops.jetLeptonCombination("kGenMatch")[TtSemiLepEvtPartons::LightQBar];
-	// check for correct permutation
-	if((lepBIndex==lepBIndexGen)&&(hadBIndex==hadBIndexGen)&&
-	   (((lightQIndex==lightQIndexGen   )&&(lightQBarIndex==lightQBarIndexGen))||
-	    ((lightQIndex==lightQBarIndexGen)&&(lightQBarIndex==lightQIndexGen   )))) permutation=true;
-      }
-    }
-    
     /** 
 	Fill the Pull Distributions
-    **/
-    // check chi2 and permutation requirement
-    if(permutation&&tops.fitChi2()<maxChi2_){
-      // a) hadronic b-jet
-      // make sure the hadronic b-jet index is in the range of the jet collection
-      if( hadB < (int)jets.size() ){
-	// get values (parton truth, reconstruction, kinematic fit)
-	double hadBPtPartonTruth = tops.hadronicDecayB()->pt();
-	double hadBPtRec    = jets[hadB].pt();
-	double hadBPtKinFit    = tops.hadronicDecayB("kKinFit")->pt();
-	double hadBEtaPartonTruth = tops.hadronicDecayB()->eta();
-	double hadBEtaRec    = jets[hadB].eta();
-	double hadBEtaKinFit    = tops.hadronicDecayB("kKinFit")->eta();
-	double hadBPhiPartonTruth = tops.hadronicDecayB()->phi();
-	double hadBPhiRec    = jets[hadB].phi();
-	double hadBPhiKinFit    = tops.hadronicDecayB("kKinFit")->phi();
-	// fill plots
-	// (i) reconstructed vs kin.fitted
-	// hadronic top b pt
-	hists_.find("hadBQuarkPullPtKinFitRec"   )->second->Fill( (hadBPtKinFit -hadBPtRec )/hadBPtRec , weight);
-	// hadronic top b eta					
-	hists_.find("hadBQuarkPullEtaKinFitRec"  )->second->Fill( (hadBEtaKinFit-hadBEtaRec)/hadBEtaRec, weight);
-	// hadronic top b phi					
-	hists_.find("hadBQuarkPullPhiKinFitRec"  )->second->Fill( (hadBPhiKinFit-hadBPhiRec)/hadBPhiRec, weight);
-	// (ii) reconstructed vs parton truth
-	// hadronic top b pt
-	hists_.find("hadBQuarkPullPtRecPartonTruth"   )->second->Fill( (hadBPtRec -hadBPtPartonTruth )/hadBPtPartonTruth , weight);
-	// hadronic top b eta					
-	hists_.find("hadBQuarkPullEtaRecPartonTruth"  )->second->Fill( (hadBEtaRec-hadBEtaPartonTruth)/hadBEtaPartonTruth, weight);
-	// hadronic top b phi					
-	hists_.find("hadBQuarkPullPhiRecPartonTruth"  )->second->Fill( (hadBPhiRec-hadBPhiPartonTruth)/hadBPhiPartonTruth, weight);
-	// (iii) kin.fitted vs parton truth
-	// hadronic top b pt
-	hists_.find("hadBQuarkPullPtKinFitPartonTruth"   )->second->Fill( (hadBPtKinFit -hadBPtPartonTruth )/hadBPtPartonTruth , weight);
-	// hadronic top b eta					
-	hists_.find("hadBQuarkPullEtaKinFitPartonTruth"  )->second->Fill( (hadBEtaKinFit-hadBEtaPartonTruth)/hadBEtaPartonTruth, weight);
-	// hadronic top b phi					
-	hists_.find("hadBQuarkPullPhiKinFitPartonTruth"  )->second->Fill( (hadBPhiKinFit-hadBPhiPartonTruth)/hadBPhiPartonTruth, weight);
-      }
+    **/    
+    // a) hadronic b-jet
+    // make sure the hadronic b-jet index is in the range of the jet collection
+    if( hadB < (int)jets.size() ){
+      // get values (parton truth, reconstruction, kinematic fit)
+      double hadBPtPartonTruth = tops.hadronicDecayB()->pt();
+      double hadBPtRec    = jets[hadB].pt();
+      double hadBPtKinFit    = tops.hadronicDecayB("kKinFit")->pt();
+      double hadBEtaPartonTruth = tops.hadronicDecayB()->eta();
+      double hadBEtaRec    = jets[hadB].eta();
+      double hadBEtaKinFit    = tops.hadronicDecayB("kKinFit")->eta();
+      double hadBPhiPartonTruth = tops.hadronicDecayB()->phi();
+      double hadBPhiRec    = jets[hadB].phi();
+      double hadBPhiKinFit    = tops.hadronicDecayB("kKinFit")->phi();
+      // fill plots
+      // (i) reconstructed vs kin.fitted
+      // hadronic top b pt
+      hists_.find("hadBQuarkPullPtKinFitRec"   )->second->Fill( (hadBPtKinFit -hadBPtRec )/hadBPtRec , weight);
+      // hadronic top b eta					
+      hists_.find("hadBQuarkPullEtaKinFitRec"  )->second->Fill( (hadBEtaKinFit-hadBEtaRec)/hadBEtaRec, weight);
+      // hadronic top b phi					
+      hists_.find("hadBQuarkPullPhiKinFitRec"  )->second->Fill( (hadBPhiKinFit-hadBPhiRec)/hadBPhiRec, weight);
+      // (ii) reconstructed vs parton truth
+      // hadronic top b pt
+      hists_.find("hadBQuarkPullPtRecPartonTruth"   )->second->Fill( (hadBPtRec -hadBPtPartonTruth )/hadBPtPartonTruth , weight);
+      // hadronic top b eta					
+      hists_.find("hadBQuarkPullEtaRecPartonTruth"  )->second->Fill( (hadBEtaRec-hadBEtaPartonTruth)/hadBEtaPartonTruth, weight);
+      // hadronic top b phi					
+      hists_.find("hadBQuarkPullPhiRecPartonTruth"  )->second->Fill( (hadBPhiRec-hadBPhiPartonTruth)/hadBPhiPartonTruth, weight);
+      // (iii) kin.fitted vs parton truth
+      // hadronic top b pt
+      hists_.find("hadBQuarkPullPtKinFitPartonTruth"   )->second->Fill( (hadBPtKinFit -hadBPtPartonTruth )/hadBPtPartonTruth , weight);
+      // hadronic top b eta					
+      hists_.find("hadBQuarkPullEtaKinFitPartonTruth"  )->second->Fill( (hadBEtaKinFit-hadBEtaPartonTruth)/hadBEtaPartonTruth, weight);
+      // hadronic top b phi					
+      hists_.find("hadBQuarkPullPhiKinFitPartonTruth"  )->second->Fill( (hadBPhiKinFit-hadBPhiPartonTruth)/hadBPhiPartonTruth, weight);
+    }
 
-      // b) leptonic b-jet
-      // make sure the leptonic b-jet index is in the range of the jet collection
-      if( lepB < (int)jets.size() ){
-	// get values (parton truth, reconstruction, kinematic fit)
-	double lepBPtPartonTruth = tops.leptonicDecayB()->pt();
-	double lepBPtRec    = jets[lepB].pt();
-	double lepBPtKinFit    = tops.leptonicDecayB("kKinFit")->pt();
-	double lepBEtaPartonTruth = tops.leptonicDecayB()->eta();
-	double lepBEtaRec    = jets[lepB].eta();
-	double lepBEtaKinFit    = tops.leptonicDecayB("kKinFit")->eta();
-	double lepBPhiPartonTruth = tops.leptonicDecayB()->phi();
-	double lepBPhiRec    = jets[lepB].phi();
-	double lepBPhiKinFit    = tops.leptonicDecayB("kKinFit")->phi();
-	// fill plots
-	// (i) reconstructed vs kin.fitted
-	// leptonic top b pt
-	hists_.find("lepBQuarkPullPtKinFitRec"   )->second->Fill( (lepBPtKinFit -lepBPtRec )/lepBPtRec , weight);
-	// leptonic top b eta					
-	hists_.find("lepBQuarkPullEtaKinFitRec"  )->second->Fill( (lepBEtaKinFit-lepBEtaRec)/lepBEtaRec, weight);
-	// leptonic top b phi					
-	hists_.find("lepBQuarkPullPhiKinFitRec"  )->second->Fill( (lepBPhiKinFit-lepBPhiRec)/lepBPhiRec, weight);
-	// (ii) reconstructed vs parton truth
-	// leptonic top b pt
-	hists_.find("lepBQuarkPullPtRecPartonTruth"   )->second->Fill( (lepBPtRec -lepBPtPartonTruth )/lepBPtPartonTruth , weight);
-	// leptonic top b eta					
-	hists_.find("lepBQuarkPullEtaRecPartonTruth"  )->second->Fill( (lepBEtaRec-lepBEtaPartonTruth)/lepBEtaPartonTruth, weight);
-	// leptonic top b phi					
-	hists_.find("lepBQuarkPullPhiRecPartonTruth"  )->second->Fill( (lepBPhiRec-lepBPhiPartonTruth)/lepBPhiPartonTruth, weight);
-	// (iii) kin.fitted vs parton truth
-	// leptonic top b pt
-	hists_.find("lepBQuarkPullPtKinFitPartonTruth"   )->second->Fill( (lepBPtKinFit -lepBPtPartonTruth )/lepBPtPartonTruth , weight);
-	// leptonic top b eta					
-	hists_.find("lepBQuarkPullEtaKinFitPartonTruth"  )->second->Fill( (lepBEtaKinFit-lepBEtaPartonTruth)/lepBEtaPartonTruth, weight);
-	// leptonic top b phi					
-	hists_.find("lepBQuarkPullPhiKinFitPartonTruth"  )->second->Fill( (lepBPhiKinFit-lepBPhiPartonTruth)/lepBPhiPartonTruth, weight);
-      }
+    // b) leptonic b-jet
+    // make sure the leptonic b-jet index is in the range of the jet collection
+    if( lepB < (int)jets.size() ){
+      // get values (parton truth, reconstruction, kinematic fit)
+      double lepBPtPartonTruth = tops.leptonicDecayB()->pt();
+      double lepBPtRec    = jets[lepB].pt();
+      double lepBPtKinFit    = tops.leptonicDecayB("kKinFit")->pt();
+      double lepBEtaPartonTruth = tops.leptonicDecayB()->eta();
+      double lepBEtaRec    = jets[lepB].eta();
+      double lepBEtaKinFit    = tops.leptonicDecayB("kKinFit")->eta();
+      double lepBPhiPartonTruth = tops.leptonicDecayB()->phi();
+      double lepBPhiRec    = jets[lepB].phi();
+      double lepBPhiKinFit    = tops.leptonicDecayB("kKinFit")->phi();
+      // fill plots
+      // (i) reconstructed vs kin.fitted
+      // leptonic top b pt
+      hists_.find("lepBQuarkPullPtKinFitRec"   )->second->Fill( (lepBPtKinFit -lepBPtRec )/lepBPtRec , weight);
+      // leptonic top b eta					
+      hists_.find("lepBQuarkPullEtaKinFitRec"  )->second->Fill( (lepBEtaKinFit-lepBEtaRec)/lepBEtaRec, weight);
+      // leptonic top b phi					
+      hists_.find("lepBQuarkPullPhiKinFitRec"  )->second->Fill( (lepBPhiKinFit-lepBPhiRec)/lepBPhiRec, weight);
+      // (ii) reconstructed vs parton truth
+      // leptonic top b pt
+      hists_.find("lepBQuarkPullPtRecPartonTruth"   )->second->Fill( (lepBPtRec -lepBPtPartonTruth )/lepBPtPartonTruth , weight);
+      // leptonic top b eta					
+      hists_.find("lepBQuarkPullEtaRecPartonTruth"  )->second->Fill( (lepBEtaRec-lepBEtaPartonTruth)/lepBEtaPartonTruth, weight);
+      // leptonic top b phi					
+      hists_.find("lepBQuarkPullPhiRecPartonTruth"  )->second->Fill( (lepBPhiRec-lepBPhiPartonTruth)/lepBPhiPartonTruth, weight);
+      // (iii) kin.fitted vs parton truth
+      // leptonic top b pt
+      hists_.find("lepBQuarkPullPtKinFitPartonTruth"   )->second->Fill( (lepBPtKinFit -lepBPtPartonTruth )/lepBPtPartonTruth , weight);
+      // leptonic top b eta					
+      hists_.find("lepBQuarkPullEtaKinFitPartonTruth"  )->second->Fill( (lepBEtaKinFit-lepBEtaPartonTruth)/lepBEtaPartonTruth, weight);
+      // leptonic top b phi					
+      hists_.find("lepBQuarkPullPhiKinFitPartonTruth"  )->second->Fill( (lepBPhiKinFit-lepBPhiPartonTruth)/lepBPhiPartonTruth, weight);
+    }
 
-      // make sure the light quark indices is in the range of the jet collection
-      if( lightQ < (int)jets.size() && lightQBar < (int)jets.size() ){
-	// get values (parton truth, reconstruction, kinematic fit)
-	double lightQBarPtPartonTruth = tops.hadronicDecayQuarkBar()->pt();
-	double lightQBarPtRec    = jets[lightQBar].pt();
-	double lightQBarPtKinFit    = tops.hadronicDecayQuarkBar("kKinFit")->pt();
-	double lightQBarEtaPartonTruth = tops.hadronicDecayQuarkBar()->eta();
-	double lightQBarEtaRec    = jets[lightQBar].eta();
-	double lightQBarEtaKinFit    = tops.hadronicDecayQuarkBar("kKinFit")->eta();
-	double lightQBarPhiPartonTruth = tops.hadronicDecayQuarkBar()->phi();
-	double lightQBarPhiRec    = jets[lightQBar].phi();
-	double lightQBarPhiKinFit    = tops.hadronicDecayQuarkBar("kKinFit")->phi();
-	double lightQPtPartonTruth = tops.hadronicDecayQuark()->pt();
-	double lightQPtRec    = jets[lightQ].pt();
-	double lightQPtKinFit    = tops.hadronicDecayQuark("kKinFit")->pt();
-	double lightQEtaPartonTruth = tops.hadronicDecayQuark()->eta();
-	double lightQEtaRec    = jets[lightQ].eta();
-	double lightQEtaKinFit    = tops.hadronicDecayQuark("kKinFit")->eta();
-	double lightQPhiPartonTruth = tops.hadronicDecayQuark()->phi();
-	double lightQPhiRec    = jets[lightQ].phi();
-	double lightQPhiKinFit    = tops.hadronicDecayQuark("kKinFit")->phi();
-	// choose quark - antiquark assignment that fits best to truth values
-	double pullQQbar=std::abs((lightQPtKinFit -lightQPtPartonTruth )/lightQPtPartonTruth );
-	pullQQbar +=     std::abs((lightQEtaKinFit-lightQEtaPartonTruth)/lightQEtaPartonTruth);
-	pullQQbar +=     std::abs((lightQPhiKinFit-lightQPhiPartonTruth)/lightQPhiPartonTruth);
-	pullQQbar +=     std::abs((lightQBarPtKinFit -lightQBarPtPartonTruth )/lightQBarPtPartonTruth );
-	pullQQbar +=     std::abs((lightQBarEtaKinFit-lightQBarEtaPartonTruth)/lightQBarEtaPartonTruth);
-	pullQQbar +=     std::abs((lightQBarPhiKinFit-lightQBarPhiPartonTruth)/lightQBarPhiPartonTruth);
-	double pullQQbarSwitched=std::abs((lightQPtKinFit -lightQBarPtPartonTruth )/lightQBarPtPartonTruth );
-	pullQQbarSwitched +=     std::abs((lightQEtaKinFit-lightQBarEtaPartonTruth)/lightQBarEtaPartonTruth);
-	pullQQbarSwitched +=     std::abs((lightQPhiKinFit-lightQBarPhiPartonTruth)/lightQBarPhiPartonTruth);
-	pullQQbarSwitched +=     std::abs((lightQBarPtKinFit -lightQPtPartonTruth )/lightQPtPartonTruth );
-	pullQQbarSwitched +=     std::abs((lightQBarEtaKinFit-lightQEtaPartonTruth)/lightQEtaPartonTruth);
-	pullQQbarSwitched +=     std::abs((lightQBarPhiKinFit-lightQPhiPartonTruth)/lightQPhiPartonTruth);
-	if( (corrPerm_&&tops.jetLeptonCombination("kKinFit")[TtSemiLepEvtPartons::LightQ]==tops.jetLeptonCombination("kGenMatch")[TtSemiLepEvtPartons::LightQBar]&&tops.jetLeptonCombination("kGenMatch")[TtSemiLepEvtPartons::LightQ]==tops.jetLeptonCombination("kKinFit")[TtSemiLepEvtPartons::LightQBar]) || (!corrPerm_&&pullQQbarSwitched<pullQQbar) ){
-	  lightQBarPtPartonTruth  = tops.hadronicDecayQuark()->pt();
-	  lightQBarEtaPartonTruth = tops.hadronicDecayQuark()->eta();
-	  lightQBarPhiPartonTruth = tops.hadronicDecayQuark()->phi();
-	  lightQPtPartonTruth  = tops.hadronicDecayQuarkBar()->pt();
-	  lightQEtaPartonTruth = tops.hadronicDecayQuarkBar()->eta();
-	  lightQPhiPartonTruth = tops.hadronicDecayQuarkBar()->phi();
-	}
-	// fill plots
-	// (i) reconstructed vs kin.fitted
-	// light q pt
-	hists_.find("lightQuarkPullPtKinFitRec" )->second->Fill( (lightQBarPtKinFit-lightQBarPtRec )/lightQBarPtRec , weight);
-	hists_.find("lightQuarkPullPtKinFitRec" )->second->Fill( (lightQPtKinFit   -lightQPtRec    )/lightQPtRec    , weight);
-	// light q eta			      	
-	hists_.find("lightQuarkPullEtaKinFitRec")->second->Fill( (lightQBarEtaKinFit-lightQBarEtaRec)/lightQBarEtaRec, weight);
-	hists_.find("lightQuarkPullEtaKinFitRec")->second->Fill( (lightQEtaKinFit   -lightQEtaRec  )/lightQEtaRec   , weight);
-	// light q phi			      	
-	hists_.find("lightQuarkPullPhiKinFitRec")->second->Fill( (lightQBarPhiKinFit-lightQBarPhiRec)/lightQBarPhiRec, weight);
-	hists_.find("lightQuarkPullPhiKinFitRec")->second->Fill( (lightQPhiKinFit   -lightQPhiRec   )/lightQPhiRec   , weight);
-	// (ii) reconstructed vs parton truth
-	// light q pt
-	hists_.find("lightQuarkPullPtRecPartonTruth" )->second->Fill( (lightQBarPtRec-lightQBarPtPartonTruth)/lightQBarPtPartonTruth, weight);
-	hists_.find("lightQuarkPullPtRecPartonTruth" )->second->Fill( (lightQPtRec   -lightQPtPartonTruth   )/lightQPtPartonTruth   , weight);
-	// light q eta				   	
-	hists_.find("lightQuarkPullEtaRecPartonTruth")->second->Fill( (lightQBarEtaRec-lightQBarEtaPartonTruth)/lightQBarEtaPartonTruth, weight);
-	hists_.find("lightQuarkPullEtaRecPartonTruth")->second->Fill( (lightQEtaRec   -lightQEtaPartonTruth   )/lightQEtaPartonTruth   , weight);
-	// light q phi				   	
-	hists_.find("lightQuarkPullPhiRecPartonTruth")->second->Fill( (lightQBarPhiRec-lightQBarPhiPartonTruth)/lightQBarPhiPartonTruth, weight);
-	hists_.find("lightQuarkPullPhiRecPartonTruth")->second->Fill( (lightQPhiRec   -lightQPhiPartonTruth   )/lightQPhiPartonTruth   , weight);
-	// (iii) kin.fitted vs parton truth
-	// light q pt
-	hists_.find("lightQuarkPullPtKinFitPartonTruth" )->second->Fill( (lightQBarPtKinFit-lightQBarPtPartonTruth )/lightQBarPtPartonTruth, weight);
-	hists_.find("lightQuarkPullPtKinFitPartonTruth" )->second->Fill( (lightQPtKinFit   -lightQPtPartonTruth    )/lightQPtPartonTruth   , weight);
-	// light q eta				      
-	hists_.find("lightQuarkPullEtaKinFitPartonTruth")->second->Fill( (lightQBarEtaKinFit-lightQBarEtaPartonTruth)/lightQBarEtaPartonTruth, weight);
-	hists_.find("lightQuarkPullEtaKinFitPartonTruth")->second->Fill( (lightQEtaKinFit   -lightQEtaPartonTruth   )/lightQEtaPartonTruth   , weight);
-	// light q phi				      
-	hists_.find("lightQuarkPullPhiKinFitPartonTruth")->second->Fill( (lightQBarPhiKinFit-lightQBarPhiPartonTruth)/lightQBarPhiPartonTruth, weight);
-	hists_.find("lightQuarkPullPhiKinFitPartonTruth")->second->Fill( (lightQPhiKinFit   -lightQPhiPartonTruth   )/lightQPhiPartonTruth   , weight);
+   // make sure the light quark indices is in the range of the jet collection
+    if( lightQ < (int)jets.size() && lightQBar < (int)jets.size() ){
+      // get values (parton truth, reconstruction, kinematic fit)
+      double lightQBarPtPartonTruth = tops.hadronicDecayQuarkBar()->pt();
+      double lightQBarPtRec    = jets[lightQBar].pt();
+      double lightQBarPtKinFit    = tops.hadronicDecayQuarkBar("kKinFit")->pt();
+      double lightQBarEtaPartonTruth = tops.hadronicDecayQuarkBar()->eta();
+      double lightQBarEtaRec    = jets[lightQBar].eta();
+      double lightQBarEtaKinFit    = tops.hadronicDecayQuarkBar("kKinFit")->eta();
+      double lightQBarPhiPartonTruth = tops.hadronicDecayQuarkBar()->phi();
+      double lightQBarPhiRec    = jets[lightQBar].phi();
+      double lightQBarPhiKinFit    = tops.hadronicDecayQuarkBar("kKinFit")->phi();
+      double lightQPtPartonTruth = tops.hadronicDecayQuark()->pt();
+      double lightQPtRec    = jets[lightQ].pt();
+      double lightQPtKinFit    = tops.hadronicDecayQuark("kKinFit")->pt();
+      double lightQEtaPartonTruth = tops.hadronicDecayQuark()->eta();
+      double lightQEtaRec    = jets[lightQ].eta();
+      double lightQEtaKinFit    = tops.hadronicDecayQuark("kKinFit")->eta();
+      double lightQPhiPartonTruth = tops.hadronicDecayQuark()->phi();
+      double lightQPhiRec    = jets[lightQ].phi();
+      double lightQPhiKinFit    = tops.hadronicDecayQuark("kKinFit")->phi();
+      // choose quark - antiquark assignment that fits best to truth values
+      double pullQQbar=std::abs((lightQPtKinFit -lightQPtPartonTruth )/lightQPtPartonTruth );
+      pullQQbar +=     std::abs((lightQEtaKinFit-lightQEtaPartonTruth)/lightQEtaPartonTruth);
+      pullQQbar +=     std::abs((lightQPhiKinFit-lightQPhiPartonTruth)/lightQPhiPartonTruth);
+      pullQQbar +=     std::abs((lightQBarPtKinFit -lightQBarPtPartonTruth )/lightQBarPtPartonTruth );
+      pullQQbar +=     std::abs((lightQBarEtaKinFit-lightQBarEtaPartonTruth)/lightQBarEtaPartonTruth);
+      pullQQbar +=     std::abs((lightQBarPhiKinFit-lightQBarPhiPartonTruth)/lightQBarPhiPartonTruth);
+      double pullQQbarSwitched=std::abs((lightQPtKinFit -lightQBarPtPartonTruth )/lightQBarPtPartonTruth );
+      pullQQbarSwitched +=     std::abs((lightQEtaKinFit-lightQBarEtaPartonTruth)/lightQBarEtaPartonTruth);
+      pullQQbarSwitched +=     std::abs((lightQPhiKinFit-lightQBarPhiPartonTruth)/lightQBarPhiPartonTruth);
+      pullQQbarSwitched +=     std::abs((lightQBarPtKinFit -lightQPtPartonTruth )/lightQPtPartonTruth );
+      pullQQbarSwitched +=     std::abs((lightQBarEtaKinFit-lightQEtaPartonTruth)/lightQEtaPartonTruth);
+      pullQQbarSwitched +=     std::abs((lightQBarPhiKinFit-lightQPhiPartonTruth)/lightQPhiPartonTruth);
+      if(pullQQbarSwitched<pullQQbar){
+	lightQBarPtPartonTruth  = tops.hadronicDecayQuark()->pt();
+	lightQBarEtaPartonTruth = tops.hadronicDecayQuark()->eta();
+	lightQBarPhiPartonTruth = tops.hadronicDecayQuark()->phi();
+	lightQPtPartonTruth  = tops.hadronicDecayQuarkBar()->pt();
+	lightQEtaPartonTruth = tops.hadronicDecayQuarkBar()->eta();
+	lightQPhiPartonTruth = tops.hadronicDecayQuarkBar()->phi();
       }
+      // fill plots
+      // (i) reconstructed vs kin.fitted
+      // light q pt
+      hists_.find("lightQuarkPullPtKinFitRec" )->second->Fill( (lightQBarPtKinFit-lightQBarPtRec )/lightQBarPtRec , weight);
+      hists_.find("lightQuarkPullPtKinFitRec" )->second->Fill( (lightQPtKinFit   -lightQPtRec    )/lightQPtRec    , weight);
+      // light q eta			      	
+      hists_.find("lightQuarkPullEtaKinFitRec")->second->Fill( (lightQBarEtaKinFit-lightQBarEtaRec)/lightQBarEtaRec, weight);
+      hists_.find("lightQuarkPullEtaKinFitRec")->second->Fill( (lightQEtaKinFit   -lightQEtaRec  )/lightQEtaRec   , weight);
+      // light q phi			      	
+      hists_.find("lightQuarkPullPhiKinFitRec")->second->Fill( (lightQBarPhiKinFit-lightQBarPhiRec)/lightQBarPhiRec, weight);
+      hists_.find("lightQuarkPullPhiKinFitRec")->second->Fill( (lightQPhiKinFit   -lightQPhiRec   )/lightQPhiRec   , weight);
+      // (ii) reconstructed vs parton truth
+      // light q pt
+      hists_.find("lightQuarkPullPtRecPartonTruth" )->second->Fill( (lightQBarPtRec-lightQBarPtPartonTruth)/lightQBarPtPartonTruth, weight);
+      hists_.find("lightQuarkPullPtRecPartonTruth" )->second->Fill( (lightQPtRec   -lightQPtPartonTruth   )/lightQPtPartonTruth   , weight);
+      // light q eta				   	
+      hists_.find("lightQuarkPullEtaRecPartonTruth")->second->Fill( (lightQBarEtaRec-lightQBarEtaPartonTruth)/lightQBarEtaPartonTruth, weight);
+      hists_.find("lightQuarkPullEtaRecPartonTruth")->second->Fill( (lightQEtaRec   -lightQEtaPartonTruth   )/lightQEtaPartonTruth   , weight);
+      // light q phi				   	
+      hists_.find("lightQuarkPullPhiRecPartonTruth")->second->Fill( (lightQBarPhiRec-lightQBarPhiPartonTruth)/lightQBarPhiPartonTruth, weight);
+      hists_.find("lightQuarkPullPhiRecPartonTruth")->second->Fill( (lightQPhiRec   -lightQPhiPartonTruth   )/lightQPhiPartonTruth   , weight);
+      // (iii) kin.fitted vs parton truth
+      // light q pt
+      hists_.find("lightQuarkPullPtKinFitPartonTruth" )->second->Fill( (lightQBarPtKinFit-lightQBarPtPartonTruth )/lightQBarPtPartonTruth, weight);
+      hists_.find("lightQuarkPullPtKinFitPartonTruth" )->second->Fill( (lightQPtKinFit   -lightQPtPartonTruth    )/lightQPtPartonTruth   , weight);
+      // light q eta				      
+      hists_.find("lightQuarkPullEtaKinFitPartonTruth")->second->Fill( (lightQBarEtaKinFit-lightQBarEtaPartonTruth)/lightQBarEtaPartonTruth, weight);
+      hists_.find("lightQuarkPullEtaKinFitPartonTruth")->second->Fill( (lightQEtaKinFit   -lightQEtaPartonTruth   )/lightQEtaPartonTruth   , weight);
+      // light q phi				      
+      hists_.find("lightQuarkPullPhiKinFitPartonTruth")->second->Fill( (lightQBarPhiKinFit-lightQBarPhiPartonTruth)/lightQBarPhiPartonTruth, weight);
+      hists_.find("lightQuarkPullPhiKinFitPartonTruth")->second->Fill( (lightQPhiKinFit   -lightQPhiPartonTruth   )/lightQPhiPartonTruth   , weight);
     }
   }
 }

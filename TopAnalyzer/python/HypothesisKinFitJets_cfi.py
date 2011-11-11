@@ -7,12 +7,8 @@ analyzeHypothesisKinFitJets = cms.EDAnalyzer("HypothesisKinFitJetsAnalyzer",
     srcB = cms.InputTag("selectedPatJets"),                                         
     ## analyzer specific configurables
     analyze   = cms.PSet(
-      ## consider only events with correct jet assignment?
-      ## judgement is done wrt. dR matching algorithm
-      corrPerm=cms.bool(False),
-      ## apply chi2 cut for events plotted
-      maxChi2=cms.double(10000)
-    )
+      ## no additional configurables needed in this case
+    )    
 )
 
 

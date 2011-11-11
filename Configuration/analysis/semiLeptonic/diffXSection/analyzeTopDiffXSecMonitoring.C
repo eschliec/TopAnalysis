@@ -4,10 +4,8 @@ void analyzeTopDiffXSecMonitoring(double luminosity = 1143, bool save = false, i
 				  TString dataFile= "/afs/naf.desy.de/group/cms/scratch/tophh/TOP2011/110819_AnalysisRun/analyzeDiffXData2011A_Muon_160404_167913_1fb.root"
 				  , const std::string decayChannel = "muon", bool withRatioPlot = true)
 {
-  // ============================
-  //  Set Root Style
-  // ============================
-		
+  // set root style
+	
   TStyle myStyle("HHStyle","HHStyle");
   setHHStyle(myStyle);
   TGaxis::SetMaxDigits(2);
@@ -15,45 +13,33 @@ void analyzeTopDiffXSecMonitoring(double luminosity = 1143, bool save = false, i
   gROOT->SetStyle("HHStyle");
   gROOT->ForceStyle();
 		
-  // ============================
-  //  Name Conventions
-  // ============================
-
+  //  ---
+  //     name conventions
+  //  ---
   // a) enumerator sample convention (as defined in basicFunctions.h)
-
-  //  0: kSig      1: kBkg      2: kZjets    3: kWjets
-  //  4: kQCD      5: kSTop     6: kDiBos    7: kData
-  //  8: kQCDEM1   9: kQCDEM2  10: kQCDEM3  11: kQCDBCE1  12: kQCDBCE2  13: kQCDBCE3  
-  // 14: kWW      15: kWZ      16: kZZ      
-  // 17: kSTops   18: kSATops  19: kSTopt   20: kSATopt   21: kSToptW   22: kSAToptW
-
+  /*0:*/  /*1:*/  /*2:*/    /*3:*/    /*4:*/   /*5:*/    /*6:*/  /*7:*/  /*8,  9,  10*/ /* 11   ,  12     ,   13:  */
+  // kSig  , kBkg  , kZjets  , kWjets  , kQCD   , kSTop   , kDiBos, kData , kWW, kWZ, kZZ, kSTops  , kSTopt  , kSToptW 
   // b) file name convention (implemented in basicFunctions.h)
-
   // "muonDiffXSec"+sampleName+GeneratorName+GeneratorTune+MCProductionCycle+systematicVariation+"PF.root"
-
-  // sampleName        = "Sig", "Bkg", Wjets", "Zjets", "WW", "WZ", "ZZ", "VV", "SingleTopSchannel", 
-  //                     "SingleTopTchannel", "SingleTopTWchannel", "QCD"
-  // GeneratorName     = "Mad", "Pythia6"
-  // GeneratorTune     = "Z2", "D6T"
-  // MCProductionCycle = "Summer11"
+  // sampleName = "Sig", "Bkg", Wjets", "Zjets", "WW", "WZ", "ZZ", "VV", "SingleTopSchannel", 
+  //              "SingleTopTchannel", "SingleTopTWchannel", "QCD"
+  // GeneratorName= "Mad", "Pythia6"
+  // GeneratorTune= "Z2", "D6T"
+  // MCProductionCycle= "Fall10"
 	
-  // ============================
-  //  Options
-  // ============================
-
+  //  ---
+  //     options
+  //  ---
   // a) options directly entered when calling function
   // luminosity: [/pb]
-
-  TString lumi = getTStringFromInt(roundToInt((luminosity), false));  
-
-  // save:    save plots?
+  TString lumi = getTStringFromInt(roundToInt((luminosity), false));
+  double lumiError = 0.045;  // relative luminosity error
+  // save: save plots?
   // verbose: set detail level of output 
-  //          0: no output 
-  //          1: std output
-  //          2: output for debugging
-
+  // 0: no output, 1: std output 2: output for debugging
   // b) options to be configured only once
   // get the .root files from the following folder:
+  //  TString inputFolder = "./diffXSecFromSignal/analysisRootFilesWithKinFit";
   TString inputFolder = "/afs/naf.desy.de/group/cms/scratch/tophh/"+inputFolderName;
   // see if its 2010 or 2011 data from luminosity
   TString dataSample="";
@@ -70,36 +56,24 @@ void analyzeTopDiffXSecMonitoring(double luminosity = 1143, bool save = false, i
   outputFileName+=dataSample+".root";
   // choose name of the output .pdf file
   TString pdfName="differentialXSecMonitoring"+lumi+"pb";
-
-  //   0: sysNo
-  //   1: sysLumiUp                  2: sysLumiDown                
-  //   3: sysPUUp                    4: sysPUDown                  
-  //   5: sysJESUp                   6: sysJESDown                 
-  //   7: sysJERUp                   8: sysJERDown                 
-  //   9: sysTrigEffSFNormUp        10: sysTrigEffSFNormDown        
-  //  11: sysTriggerEffSFShapeUpEta 12: sysTriggerEffSFShapeDownEta
-  //  13: sysTriggerEffSFShapeUpPt  14: sysTriggerEffSFShapeDownPt  
-  //  15: sysMuEffSFUp              16: sysMuEffSFDown 
-  //  17: sysBtagSFUp               18: sysBtagSFDown  
-  //  19: sysMisTagSFUp             20: sysMisTagSFDown  
-  //  21: sysTopScaleUp             22: sysTopScaleDown            
-  //  23: sysVBosonScaleUp          24: sysVBosonScaleDown          
-  //  25: sysSingleTopScaleUp       26: sysSingleTopScaleDown     
-  //  27: sysTopMatchUp             28: sysTopMatchDown            
-  //  29: sysVBosonMatchUp          30: sysVBosonMatchDown         
-  //  31: sysTopMassUp              32: sysTopMassDown            
-  //  33: sysQCDUp                  34: sysQCDDown                 
-  //  35: sysSTopUp                 36: sysSTopDown               
-  //  37: sysDiBosUp                38: sysDiBosDown              
-  //  39: sysShapeUp                40: sysShapeDown   
-  //  41: ENDOFSYSENUM
-
+  /* systematicVariation: which systematic shift do you want to make? from basicFunctions.h:
+     0:sysNo              1:sysLumiUp          2:sysLumiDown          3:sysJESUp      
+     4:sysJESDown         5:sysJERUp           6:sysJERDown           7:sysTopScaleUp 
+     8:sysTopScaleDown    9:sysVBosonScaleUp  10:sysVBosonScaleDown  11:sysTopMatchUp 
+     12:sysTopMatchDown  13:sysVBosonMatchUp  14:sysVBosonMatchDown  15:sysMuEffSFup  
+     16:sysMuEffSFdown   17:sysISRFSRup       18:sysISRFSRdown       19:sysPileUp    
+     20:sysQCDup         21:sysQCDdown        22:sysSTopUp           23:sysSTopDown  
+     24:sysBtagUp        25:sysBtagDown       26:sysShapeUp          27:sysShapeUp 
+     28:sysPUup          29:sysPUdown         30:sysflatTrigSF       31:sysTrigEffSFNormUp
+     32:sysTrigEffSFNormDown     33:sysTriggerEffSFShapeUpEta   34:sysTriggerEffSFShapeDownEta
+     35:sysTriggerEffSFShapeUpPt 36:sysTriggerEffSFShapeDownPt  37:sysMisTagSFup     38:sysMisTagSFdown     
+     39:sysDiBosUp       40:sysDiBosDown
+  */
   int systematicVariation=sysNo;
 
-  // ============================
+  //  ---
   //     choose plots
-  // ============================
-
+  //  ---
   // a) list plots you would like to see ("folder/plotName") - same as in .root files (for 1D and 2D)
 
   TString plots1D[ ] = { 
@@ -448,6 +422,9 @@ void analyzeTopDiffXSecMonitoring(double luminosity = 1143, bool save = false, i
   //    open our standard analysis files
   // ---
   std::map<unsigned int, TFile*> files_           = getStdTopAnalysisFiles(inputFolder, systematicVariation, dataFile, decayChannel);
+  std::map<unsigned int, TFile*> filesUncJESUp_   = getStdTopAnalysisFiles(inputFolder, sysJESUp,   dataFile, decayChannel);
+  std::map<unsigned int, TFile*> filesUncJESDown_ = getStdTopAnalysisFiles(inputFolder, sysJESDown, dataFile, decayChannel);
+	
   // ---
   //    loading histos
   // ---
@@ -462,8 +439,13 @@ void analyzeTopDiffXSecMonitoring(double luminosity = 1143, bool save = false, i
   // container for all histos (1D&2D)
   // example for acess: histo_["plotName"][sampleNr]
   std::map< TString, std::map <unsigned int, TH1F*> > histo_;
+  std::map< TString, std::map <unsigned int, TH1F*> > histoUncJESUp_;
+  std::map< TString, std::map <unsigned int, TH1F*> > histoUncJESDown_;
   std::map< TString, TH1F* > histoErrorBand_;
   std::map< TString, std::map <unsigned int, TH2F*> > histo2_;
+  std::map< TString, std::map <unsigned int, TH2F*> > histo2UncJESUp_;
+  std::map< TString, std::map <unsigned int, TH2F*> > histo2UncJESDown_;
+  std::map< TString, TH2F* > histo2ErrorBand_;
   // total # plots 
   int Nplots=0;
   // save all histos from plotList_ that exist in files_ into 
@@ -473,6 +455,9 @@ void analyzeTopDiffXSecMonitoring(double luminosity = 1143, bool save = false, i
   vecRedundantPartOfNameInData.push_back("_reweighted3BX");
   vecRedundantPartOfNameInData.push_back("_reweighted");
   getAllPlots( files_,           plotList_, histo_,           histo2_,           N1Dplots, Nplots, verbose, decayChannel, &vecRedundantPartOfNameInData);
+  getAllPlots( filesUncJESUp_,   plotList_, histoUncJESUp_,   histo2UncJESUp_,   N1Dplots, Nplots, verbose, decayChannel, &vecRedundantPartOfNameInData);
+  getAllPlots( filesUncJESDown_, plotList_, histoUncJESDown_, histo2UncJESDown_, N1Dplots, Nplots, verbose, decayChannel, &vecRedundantPartOfNameInData);
+	
   // ---
   //    lumiweighting for choosen luminosity
   // ---
@@ -480,7 +465,9 @@ void analyzeTopDiffXSecMonitoring(double luminosity = 1143, bool save = false, i
   // Additionally the mu eff SF is applied
   // NOTE: luminosity [/pb]
   scaleByLuminosity(plotList_, histo_,           histo2_,           N1Dplots, luminosity, verbose, systematicVariation, decayChannel);
-
+  scaleByLuminosity(plotList_, histoUncJESUp_,   histo2UncJESUp_,   N1Dplots, luminosity, verbose, sysJESUp,            decayChannel);
+  scaleByLuminosity(plotList_, histoUncJESDown_, histo2UncJESDown_, N1Dplots, luminosity, verbose, sysJESDown,          decayChannel);
+	
   // ---
   //    add single top channels and DiBoson contributions
   // ---
@@ -490,6 +477,8 @@ void analyzeTopDiffXSecMonitoring(double luminosity = 1143, bool save = false, i
   // reCreate: reCreate combined plots if they are already existing
   bool reCreate=false;
   AddSingleTopAndDiBoson(plotList_, histo_,           histo2_,           N1Dplots, verbose, reCreate, decayChannel);
+  AddSingleTopAndDiBoson(plotList_, histoUncJESUp_,   histo2UncJESUp_,   N1Dplots, verbose, reCreate, decayChannel);
+  AddSingleTopAndDiBoson(plotList_, histoUncJESDown_, histo2UncJESDown_, N1Dplots, verbose, reCreate, decayChannel);
 
   // ---
   //    configure histograms
@@ -522,14 +511,20 @@ void analyzeTopDiffXSecMonitoring(double luminosity = 1143, bool save = false, i
       if((plot<N1Dplots)&&(histo_.count(plotList_[plot])>0)&&(histo_[plotList_[plot]].count(sample)>0)){ 
 	// default
 	histogramStyle( *histo_[plotList_[plot]][sample],           sample, true);
+	histogramStyle( *histoUncJESUp_[plotList_[plot]][sample],   sample, true);
+	histogramStyle( *histoUncJESDown_[plotList_[plot]][sample], sample, true);
 	// special configurations
 	if(getStringEntry(plotList_[plot], 2)=="PartonJetDRall"){
 	  histo_[plotList_[plot]][sample]           -> SetNdivisions(816);
+	  histoUncJESUp_[plotList_[plot]][sample]   -> SetNdivisions(816);
+	  histoUncJESDown_[plotList_[plot]][sample] -> SetNdivisions(816);
 	}
       }
       // b) 2D
       if((plot>=N1Dplots)&&(histo2_.count(plotList_[plot])>0)&&(histo2_[plotList_[plot]].count(sample)>0)){
 	histStyle2D( *histo2_[plotList_[plot]][sample], sampleLabel(sample,decayChannel), getStringEntry(axisLabel_[plot],1), getStringEntry(axisLabel_[plot],2));
+ 	histStyle2D( *histo2UncJESUp_[plotList_[plot]][sample], sampleLabel(sample,decayChannel), getStringEntry(axisLabel_[plot],1), getStringEntry(axisLabel_[plot],2));
+      	histStyle2D( *histo2UncJESDown_[plotList_[plot]][sample], sampleLabel(sample,decayChannel), getStringEntry(axisLabel_[plot],1), getStringEntry(axisLabel_[plot],2));
       }
     }
   }
@@ -563,24 +558,24 @@ void analyzeTopDiffXSecMonitoring(double luminosity = 1143, bool save = false, i
     for(unsigned int step=0; step<selection_.size(); ++step){    
       // print label
       switch (step){
-          case 0 : std::cout << std::endl << " Event composition ---- pre-tagged, derived from: "+selection_[step]          << std::endl; break;
-          case 1 : std::cout << std::endl << " Event composition ---- after b-tagging, derived from: "+selection_[step]     << std::endl; break;
-          case 2 : std::cout << std::endl << " Event composition ---- after kinematic fit, derived from: "+selection_[step] << std::endl; break;
+          case 0 : std::cout << std::endl << "Event composition ---- pre-tagged, derived from: "+selection_[step]          << std::endl; break;
+          case 1 : std::cout << std::endl << "Event composition ---- after b-tagging, derived from: "+selection_[step]     << std::endl; break;
+          case 2 : std::cout << std::endl << "Event composition ---- after kinematic fit, derived from: "+selection_[step] << std::endl; break;
           default: break;
       }
       // all MC events
       double NAllMC=events_[selection_[step]][kSig]+events_[selection_[step]][MCBG];
       // print yield and composition
-      std::cout << " Events observed in data: " << events_[selection_[step]][kData] << std::endl;
-      std::cout << " Events expected from MC: " << NAllMC << std::endl << std::endl;
-      std::cout << " Expected event composition:"   << std::endl; 
-      std::cout << " ttbar SG:   " << std::setprecision(4) << std::fixed << events_[selection_[step]][kSig  ] / NAllMC << std::endl;
-      std::cout << " ttbar BG:   " << std::setprecision(4) << std::fixed << events_[selection_[step]][kBkg  ] / NAllMC << std::endl;
-      std::cout << " W + Jets:   " << std::setprecision(4) << std::fixed << events_[selection_[step]][kWjets] / NAllMC << std::endl; 
-      std::cout << " Z + Jets:   " << std::setprecision(4) << std::fixed << events_[selection_[step]][kZjets] / NAllMC << std::endl;
-      std::cout << " QCD:        " << std::setprecision(4) << std::fixed << events_[selection_[step]][kQCD  ] / NAllMC << std::endl;
-      std::cout << " Single Top: " << std::setprecision(4) << std::fixed << events_[selection_[step]][kSTop ] / NAllMC << std::endl;
-      std::cout << " DiBoson:    " << std::setprecision(4) << std::fixed << events_[selection_[step]][kDiBos] / NAllMC << std::endl;
+      std::cout << "events observed in data: " << events_[selection_[step]][kData] << std::endl;
+      std::cout << "events expected from MC: " << NAllMC << std::endl;
+      std::cout << "expected event composition:"   << std::endl; 
+      std::cout << "ttbar SG:   " << std::setprecision(4) << std::fixed << events_[selection_[step]][kSig  ] / NAllMC << std::endl;
+      std::cout << "ttbar BG:   " << std::setprecision(4) << std::fixed << events_[selection_[step]][kBkg  ] / NAllMC << std::endl;
+      std::cout << "W+jets:     " << std::setprecision(4) << std::fixed << events_[selection_[step]][kWjets] / NAllMC << std::endl; 
+      std::cout << "Z+jets:     " << std::setprecision(4) << std::fixed << events_[selection_[step]][kZjets] / NAllMC << std::endl;
+      std::cout << "QCD:        " << std::setprecision(4) << std::fixed << events_[selection_[step]][kQCD  ] / NAllMC << std::endl;
+      std::cout << "single top: " << std::setprecision(4) << std::fixed << events_[selection_[step]][kSTop ] / NAllMC << std::endl;
+      std::cout << "diboson:    " << std::setprecision(4) << std::fixed << events_[selection_[step]][kDiBos] / NAllMC << std::endl;
     }
   }
 	
@@ -597,24 +592,70 @@ void analyzeTopDiffXSecMonitoring(double luminosity = 1143, bool save = false, i
 	// equidistant binning
 	double reBinFactor = atof(((string)getStringEntry(axisLabel_[plot],4)).c_str());
 	if(reBinFactor>1){
-	  equalReBinTH1(reBinFactor, histo_, plotName, sample);
+	  equalReBinTH1(reBinFactor, histo_,           plotName, sample);
+	  equalReBinTH1(reBinFactor, histoUncJESUp_,   plotName, sample);
+	  equalReBinTH1(reBinFactor, histoUncJESDown_, plotName, sample);
 	}
       }
     }
   }
-
-  // ===============================================================
-  //  Errors for uncertainty bands from ttbar Xsec and luminosity
-  // ===============================================================
+  // ========================================================
+  //  Errors for uncertainty bands from JES and luminosity
+  // ========================================================
   
-  std::cout << std::endl << " Start calculating error bands for 1D plots .... ";
-  makeUncertaintyBands(histo_, histoErrorBand_, plotList_, N1Dplots);
-  std::cout << " .... Finished." << std::endl; 
+  std::cout << std::endl << " Start calculating error bands .... " << std::endl;
 
-  // ========================================================
-  //  Create Legends
-  // ========================================================
+  for(unsigned int plot=0; plot<plotList_.size(); ++plot)
+  {
+    TString plotName     = plotList_[plot];
 
+    // Initialize and reset histograms
+
+    TH1F* histoSumRef  = (TH1F*)histo_[plotName][kSig]->Clone();
+    TH1F* histoSumUp   = (TH1F*)histo_[plotName][kSig]->Clone();
+    TH1F* histoSumDown = (TH1F*)histo_[plotName][kSig]->Clone();
+    TH1F* histoError   = (TH1F*)histo_[plotName][kSig]->Clone();
+
+    histoSumRef    -> Reset("ICESM");
+    histoSumUp     -> Reset("ICESM");
+    histoSumDown   -> Reset("ICESM");
+    histoError     -> Reset("ICESM");
+
+    // Integral over all samples before accessing the differences
+
+    for(unsigned int sample=kSig; sample<kData; ++sample)
+    {
+      if((plot<N1Dplots)&&(plotExists(histo_, plotName, sample)))
+      {
+	histoSumRef  -> Add(histo_[plotName][sample]);
+	histoSumUp   -> Add(histoUncJESUp_[plotName][sample]);
+	histoSumDown -> Add(histoUncJESDown_[plotName][sample]);
+      }
+    }
+
+    // Compare summed histograms, symmetrize deviations and store relative deviation to error histogram after adding constant contributions
+        
+    for (int bin = 0; bin < histoSumRef->GetNbinsX(); bin++)
+    {
+      double diffUp   = fabs(histoSumUp->GetBinContent(bin+1)   - histoSumRef->GetBinContent(bin+1));
+      double diffDown = fabs(histoSumDown->GetBinContent(bin+1) - histoSumRef->GetBinContent(bin+1));
+      double maxDiff  = (diffUp > diffDown) ? diffUp : diffDown; // symmetrize error
+
+      maxDiff = (histoSumRef->GetBinContent(bin+1) > 0) ? (maxDiff/histoSumRef->GetBinContent(bin+1)) : 0; 
+      maxDiff = sqrt(maxDiff*maxDiff+lumiError*lumiError); // add constant error for luminosity (defined at beginning of macro)
+      histoError -> SetBinContent(bin+1,maxDiff);
+      
+      histoSumRef->SetBinError(bin+1,maxDiff*histoSumRef->GetBinContent(bin+1));
+    }
+
+    histoErrorBand_[plotName] = (TH1F*)histoSumRef->Clone();
+  }
+
+  std::cout << " .... Finished calculation of error bands." << std::endl;  
+
+  // ---
+  //    create legends
+  // ---
   unsigned int Nlegends=0; 
   TLegend *leg  = new TLegend(); 
   TLegend *leg0 = new TLegend(0.05, 0.15, 1.05, 0.9);
@@ -787,7 +828,6 @@ void analyzeTopDiffXSecMonitoring(double luminosity = 1143, bool save = false, i
 	      if(plotList_[plot].Contains("Tagged")) label = "Tagged";
 	      if(plotList_[plot].Contains("PreSel")) label = "Pre-Selected";
 	      if(plotList_[plot].Contains("Njets1")) label = "#geq 1 Jet";
-	      if(plotList_[plot].Contains("KinFit")) label = "";
 	      DrawLabel(label, 1.0 - gStyle->GetPadRightMargin() - gStyle->GetTickLength() - 0.2, 1.0 - gStyle->GetPadTopMargin() - gStyle->GetTickLength() - 0.05,
 		 	       1.0 - gStyle->GetPadRightMargin() - gStyle->GetTickLength(),       1.0 - gStyle->GetPadTopMargin() - gStyle->GetTickLength(), 12    );
 	      leg->SetX1NDC(1.0 - gStyle->GetPadRightMargin() - gStyle->GetTickLength() - 0.20);
@@ -867,6 +907,4 @@ void analyzeTopDiffXSecMonitoring(double luminosity = 1143, bool save = false, i
       saveToRootFile(outputFileName, plotCanvas_[idx], true, verbose, "monitoring");
     }
   }
-  // delete pointer
-  closeStdTopAnalysisFiles(files_);
 }

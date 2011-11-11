@@ -32,8 +32,6 @@ MuonQuality::book()
   hists_["hcalEn"   ] = new TH1F( "hcalEn"  ,  "hcalEn"   ,   40,     0. ,  10.  );
   // relative isolation (tracker and calo combined)
   hists_["relIso"   ] = new TH1F( "relIso"  ,  "relIso"   ,   50,     0. ,  1.0  );
-  // absolute isolation (tracker and calo combined)
-  hists_["absIso"   ] = new TH1F( "absIso"  ,  "absIso"   ,  100,     0. ,  10.  );
   // is GlobalMuonPromptTight?
   hists_["isGlobalMuonPromptTight"] = new TH1F("isGlobalMuonPromptTight","isGlobalMuonPromptTight"  ,   2,     0. ,  2.  ); 
   // is TrackerMuon?
@@ -117,8 +115,6 @@ MuonQuality::book(edm::Service<TFileService>& fs)
   hists_["hcalEn"   ] = fs->make<TH1F>( "hcalEn"  ,  "hcalEn"   ,   40,    0.,  10.  );
   // relative isolation (tracker and calo combined)
   hists_["relIso"   ] = fs->make<TH1F>( "relIso"  ,  "relIso"   ,   50,    0.,  1.0  );
-  // absolute isolation (tracker and calo combined)
-  hists_["absIso"   ] = fs->make<TH1D>( "absIso"  ,  "absIso"   ,  100,     0. , 10. );
   // is GlobalMuonPromptTight?
   hists_["isGlobalMuonPromptTight"] = fs->make<TH1F>("isGlobalMuonPromptTight" , "isGlobalMuonPromptTight" ,   2,     0. ,  2.  ); 
   // is TrackerMuon?
@@ -213,9 +209,6 @@ MuonQuality::fill(const edm::View<pat::Muon>& muons, const double& weight)
       // PF relIso
       hists_.find("relIso")->second->Fill( (muon->chargedHadronIso() + muon->neutralHadronIso() + 
 					    muon->photonIso()) / muon->pt() , weight );
-      // PF absIso
-      hists_.find("absIso")->second->Fill( (muon->chargedHadronIso() + muon->neutralHadronIso() + 
-					    muon->photonIso())              , weight );
       // is GlobalMuonPromptTight?
       hists_.find("isGlobalMuonPromptTight")->second->Fill(muon->isGood("GlobalMuonPromptTight") , weight );
       // is TrackerMuon?

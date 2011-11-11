@@ -113,7 +113,7 @@ VertexAnalyzer::analyze(const Event& evt, const EventSetup&)
     double chi2 = vrtx->chi2();
     double nchi2= chi2/ndof;
 
-    if(!isFake && ndof>=ndof_ && abs(z)<=z_ && rho<=rho_){
+    if(!isFake && ndof>ndof_ && abs(z)<z_ && rho<rho_){
       i++;
 
       posX_  ->Fill(vrtx->x(), weight);

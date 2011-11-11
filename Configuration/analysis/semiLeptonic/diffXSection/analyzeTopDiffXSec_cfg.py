@@ -204,9 +204,7 @@ process.source = cms.Source("PoolSource",
     #'/store/user/dammann/TTJets_TuneD6T_7TeV-madgraph-tauola/Fall10-PAT-v2/43e23e1dee19d970b0c8344e9053309f/mcpat_21_1_JdU.root'
     #'/store/user/mgoerner/QCD_Pt-20_MuEnrichedPt-15_TuneZ2_7TeV-pythia6/PAT_FALL10HH2/148435cd71339b79cc0025730c13472a/fall10MC_9_1_mFa.root'
     #'/store/user/mgoerner/Mu/PAT_Nov4RerecoL1IncludedUHH/e37a6f43ad6b01bd8486b714dc367330/DataNov4RerecoL1included_196_1_jzY.root'
-    #'/store/mc/Summer11/TTJets_TuneZ2_7TeV-madgraph-tauola/AODSIM/PU_S4_START42_V11-v1/0000/FEEE3638-F297-E011-AAF8-00304867BEC0.root'
     )
-
 )
 
 ## automatically load the correct (AOD) .root file list for each MC sample
@@ -477,10 +475,6 @@ process.load("TopAnalysis.TopFilter.sequences.genSelection_cff")
 ## at ttGenEventLevel
 from TopAnalysis.TopFilter.filters.SemiLeptonicGenPhaseSpaceFilter_cfi import filterSemiLeptonicGenPhaseSpace
 process.filterGenPhaseSpace = filterSemiLeptonicGenPhaseSpace.clone(src = "genEvt")
-
-## Generator kinematics selection (https://hypernews.cern.ch/HyperNews/CMS/get/physics-validation/1489.html)
-process.load("GeneratorInterface.GenFilters.TotalKinematicsFilter_cfi")
-process.totalKinematicsFilterDefault = process.totalKinematicsFilter.clone(tolerance = 0.5)
 
 ## ---
 ## including analysis tools
@@ -899,8 +893,8 @@ process.load("TopQuarkAnalysis.TopEventProducers.producers.TtSemiLepEvtFilter_cf
 process.filterRecoKinFit  = process.ttSemiLepEventFilter.clone( cut = cms.string("isHypoValid('kKinFit')"  ) )
 process.filterMatchKinFit = process.ttSemiLepEventFilter.clone( cut = cms.string("isHypoValid('kGenMatch')") )
 
-## configure top reconstruction analyzers & define PSets
-## A) for top reconstruction analyzer
+## ## configure top reconstruction analyzers & define PSets
+## a) for top reconstruction analyzer
 process.load("TopAnalysis.TopAnalyzer.TopKinematics_cfi")
 ## 1)  plots built from event hypothesis kinFit after reco selection
 recoKinFit        = cms.PSet(hypoKey=cms.string('kKinFit'  ), lepton=cms.string(decayChannel), useTree=cms.bool(True),
@@ -933,51 +927,12 @@ hypoKinFit = cms.PSet(hypoKey = cms.string("kKinFit"),
                       wantTree = cms.bool(True),
                       maxNJets = process.kinFitTtSemiLepEventHypothesis.maxNJets)
 process.analyzeHypoKinFit = process.analyzeHypothesisKinFit.clone(analyze=hypoKinFit)
-
-
-## B object reconstruction quality
-# 1) Psets:
-# a) all
-analyzeAll = cms.PSet( corrPerm=cms.bool(False), maxChi2=cms.double(10000) )
-# b) correct permutation
-analyzeCorrect = cms.PSet( corrPerm=cms.bool(True), maxChi2=cms.double(10000) )
-# c) chi2<5
-analyzeChi5  = cms.PSet( corrPerm=cms.bool(False), maxChi2=cms.double(5)  )
-# d) chi2<10
-analyzeChi10 = cms.PSet( corrPerm=cms.bool(False), maxChi2=cms.double(10) )
-# e) chi2<15
-analyzeChi15 = cms.PSet( corrPerm=cms.bool(False), maxChi2=cms.double(15) )
-# f) chi2<30
-analyzeChi30 = cms.PSet( corrPerm=cms.bool(False), maxChi2=cms.double(30) )
-# g) chi2<50
-analyzeChi50 = cms.PSet( corrPerm=cms.bool(False), maxChi2=cms.double(50) )
-# 2) lepton
-process.load("TopAnalysis.TopAnalyzer.HypothesisKinFitLepton_cfi")
-process.analyzeHypoKinFitLepton      = process.analyzeHypothesisKinFitLepton.clone(srcA = "ttSemiLepEvent", srcB = "tightMuons", analyze=analyzeAll    )
-process.analyzeHypoKinFitLeptonCorr  = process.analyzeHypothesisKinFitLepton.clone(srcA = "ttSemiLepEvent", srcB = "tightMuons", analyze=analyzeCorrect)
-process.analyzeHypoKinFitLeptonChi5  = process.analyzeHypothesisKinFitLepton.clone(srcA = "ttSemiLepEvent", srcB = "tightMuons", analyze=analyzeChi5   )
-process.analyzeHypoKinFitLeptonChi10 = process.analyzeHypothesisKinFitLepton.clone(srcA = "ttSemiLepEvent", srcB = "tightMuons", analyze=analyzeChi10  )
-process.analyzeHypoKinFitLeptonChi15 = process.analyzeHypothesisKinFitLepton.clone(srcA = "ttSemiLepEvent", srcB = "tightMuons", analyze=analyzeChi15   )
-process.analyzeHypoKinFitLeptonChi30 = process.analyzeHypothesisKinFitLepton.clone(srcA = "ttSemiLepEvent", srcB = "tightMuons", analyze=analyzeChi30  )
-process.analyzeHypoKinFitLeptonChi50 = process.analyzeHypothesisKinFitLepton.clone(srcA = "ttSemiLepEvent", srcB = "tightMuons", analyze=analyzeChi50  )
-# 3) jets
-process.load("TopAnalysis.TopAnalyzer.HypothesisKinFitJets_cfi")
-process.analyzeHypoKinFitJets      = process.analyzeHypothesisKinFitJets.clone(srcA = "ttSemiLepEvent", srcB = "tightLeadingPFJets", analyze=analyzeAll    )
-process.analyzeHypoKinFitJetsCorr  = process.analyzeHypothesisKinFitJets.clone(srcA = "ttSemiLepEvent", srcB = "tightLeadingPFJets", analyze=analyzeCorrect)
-process.analyzeHypoKinFitJetsChi5  = process.analyzeHypothesisKinFitJets.clone(srcA = "ttSemiLepEvent", srcB = "tightLeadingPFJets", analyze=analyzeChi5   )
-process.analyzeHypoKinFitJetsChi10 = process.analyzeHypothesisKinFitJets.clone(srcA = "ttSemiLepEvent", srcB = "tightLeadingPFJets", analyze=analyzeChi10  )
-process.analyzeHypoKinFitJetsChi15 = process.analyzeHypothesisKinFitJets.clone(srcA = "ttSemiLepEvent", srcB = "tightLeadingPFJets", analyze=analyzeChi15  )
-process.analyzeHypoKinFitJetsChi30 = process.analyzeHypothesisKinFitJets.clone(srcA = "ttSemiLepEvent", srcB = "tightLeadingPFJets", analyze=analyzeChi30  )
-process.analyzeHypoKinFitJetsChi50 = process.analyzeHypothesisKinFitJets.clone(srcA = "ttSemiLepEvent", srcB = "tightLeadingPFJets", analyze=analyzeChi50  )
-# 4) neutrino/MET
-process.load("TopAnalysis.TopAnalyzer.HypothesisKinFitMET_cfi" )
-process.analyzeHypoKinFitMET      = process.analyzeHypothesisKinFitMET.clone(srcA = "ttSemiLepEvent", srcB = "patMETs", analyze=analyzeAll    )
-process.analyzeHypoKinFitMETCorr  = process.analyzeHypothesisKinFitMET.clone(srcA = "ttSemiLepEvent", srcB = "patMETs", analyze=analyzeCorrect)
-process.analyzeHypoKinFitMETChi5  = process.analyzeHypothesisKinFitMET.clone(srcA = "ttSemiLepEvent", srcB = "patMETs", analyze=analyzeChi5   )
-process.analyzeHypoKinFitMETChi10 = process.analyzeHypothesisKinFitMET.clone(srcA = "ttSemiLepEvent", srcB = "patMETs", analyze=analyzeChi10  )
-process.analyzeHypoKinFitMETChi15 = process.analyzeHypothesisKinFitMET.clone(srcA = "ttSemiLepEvent", srcB = "patMETs", analyze=analyzeChi15  )
-process.analyzeHypoKinFitMETChi30 = process.analyzeHypothesisKinFitMET.clone(srcA = "ttSemiLepEvent", srcB = "patMETs", analyze=analyzeChi30  )
-process.analyzeHypoKinFitMETChi50 = process.analyzeHypothesisKinFitMET.clone(srcA = "ttSemiLepEvent", srcB = "patMETs", analyze=analyzeChi50  )
+#process.load("TopAnalysis.TopAnalyzer.HypothesisKinFitMET_cfi" )
+#process.analyzeHypoKinFitMET  = process.analyzeHypothesisKinFitMET.clone (srcA = "ttSemiLepEvent", srcB = "patMETs"         )
+#process.load("TopAnalysis.TopAnalyzer.HypothesisKinFitJets_cfi")
+#process.analyzeHypoKinFitJets = process.analyzeHypothesisKinFitJets.clone(srcA = "ttSemiLepEvent", srcB = "tightLeadingPFJets")
+#process.load("TopAnalysis.TopAnalyzer.HypothesisKinFitMuon_cfi")
+#process.analyzeHypoKinFitMuon = process.analyzeHypothesisKinFitMuon.clone(srcA = "ttSemiLepEvent", srcB = "tightMuons"      )
 
 ## ---
 ##    collect KinFit Analyzers depending on sample processed
@@ -996,27 +951,6 @@ if(applyKinFit==True):
                                              process.analyzeTopRecoKinematicsKinFitTopAntitop+
                                              process.analyzeTopRecoKinematicsGenMatch        +
                                              process.analyzeHypoKinFit                       +
-                                             process.analyzeHypoKinFitLepton                 +
-                                             process.analyzeHypoKinFitLeptonCorr             +
-                                             process.analyzeHypoKinFitLeptonChi5             +
-                                             process.analyzeHypoKinFitLeptonChi10            +
-                                             process.analyzeHypoKinFitLeptonChi15            +
-                                             process.analyzeHypoKinFitLeptonChi30            +
-                                             process.analyzeHypoKinFitLeptonChi50            +
-                                             process.analyzeHypoKinFitMET                    +
-                                             process.analyzeHypoKinFitMETCorr                +
-                                             process.analyzeHypoKinFitMETChi5                +
-                                             process.analyzeHypoKinFitMETChi10               +
-                                             process.analyzeHypoKinFitMETChi15               +
-                                             process.analyzeHypoKinFitMETChi30               +
-                                             process.analyzeHypoKinFitMETChi50               +
-                                             process.analyzeHypoKinFitJets                   +
-                                             process.analyzeHypoKinFitJetsCorr               +
-                                             process.analyzeHypoKinFitJetsChi5               +
-                                             process.analyzeHypoKinFitJetsChi10              +
-                                             process.analyzeHypoKinFitJetsChi15              +
-                                             process.analyzeHypoKinFitJetsChi30              +
-                                             process.analyzeHypoKinFitJetsChi50              +
                                              process.filterMatchKinFit
                                              )
             process.kinFitGen           = cms.Sequence(process.analyzeTopPartonLevelKinematics          )
@@ -1117,10 +1051,10 @@ process.load("TopAnalysis.TopUtils.EventWeightDileptonModelVariation_cfi")
 #process.eventWeightDileptonModelVariation.ttGenEvent=cms.InputTag('genEvt')
 process.eventWeightDileptonModelVariation.ttGenEvent = cms.InputTag('genEvt')
 process.eventWeightDileptonModelVariation.weightVariable = cms.string('ttbarmass') #valid values: toppt, topeta, ttbarmass
-process.eventWeightDileptonModelVariation.slope = cms.double(0.03)
-process.eventWeightDileptonModelVariation.weight1x = cms.double(350)  #position where weight is 1
+process.eventWeightDileptonModelVariation.slope = cms.double(0)
+process.eventWeightDileptonModelVariation.weight1x = cms.double(600)  #position where weight is 1
 process.eventWeightDileptonModelVariation.minWeight = cms.double(0.1) #low cut-off, at least 0.1 event weight
-process.eventWeightDileptonModelVariation.maxWeight = cms.double(100)  #high cut-off, at most 2 event weight
+process.eventWeightDileptonModelVariation.maxWeight = cms.double(2)  #high cut-off, at most 2 event weight
 process.eventWeightDileptonModelVariation.landauMPV = cms.double(420)
 process.eventWeightDileptonModelVariation.landauSigma = cms.double(34)
 if(sysDistort=='up'):
@@ -1584,7 +1518,8 @@ if(runningOnData=="MC" and applyKinFit==True and additionalEventWeights):
 ##    run the final sequences
 ## ---
 ## standard sequence for cross section analyis and detailed cut monitoring
-process.p1 = cms.Path(## gen event selection (decay channel) and the trigger selection (hltFilter)
+process.p1 = cms.Path(
+                      ## gen event selection (decay channel) and the trigger selection (hltFilter)
                       process.filterSequence                        *
                       ## PV event selection
                       process.PVSelection                           *
@@ -1610,7 +1545,7 @@ process.p1 = cms.Path(## gen event selection (decay channel) and the trigger sel
                       process.jetSelection                          *
                       ## monitoring before b-tagging
                       process.monitorKinematicsBeforeBtagging       *
-                      process.PUControlDistributionsBeforeBtagging  *                      
+                      process.PUControlDistributionsBeforeBtagging  *
                       ## b-tagging
                       process.btagSelection                         *
                       ## create PU event weights
@@ -1661,8 +1596,7 @@ process.p2 = cms.Path(## gen event selection (decay channel) and the trigger sel
 ## no phase space cuts
 if(runningOnData=="MC"):
     print "running on Monte Carlo, gen-plots produced"
-    process.p3 = cms.Path(## generator kinematics (check E-p conservation on gen level)
-                          process.totalKinematicsFilterDefault          *
+    process.p3 = cms.Path(
                           ## gen event selection: semileptonic (muon & tau->lepton)
                           ## tau->Mu if eventFilter=='background only' and
                           ## process.ttSemiLeptonicFilter.invert = True
@@ -1692,7 +1626,8 @@ else:
 ## std analysis with generator objects as input for efficiency determination
 ## phase space cuts for muon and jets
 if(runningOnData=="MC"):
-    process.s4 = cms.Sequence(## introduce some collections
+    process.s4 = cms.Sequence(
+                              ## introduce some collections
                               process.isolatedGenLeptons                    *
                               process.semiLeptGenCollections                *
                               ## create PU event weights
@@ -1711,8 +1646,7 @@ if(runningOnData=="MC"):
                               ## investigate top reconstruction
                               process.kinFitGenPhaseSpace
                               )
-    process.p4 = cms.Path(## generator kinematics (check E-p conservation on gen level)
-                          process.totalKinematicsFilterDefault           *
+    process.p4 = cms.Path(
                           ## gen event selection: semileptonic (muon & tau->lepton)
                           ## tau->Mu if eventFilter=='background only' and
                           ## process.ttSemiLeptonicFilter.invert = True
@@ -1839,7 +1773,6 @@ if(pfToPAT):
         'runOnAOD': True,
         'switchOffEmbedding': False,
         'addResolutions': True,
-        'resolutionsVersion': 'summer11',
         'runOnOLDcfg': True,
         'cutsMuon': 'pt > 10. & abs(eta) < 2.5',
         'cutsElec': 'et > 15. & abs(eta) < 2.5',
@@ -1893,10 +1826,7 @@ if(pfToPAT):
         #massSearchReplaceAnyInputTag(getattr(process,path), 'selectedPatJetsAK5PF', 'selectedPatJets')        
         # run trigger at the beginning to save a lot of time
         getattr(process,path).insert(0,process.hltFilter)
-        ## generator kinematics (check E-p conservation on gen level)
-        if(runningOnData=="MC"):
-            getattr(process,path).insert(0,process.totalKinematicsFilterDefault)
- 
+
 ## change decay subset to parton level (ME)
 #process.decaySubset.fillMode = cms.string("kME")
 

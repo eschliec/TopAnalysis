@@ -1026,7 +1026,7 @@ TopKinematics::fill(const TtSemiLeptonicEvent& tops, const double& weight)
 	    // 8: wrong jet chosen (only valid if kinFitTtSemiLepEventHypothesis.maxNJets>4)
 	    // e.g. took the wrong 4 out of 5 jets 
 	    else{
-	      if(assignment<0) assignment=8;
+	      if(assignment==-10) assignment=8;
 	    }
 	    break;
 	  }

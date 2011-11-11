@@ -6,9 +6,7 @@ HypothesisKinFitMET::HypothesisKinFitMET()
 }
 
 /// default constructor for full fw
-HypothesisKinFitMET::HypothesisKinFitMET(const edm::ParameterSet& cfg) :
-  corrPerm_( cfg.getParameter<bool>   ("corrPerm") ),
-  maxChi2_ ( cfg.getParameter<double> ("maxChi2" ) )
+HypothesisKinFitMET::HypothesisKinFitMET(const edm::ParameterSet& cfg)
 {
 }
 
@@ -62,61 +60,37 @@ HypothesisKinFitMET::fill(const TtSemiLeptonicEvent& tops, const edm::View<pat::
 {
   // make sure to have a valid hypothesis on reconstruction level
   if( tops.isHypoValid("kKinFit") ){
-    //q get requested permutation 
-    bool permutation=true;
-    if(corrPerm_){
-      permutation=false;
-      // if jet parton match exists:
-      if(tops.isHypoValid("kGenMatch")){
-	// indices for all quarks from Kinfit Hypothesis and genmatch
-	int lepBIndex         = tops.jetLeptonCombination("kKinFit"  )[TtSemiLepEvtPartons::LepB     ];
-	int hadBIndex         = tops.jetLeptonCombination("kKinFit"  )[TtSemiLepEvtPartons::HadB     ];
-	int lightQIndex       = tops.jetLeptonCombination("kKinFit"  )[TtSemiLepEvtPartons::LightQ   ];
-	int lightQBarIndex    = tops.jetLeptonCombination("kKinFit"  )[TtSemiLepEvtPartons::LightQBar];
-	int lepBIndexGen      = tops.jetLeptonCombination("kGenMatch")[TtSemiLepEvtPartons::LepB     ];
-	int hadBIndexGen      = tops.jetLeptonCombination("kGenMatch")[TtSemiLepEvtPartons::HadB     ];
-	int lightQIndexGen    = tops.jetLeptonCombination("kGenMatch")[TtSemiLepEvtPartons::LightQ   ];
-	int lightQBarIndexGen = tops.jetLeptonCombination("kGenMatch")[TtSemiLepEvtPartons::LightQBar];
-	// check for correct permutation
-	if((lepBIndex==lepBIndexGen)&&(hadBIndex==hadBIndexGen)&&
-	   (((lightQIndex==lightQIndexGen   )&&(lightQBarIndex==lightQBarIndexGen))||
-	    ((lightQIndex==lightQBarIndexGen)&&(lightQBarIndex==lightQIndexGen   )))) permutation=true;
-      }
-    }
     /** 
 	Fill the Pull Distributions (Relative to the Reco Input)
     **/
-    // check chi2 and permutation requirement
-    if(permutation&&tops.fitChi2()<maxChi2_){
-      // make sure the met index is in the range of the met collection
-      if( 0 < (int)mets.size() ){
-	// a) get values (parton truth, reconstruction, kinematic fit)
-	// neutrino pt
-	double neutrinoPtPartonTruth = tops.singleNeutrino()->pt();
-	double neutrinoPtRec    = mets[0].pt();
-	double neutrinoPtKinFit    = tops.singleNeutrino("kKinFit")->pt();
-	// neutrino eta
-	double neutrinoEtaPartonTruth = tops.singleNeutrino()->eta();
-	double neutrinoEtaRec    = mets[0].eta();
-	double neutrinoEtaKinFit    = tops.singleNeutrino("kKinFit")->eta();
-	// neutrino phi
-	double neutrinoPhiPartonTruth = tops.singleNeutrino()->phi();
-	double neutrinoPhiRec    = mets[0].phi();
-	double neutrinoPhiKinFit    = tops.singleNeutrino("kKinFit")->phi();
-	// b) fill plots
-	// (i) reconstructed vs kin.fitted
-	hists_.find("neutrinoPullPtKinFitRec"   )->second->Fill( (neutrinoPtKinFit- neutrinoPtRec )/neutrinoPtRec, weight);
-	hists_.find("neutrinoPullEtaKinFitRec"  )->second->Fill( (neutrinoEtaKinFit-neutrinoEtaRec)/neutrinoPtRec, weight);
-	hists_.find("neutrinoPullPhiKinFitRec"  )->second->Fill( (neutrinoPhiKinFit-neutrinoEtaRec)/neutrinoPtRec, weight);
-	// (ii) reconstructed vs parton truth
-	hists_.find("neutrinoPullPtRecPartonTruth" )->second->Fill( (neutrinoPtRec -neutrinoPtPartonTruth )/neutrinoPtPartonTruth , weight);
-	hists_.find("neutrinoPullEtaRecPartonTruth")->second->Fill( (neutrinoEtaRec-neutrinoEtaPartonTruth)/neutrinoEtaPartonTruth, weight);
-	hists_.find("neutrinoPullPhiRecPartonTruth")->second->Fill( (neutrinoPhiRec-neutrinoPhiPartonTruth)/neutrinoPhiPartonTruth, weight);
-	// (iii) kin.fitted vs parton truth
-	hists_.find("neutrinoPullPtKinFitPartonTruth" )->second->Fill( (neutrinoPtKinFit- neutrinoPtPartonTruth )/neutrinoPtPartonTruth , weight);
-	hists_.find("neutrinoPullEtaKinFitPartonTruth")->second->Fill( (neutrinoEtaKinFit-neutrinoEtaPartonTruth)/neutrinoEtaPartonTruth, weight);
-	hists_.find("neutrinoPullPhiKinFitPartonTruth")->second->Fill( (neutrinoPhiKinFit-neutrinoPhiPartonTruth)/neutrinoPhiPartonTruth, weight);
-      }
+    // make sure the met index is in the range of the met collection
+    if( 0 < (int)mets.size() ){
+      // a) get values (parton truth, reconstruction, kinematic fit)
+      // neutrino pt
+      double neutrinoPtPartonTruth = tops.singleNeutrino()->pt();
+      double neutrinoPtRec    = mets[0].pt();
+      double neutrinoPtKinFit    = tops.singleNeutrino("kKinFit")->pt();
+      // neutrino eta
+      double neutrinoEtaPartonTruth = tops.singleNeutrino()->eta();
+      double neutrinoEtaRec    = mets[0].eta();
+      double neutrinoEtaKinFit    = tops.singleNeutrino("kKinFit")->eta();
+      // neutrino phi
+      double neutrinoPhiPartonTruth = tops.singleNeutrino()->phi();
+      double neutrinoPhiRec    = mets[0].phi();
+      double neutrinoPhiKinFit    = tops.singleNeutrino("kKinFit")->phi();
+      // b) fill plots
+      // (i) reconstructed vs kin.fitted
+      hists_.find("neutrinoPullPtKinFitRec"   )->second->Fill( (neutrinoPtKinFit- neutrinoPtRec )/neutrinoPtRec, weight);
+      hists_.find("neutrinoPullEtaKinFitRec"  )->second->Fill( (neutrinoEtaKinFit-neutrinoEtaRec)/neutrinoPtRec, weight);
+      hists_.find("neutrinoPullPhiKinFitRec"  )->second->Fill( (neutrinoPhiKinFit-neutrinoEtaRec)/neutrinoPtRec, weight);
+      // (ii) reconstructed vs parton truth
+      hists_.find("neutrinoPullPtRecPartonTruth" )->second->Fill( (neutrinoPtRec -neutrinoPtPartonTruth )/neutrinoPtPartonTruth , weight);
+      hists_.find("neutrinoPullEtaRecPartonTruth")->second->Fill( (neutrinoEtaRec-neutrinoEtaPartonTruth)/neutrinoEtaPartonTruth, weight);
+      hists_.find("neutrinoPullPhiRecPartonTruth")->second->Fill( (neutrinoPhiRec-neutrinoPhiPartonTruth)/neutrinoPhiPartonTruth, weight);
+      // (iii) kin.fitted vs parton truth
+      hists_.find("neutrinoPullPtKinFitPartonTruth" )->second->Fill( (neutrinoPtKinFit- neutrinoPtPartonTruth )/neutrinoPtPartonTruth , weight);
+      hists_.find("neutrinoPullEtaKinFitPartonTruth")->second->Fill( (neutrinoEtaKinFit-neutrinoEtaPartonTruth)/neutrinoEtaPartonTruth, weight);
+      hists_.find("neutrinoPullPhiKinFitPartonTruth")->second->Fill( (neutrinoPhiKinFit-neutrinoPhiPartonTruth)/neutrinoPhiPartonTruth, weight);
     }
   }
 } 

@@ -76,7 +76,7 @@ class PredXSec {
 public:
 
   PredXSec(const TString& label, RooRealVar& xsec_var, RooRealVar& mass_var, RooRealVar& alpha_var,
-	   const TF1* xsec_func, const std::vector<TF1*>* unc_funcs, TFile& alpha_funcFile);
+	   const TF1* xsec_func, const std::vector<TF1*>* unc_funcs, const TString& alpha_funcFileName);
 
 public:
 
@@ -92,6 +92,8 @@ private:
   const LinearDependence relUncPdf;
   const LinearDependence relUncScaleUp;
   const LinearDependence relUncScaleDown;
+
+  TFile alpha_funcFile;
 
   const QuadraticDependence alpha_p0;
   const QuadraticDependence alpha_p1;
@@ -120,7 +122,7 @@ public:
 };
 
 PredXSec::PredXSec(const TString& label, RooRealVar& xsec_var, RooRealVar& mass_var, RooRealVar& alpha_var,
-		   const TF1* xsec_func, const std::vector<TF1*>* unc_funcs, TFile& alpha_funcFile):
+		   const TF1* xsec_func, const std::vector<TF1*>* unc_funcs, const TString& alpha_funcFileName):
   name(label),
   p0(label+"_p0", label+"_p0", xsec_func->GetParameter(0)),
   p1(label+"_p1", label+"_p1", xsec_func->GetParameter(1)),
@@ -129,6 +131,7 @@ PredXSec::PredXSec(const TString& label, RooRealVar& xsec_var, RooRealVar& mass_
   relUncPdf      (label+"_relUncPdf"      , unc_funcs[1].at(0), mass_var),
   relUncScaleUp  (label+"_relUncScaleUp"  , unc_funcs[0].at(0), mass_var),
   relUncScaleDown(label+"_relUncScaleDown", unc_funcs[0].at(1), mass_var),
+  alpha_funcFile(alpha_funcFileName, "READ"),
   alpha_p0(label+"_alpha_p0", ((TGraph*)alpha_funcFile.Get("graph_p0"))->GetFunction("pol2"), mass_var),
   alpha_p1(label+"_alpha_p1", ((TGraph*)alpha_funcFile.Get("graph_p1"))->GetFunction("pol2"), mass_var),
   alpha_p2(label+"_alpha_p2", ((TGraph*)alpha_funcFile.Get("graph_p2"))->GetFunction("pol2"), mass_var),
@@ -151,6 +154,7 @@ PredXSec::PredXSec(const TString& label, RooRealVar& xsec_var, RooRealVar& mass_
        "1/(2*(@3-@2))*(TMath::Erf((@3-@0)/(@1*TMath::Sqrt(2)))-TMath::Erf((@2-@0)/(@1*TMath::Sqrt(2))))",
        RooArgList(xsec_var, gaussianUnc, xsecScaleDown, xsecScaleUp))
 {
+  alpha_funcFile.Close();
   mcIntegratorCfg.method1D().setLabel("RooMCIntegrator");
   rectangularProb.setIntegratorConfig(mcIntegratorCfg);
 }
@@ -237,6 +241,7 @@ FinalLikeliResults::FinalLikeliResults(const TString& label,
   point = TGraphErrors(1, xBest, yBest, xBestErr, yBestErr);
   point.GetXaxis()->SetTitle(alpha_var.getTitle());
   point.GetYaxis()->SetTitle(mass_var .getTitle(true));
+  point.SetMarkerStyle(29);
   point.SetMarkerSize(3.);
   ellipse = RooEllipse(label+"_ellipse", bestX, bestY, xBestErr[0], yBestErr[0], correl);
 }

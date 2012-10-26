@@ -49,3 +49,11 @@ plotDiffXsec also does
 write writes the histogram
 
 the plots will be put into a directory called Plots according to the channel in .eps format which is the best
+
+
+========
+========
+To run the new analysis:
+
+make
+./load_Analysis

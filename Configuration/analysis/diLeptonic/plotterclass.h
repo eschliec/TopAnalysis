@@ -27,6 +27,9 @@
 #include "DilepSVDFunctions.h"
 #include "DilepSVDFunctions.C"
 
+#define TOPXSEC (225.197)
+#define LUMI (5100)
+
 class Plotter {
 
  public:
@@ -137,8 +140,8 @@ class Plotter {
 void Plotter::UnfoldingOptions(bool doSVD)
 {
   doUnfolding = doSVD;
-  doSystematics = true;
-  drawNLOCurves = true;
+  doSystematics = false;
+  drawNLOCurves = false;
 }
 
 
@@ -1259,7 +1262,7 @@ Plotter::Plotter()
   outpathPlots = "Plots";
   subfolderChannel = "";
   subfolderSpecial = "";
-
+    doSystematics = false;
 }
 
 Plotter::Plotter(TString name_, TString XAxis_,TString YAxis_, double rangemin_, double rangemax_)
@@ -1376,7 +1379,7 @@ void Plotter::setDataSet(TString mode)
   }
   
 
-  lumi=4966;
+  lumi=LUMI;
   
   DYEntry = "Z / #gamma* #rightarrow ee/#mu#mu";
 
@@ -1889,7 +1892,7 @@ void Plotter::write() // do scaling, stacking, legending, and write in file
     Double_t topunc = 0; // uncertainty on top xsec
     
     //Kidonakis
-    double topxsec = 165.6;
+    double topxsec = TOPXSEC;
     double topxsecErr2 = 2.2*2.2 + 4.4*4.4 + 5.5*5.5; //topxsecErr2 = lumiErr*lumiErr + topxsecScaleErr*topxsecScaleErr + topxsecPDFErr*topxsecPDFErr
 
     double topRelUnc =  TMath::Sqrt(topxsecErr2)/topxsec;
@@ -1945,7 +1948,7 @@ void Plotter::write() // do scaling, stacking, legending, and write in file
   
   DrawDecayChLabel(channelLabel[channelType]);    
   leg->Draw("SAME");  
-  //drawRatio(drawhists[0], stacksum, 0.5, 1.9, *gStyle);
+  drawRatio(drawhists[0], stacksum, 0.5, 1.9, *gStyle);
 
     
   // Create Directory for Output Plots 
@@ -2320,7 +2323,8 @@ double Plotter::CalcXSec(std::vector<TString> datasetVec, double InclusiveXsecti
 
   
   double BranchingFraction[4]={0.01166, 0.01166, 0.02332, 0.04666};//[ee, mumu, emu, combined] not including tau
-  lumi = 4966;
+  //lumi = 4966;
+  lumi = LUMI;
 
   TH1D *numhists[hists.size()];
   double numbers[4]={0., 0., 0., 0.};//[0]=data, [1]=Signal, [2]Signal(only lumi & PU weights), [3]background (non-ttbar)
@@ -2459,7 +2463,7 @@ void Plotter::CalcDiffXSec(TH1 *varhists[], TH1* RecoPlot, TH1* GenPlot, TH2* ge
   double SignalEvents = 63244696.0;
   double Xbins[XAxisbins.size()];
   double binWidth[XAxisbinCenters.size()];
-  double topxsec = 165.6;
+  double topxsec = TOPXSEC;
   for(unsigned int i = 0; i<XAxisbins.size();i++){Xbins[i]=XAxisbins[i];}
   double DataSum[XAxisbinCenters.size()];
   double GenSignalSum[XAxisbinCenters.size()];
@@ -2713,7 +2717,7 @@ void Plotter::CalcDiffXSec(TH1 *varhists[], TH1* RecoPlot, TH1* GenPlot, TH2* ge
 void Plotter::PlotDiffXSec(){
     TH1::AddDirectory(kFALSE); 
     TGaxis::SetMaxDigits(2);
-
+    doSystematics = false;
     if(doSystematics){//############### Syst ################
       cout << endl;
       cout << "<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>" << endl;
@@ -2736,7 +2740,7 @@ void Plotter::PlotDiffXSec(){
       cout << "<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>" << endl;
       cout << endl; 
     }
-    double topxsec = 165.6;
+    double topxsec = TOPXSEC;
     //double BranchingFraction[4]={0.0167, 0.0162, 0.0328, 0.06569};//[ee, mumu, emu]
     double SignalEvents = 63244696.0;
     double Xbins[XAxisbins.size()];
@@ -2767,6 +2771,7 @@ void Plotter::PlotDiffXSec(){
       if(legends[i] == "t#bar{t} Signal"){
 	TFile *ftemp = TFile::Open(dataset[i]);
 	if(init==false){
+           std::cout << ftemp->Get("Reco"+newname) << " from " << dataset[i] << " Reco"+newname+"\n";
 	  RecoPlotFineBins =  (TH1D*)ftemp->Get("Reco"+newname)->Clone();
 	  genReco2d = (TH2*)ftemp->Get("GenReco"+newname)->Clone();
 	  GenPlotTheory=(TH1D*)ftemp->Get("VisGen"+newname)->Clone();
@@ -3534,7 +3539,7 @@ void Plotter::PlotDiffXSec(){
       Double_t binerr2 = binc*binc*lumierr*lumierr;
       Double_t topunc = 0; // uncertainty on top xsec
       
-      double topxsec = 165.6;
+      double topxsec = TOPXSEC;
       double topxsecErr2 = 2.2*2.2 + 11.6*11.6;
       
       double topRelUnc =  TMath::Sqrt(topxsecErr2)/topxsec;
@@ -3637,7 +3642,7 @@ TH1* Plotter::GetNloCurve(const char *particle, const char *quantity, const char
     } else{
       Double_t nevents = weight->GetEntries();
       //
-      Double_t crosssection = 165.6; //######
+      Double_t crosssection = TOPXSEC; //######
       Double_t binw = hist->GetBinWidth(1);
       wgt = crosssection/nevents/binw;
     }
@@ -3710,7 +3715,7 @@ TH1* Plotter::GetNloCurve(TString NewName, TString Generator){
     
     Double_t wgt = 1.;
     Double_t nevents = 16420479;//weight->GetEntries();
-    Double_t crosssection = 165.6;
+    Double_t crosssection = TOPXSEC;
     Double_t binw = hist->GetBinWidth(1);
     wgt = crosssection/nevents/binw;
     rethist->Scale(wgt);

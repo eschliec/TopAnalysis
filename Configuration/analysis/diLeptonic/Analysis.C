@@ -24,36 +24,35 @@ double SampleXSection(TString sample){
     //  https://twiki.cern.ch/twiki/bin/view/CMS/StandardModelCrossSectionsat8TeV
     //  AN-12/194    AN-12/228
     
-    double XSec=-1.;
-    if(sample.Contains("data"))              {XSec = 1;}
-    else if(sample.Contains("ttbar"))       {XSec = 225.197;}
-    else if(sample.Contains("single"))      {XSec = 22.2;}
-    else if(sample.Contains("ww"))          {XSec = 54.838;}
-    else if(sample.Contains("wz"))          {XSec = 33.21;}
-    else if(sample.Contains("zz"))          {XSec = 17.654;}
-    else if(sample.Contains("1050"))        {XSec = 860.5; } //5745.25;}
-    else if(sample.Contains("50inf"))       {XSec = 3532.8; } //3503.71;}
-    else if(sample.Contains("wtolnu"))      {XSec = 36257.2;}
-    else if(sample.Contains("qcdmu15"))     {XSec = 3.640E8*3.7E-4;}
-    else if(sample.Contains("qcdmu2030"))   {XSec = 2.870E8*6.500E-3;}
-    else if(sample.Contains("qcdmu3050"))   {XSec = 6.609E7*12.20E-3;}
-    else if(sample.Contains("qcdmu5080"))   {XSec = 8.802E6*21.80E-3;}
-    else if(sample.Contains("qcdmu80120"))  {XSec = 1.024E6*39.50E-3;}
-    else if(sample.Contains("qcdmu120170")) {XSec = 1.578E5*47.30E-3;}
-    else if(sample.Contains("qcdem2030"))   {XSec = 2.886E8*10.10E-3;}
-    else if(sample.Contains("qcdem3080"))   {XSec = 7.433E7*62.10E-3;}
-    else if(sample.Contains("qcdem80170"))  {XSec = 1.191E6*153.9E-3;}
-    else if(sample.Contains("qcdbcem2030")) {XSec = 2.886E8*5.800E-4;}
-    else if(sample.Contains("qcdbcem3080")) {XSec = 7.424E7*2.250E-3;}
-    else if(sample.Contains("qcdbcem80170")){XSec = 1.191E6*10.90E-3;}
-    
-    return XSec;
+    if(sample.Contains("data"))        {return 1;}
+    if(sample.Contains("ttbar"))       {return 225.197;}
+    if(sample.Contains("single"))      {return 22.2;}
+    if(sample.Contains("ww"))          {return 54.838;}
+    if(sample.Contains("wz"))          {return 33.21;}
+    if(sample.Contains("zz"))          {return 17.654;}
+    if(sample.Contains("1050"))        {return 860.5; } //5745.25;}
+    if(sample.Contains("50inf"))       {return 3532.8; } //3503.71;}
+    if(sample.Contains("wtolnu"))      {return 36257.2;}
+    if(sample.Contains("qcdmu15"))     {return 3.640E8*3.7E-4;}
+    if(sample.Contains("qcdmu2030"))   {return 2.870E8*6.500E-3;}
+    if(sample.Contains("qcdmu3050"))   {return 6.609E7*12.20E-3;}
+    if(sample.Contains("qcdmu5080"))   {return 8.802E6*21.80E-3;}
+    if(sample.Contains("qcdmu80120"))  {return 1.024E6*39.50E-3;}
+    if(sample.Contains("qcdmu120170")) {return 1.578E5*47.30E-3;}
+    if(sample.Contains("qcdem2030"))   {return 2.886E8*10.10E-3;}
+    if(sample.Contains("qcdem3080"))   {return 7.433E7*62.10E-3;}
+    if(sample.Contains("qcdem80170"))  {return 1.191E6*153.9E-3;}
+    if(sample.Contains("qcdbcem2030")) {return 2.886E8*5.800E-4;}
+    if(sample.Contains("qcdbcem3080")) {return 7.424E7*2.250E-3;}
+    if(sample.Contains("qcdbcem80170")){return 1.191E6*10.90E-3;}
+
+    return -1;
 }
 
 void Analysis::Begin ( TTree * )
 {
     EventCounter = 0;
-    //gStyle->SetOptStat(0);
+    bEff = 0;
 
     //By now defined the per-jet SFs vary according to:
     //   BTag_Up   ==> pt>ptmedian vary DOWN, pt<ptmedian vary UP
@@ -347,17 +346,21 @@ Bool_t Analysis::Process ( Long64_t entry )
     
     if (isMC) { //still have lumi weights for old plotterclass
         weightGenerator *= lumiWeight;
+        
+        if (pureweighter) {
+            weightPU = pureweighter->getPUweight(vertMultiTrue);
+        } else {
+            if ( systematic == "PU_UP" ) {
+                weightPU = weightPU_Up;   //only for PU systematic run
+            } else if ( systematic == "PU_DOWN" ) {
+                weightPU = weightPU_Down;   //only for PU systematic run
+            }
+        }
     }
 
     double weightLepSF = isMC ? leptonSF : 1;
     double trigEFF = 1.0; //set trigger efficiency scale factor to 1.
     
-    if ( systematic == "PU_UP" ) {
-        weightPU = weightPU_Up;   //only for PU systematic run
-    } else if ( systematic == "PU_DOWN" ) {
-        weightPU = weightPU_Down;   //only for PU systematic run
-    }
-
     int BHadronIndex=-1;
     int AntiBHadronIndex=-1;
 
@@ -595,7 +598,7 @@ Bool_t Analysis::Process ( Long64_t entry )
     //===CUT===
     // check if event was triggered (only needed for the signal sample which does not
     // contain trigger preselection cuts)
-    if (isTtbarPlusTauSample) {
+    if (false && isTtbarPlusTauSample) {
         if (!(((triggerBits & 0x0000FF) && channel == "mumu")    //mumu triggers in rightmost byte
            || ((triggerBits & 0x00FF00) && channel == "emu")     //emu in 2nd byte
            || ((triggerBits & 0xFF0000) && channel == "ee")))    //ee in 3rd byte
@@ -710,16 +713,8 @@ Bool_t Analysis::Process ( Long64_t entry )
     h_MET->Fill(*(metEt->begin()), weight);
 
     //loop over both leptons
-    for (size_t i = LeadLeptonNumber; i != NLeadLeptonNumber; i = NLeadLeptonNumber) {
-        if ( lepType->at(i) == LEP_TYPE_ELECTRON ) {
-            h_ElectronpT->Fill(lepton->at(i).Pt(), weight);
-            h_ElectronEta->Fill(lepton->at(i).Eta(), weight);
-        }
-        if ( lepType->at(i) == LEP_TYPE_MUON ) {
-            h_MuonpT->Fill(lepton->at(i).Pt(), weight);
-            h_MuonEta->Fill(lepton->at(i).Eta(), weight);
-        }
-    }
+    FillLeptonHisto(LeadLeptonNumber, weight);
+    FillLeptonHisto(NLeadLeptonNumber, weight);
                 
     //=== CUT ===
     //Require at least one solution for the kinematic event reconstruction
@@ -886,6 +881,17 @@ Bool_t Analysis::Process ( Long64_t entry )
     h_GenRecoTTBarRapidity->Fill(hypttbar.Rapidity(), genttbar.Rapidity(), weight );
 
     return kTRUE;
+}
+
+void Analysis::FillLeptonHisto(size_t i, double weight) {
+    if ( lepType->at(i) == LEP_TYPE_ELECTRON ) {
+        h_ElectronpT->Fill(lepton->at(i).Pt(), weight);
+        h_ElectronEta->Fill(lepton->at(i).Eta(), weight);
+    }
+    if ( lepType->at(i) == LEP_TYPE_MUON ) {
+        h_MuonpT->Fill(lepton->at(i).Pt(), weight);
+        h_MuonEta->Fill(lepton->at(i).Eta(), weight);
+    }
 }
 
 
@@ -1216,7 +1222,7 @@ void Analysis::SetChannel(TString channel)
     this->channel = channel;
     if (channel == "emu") leptonSF = 0.957;
     else if (channel == "ee") leptonSF = 0.935;
-    else leptonSF = 0.957;
+    else leptonSF = 0.987;
 
 }
 
@@ -1264,6 +1270,10 @@ void Analysis::SetRunViaTau(bool runViaTau)
     if (runViaTau) isSignal = 0;
 }
 
+void Analysis::SetPUReweighter(PUReweighter* pu)
+{
+    pureweighter = pu;
+}
 
 void Analysis::Init ( TTree *tree )
 {
@@ -1347,6 +1357,7 @@ void Analysis::Init ( TTree *tree )
     fChain->SetBranchAddress("weightPU_Up", &weightPU_Up, &b_weightPU_Up );
     fChain->SetBranchAddress("weightPU_Down", &weightPU_Down, &b_weightPU_Down );
     fChain->SetBranchAddress("vertMulti", &vertMulti, &b_vertMulti );
+    fChain->SetBranchAddress("vertMultiTrue", &vertMultiTrue, &b_vertMultiTrue );
 
 
     fChain->SetBranchAddress("allGenJets", &allGenJets, &b_allGenJets );
@@ -1428,6 +1439,7 @@ void Analysis::GetRecoBranches ( Long64_t & entry )
     b_weightPU_Up->GetEntry(entry); //!
     b_weightPU_Down->GetEntry(entry); //!
     b_vertMulti->GetEntry(entry); //!
+    b_vertMultiTrue->GetEntry(entry); //!
 
     b_genJet->GetEntry(entry); //!
     b_allGenJets->GetEntry(entry); //!
@@ -1537,6 +1549,10 @@ bool Analysis::getLeptonPair(size_t &LeadLeptonNumber, size_t &NLeadLeptonNumber
 
 double Analysis::calculateBtagSF()
 {
+    return 1;
+    
+    if (!bEff) return 1; //no btag file given, so return 1
+    
     //pt efficiency median value can be obtained running and reading the output of: root -l -b -q CalcMedian.C
     const double ptmedian = 65;
     const double etamedian = 0.75;

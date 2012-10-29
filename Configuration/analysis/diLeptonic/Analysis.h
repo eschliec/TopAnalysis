@@ -21,6 +21,7 @@
 #include <sstream>
 #include "TGraphAsymmErrors.h"
 #include "classes.h"
+#include "PUReweighter.h"
 
 using namespace std;
 
@@ -53,6 +54,7 @@ class Analysis : public TSelector
     Double_t        weightPU_Up;
     Double_t        weightPU_Down;
     Int_t           vertMulti;
+    Int_t           vertMultiTrue;
 
     LV              *GenWPlus;
     LV              *GenWMinus;
@@ -115,6 +117,7 @@ class Analysis : public TSelector
     TBranch        *b_weightPU_Up;   //!
     TBranch        *b_weightPU_Down;   //!
     TBranch        *b_vertMulti;   //!
+    TBranch        *b_vertMultiTrue;
 
     TBranch        *b_GenTop;   //!
     TBranch        *b_GenAntiTop;   //!
@@ -279,6 +282,8 @@ class Analysis : public TSelector
     //other SF
     double leptonSF;
     double lumiWeight; //needed while using old plotterclass
+    
+    void FillLeptonHisto(size_t i, double weight);
 
     // Variables added from the outside
     TString btagFile;
@@ -293,12 +298,13 @@ class Analysis : public TSelector
     bool getLeptonPair(size_t& LeadLeptonNumber, size_t& NLeadLeptonNumber);
     bool runViaTau;
     TH1* weightedEvents;
+    PUReweighter *pureweighter;
     
     double calculateBtagSF();
     double getJetHT(const VLV& jet, int pt_cut);
     
 public:
-    Analysis ( TTree * = 0 ) { runViaTau = 0; }
+    Analysis ( TTree * = 0 ) { runViaTau = 0; pureweighter = 0; }
     void SetBTagFile(TString btagFile);
     void SetChannel(TString channel);
     void SetSignal(bool isSignal);
@@ -308,6 +314,7 @@ public:
     void SetMC(bool isMC);
     void SetWeightedEvents(TH1* weightedEvents);
     void SetRunViaTau(bool runViaTau);
+    void SetPUReweighter(PUReweighter *pu);
     ClassDef ( Analysis,0 );
 };
 

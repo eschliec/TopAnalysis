@@ -67,7 +67,7 @@ void Analysis::Begin ( TTree * )
         return;
     }
 
-    if ( bEfficiencies ) {
+    if ( !bEfficiencies ) {
         cout<<"File "<< btagFile << " does not exist. Running without btagsf!!!"<<endl;
         return;
     }

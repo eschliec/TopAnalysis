@@ -719,10 +719,9 @@ if options.runOnMC:
              process.scaledJetEnergy * process.selectedPatJets)
 
 else:
-    #process.load("RecoMET.METFilters.ecalLaserCorrFilter_cfi")
-    #for pathname in pathnames:
-        #getattr(process, pathname).replace(process.HBHENoiseFilter,
-             #process.HBHENoiseFilter * process.ecalLaserCorrFilter)
-    pass
+    process.load("RecoMET.METFilters.ecalLaserCorrFilter_cfi")
+    for pathname in pathnames:
+        getattr(process, pathname).replace(process.HBHENoiseFilter,
+             process.HBHENoiseFilter * process.ecalLaserCorrFilter)
 
 process.load("TopAnalysis.TopUtils.SignalCatcher_cfi")

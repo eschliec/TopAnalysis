@@ -1556,8 +1556,6 @@ bool Analysis::getLeptonPair(size_t &LeadLeptonNumber, size_t &NLeadLeptonNumber
 
 double Analysis::calculateBtagSF()
 {
-    return 1;
-    
     if (!bEff) return 1; //no btag file given, so return 1
     
     //pt efficiency median value can be obtained running and reading the output of: root -l -b -q CalcMedian.C

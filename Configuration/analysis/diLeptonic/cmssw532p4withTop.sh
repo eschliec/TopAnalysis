@@ -50,13 +50,15 @@ addpkg RecoMET/METFilters V00-00-10
 ###### Hamburg TOP package (plus dependencies) #####
 
 cvs co -d TopAnalysis UserCode/Bromo/TopAnalysis
-cvs update -r B_5_2_X TopAnalysis/TopAnalyzer/python/ntuplewriter_cfi.py
+cvs update -r Oct2012-Rewritten-Analysis TopAnalysis/TopAnalyzer/python
+cvs update -r Oct2012-Rewritten-Analysis TopAnalysis/TopAnalyzer/plugins
 cvs update -r B_5_2_X TopAnalysis/TopAnalyzer/python/FullLepGenAnalyzer_cfi.py
 cvs update -r B_5_2_X TopAnalysis/TopFilter/python/filters/GeneratorTtDileptonFilter_cfi.py
 cvs update -r B_5_2_X TopAnalysis/TopUtils/python/GenLevelBJetProducer_cfi.py
 cvs update -r B_5_2_X TopAnalysis/TopUtils/python/genlevelbjetproducer_cfi.py
 cvs update -r B_5_2_X TopAnalysis/TopUtils/python/HadronLevelBJetProducer_cfi.py
 cvs update -r B_5_2_X TopAnalysis/TopUtils/python/usePatTupleWithParticleFlow_cff.py
+cvs update -r Oct2012-Rewritten-Analysis TopAnalysis/Configuration/analysis/diLeptonic
 
 #With the newest tag for this package, problem with elPFIsoValues (the other option is to change the "elPFIsoValue*03/04" in the file
 addpkg RecoParticleFlow/PFProducer V15-01-03-02

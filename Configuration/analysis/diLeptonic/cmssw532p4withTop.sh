@@ -44,6 +44,9 @@ addpkg ElectroWeakAnalysis/WENu V00-04-02
 addpkg PhysicsTools/Utilities V08-03-17
 addpkg SimDataFormats/PileupSummaryInfo V00-02-04
 
+###### ECAL Laser rejection in 2012A+B ####
+addpkg RecoMET/METFilters V00-00-10
+
 ###### Hamburg TOP package (plus dependencies) #####
 
 cvs co -d TopAnalysis UserCode/Bromo/TopAnalysis

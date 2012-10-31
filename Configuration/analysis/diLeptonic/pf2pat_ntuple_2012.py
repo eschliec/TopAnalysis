@@ -29,7 +29,6 @@ options.register('outputFile', '', VarParsing.VarParsing.multiplicity.singleton,
 options.register('systematicsName', 'Nominal', VarParsing.VarParsing.multiplicity.singleton, VarParsing.VarParsing.varType.string, "type of systematics")
 options.register('json', '', VarParsing.VarParsing.multiplicity.singleton, VarParsing.VarParsing.varType.string, "limit to certain lumis")
 options.register('skipEvents', 0, VarParsing.VarParsing.multiplicity.singleton, VarParsing.VarParsing.varType.int, "skip N events")
-options.register('pu', '', VarParsing.VarParsing.multiplicity.singleton, VarParsing.VarParsing.varType.string, "Pileup distribution input file")
 options.register('triggerStudy',False, VarParsing.VarParsing.multiplicity.singleton, VarParsing.VarParsing.varType.bool, "do trigger efficiency study")
 
 # get and parse the command line arguments
@@ -45,6 +44,11 @@ print options.mode
 if options.mode == '':
     print 'cannot run without specifying a mode'
     exit(8888)
+
+if options.samplename == '':
+    print 'cannot run without specifying a samplename'
+    exit(8888)
+
 
 if options.samplename == 'data':
     options.runOnMC = False
@@ -62,7 +66,7 @@ else:
 # limit to json file (if passed as parameter)
 
 if options.json != '':
-    import PhysicsTools.PythonAnalysis.LumiList as LumiList
+    import FWCore.PythonUtilities.LumiList as LumiList
     import FWCore.ParameterSet.Types as CfgTypes
     myLumis = LumiList.LumiList(filename = options.json).getCMSSWString().split(',')
     process.source.lumisToProcess = CfgTypes.untracked(CfgTypes.VLuminosityBlockRange())
@@ -90,13 +94,12 @@ process.maxEvents = cms.untracked.PSet(
 ####################################################################
 # Geometry and Detector Conditions
 
-process.load("Configuration.StandardSequences.Geometry_cff")
+process.load("Configuration.Geometry.GeometryIdeal_cff")
 process.load("Configuration.StandardSequences.FrontierConditions_GlobalTag_cff")
 
 if options.globalTag != '':
     process.GlobalTag.globaltag = cms.string( options.globalTag )
 else:
-    #from Configuration.PyReleaseValidation.autoCond import autoCond
     if options.runOnMC:
         process.GlobalTag.globaltag = cms.string('START53_V7F::All')
     else:
@@ -105,13 +108,7 @@ else:
 process.load("Configuration.StandardSequences.MagneticField_cff")
 
 ####################################################################
-# Pythia rejection
-process.load("GeneratorInterface.GenFilters.TotalKinematicsFilter_cfi")
-process.totalKinematicsFilter.tolerance = 5
-# set default cut to 5 GeV istead of 0.5 GeV https://indico.cern.ch/conferenceDisplay.py?confId=153867
-# adds process.totalKinematicsFilter
 
-####################################################################
 # trigger filtering
 # get the central diLepton trigger lists
 from TopAnalysis.TopFilter.sequences.diLeptonTriggers_cff import *
@@ -271,77 +268,60 @@ process.TFileService = cms.Service("TFileService",
 
 ### OLD ANALYSIS STARTS HERE !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-mcname = 'standard'
-
-if options.samplename != '':
-    mcname = options.samplename
-
 zfilter = False
 topfilter = False
 signal = False
-isdata = False
 alsoViaTau = False
 useGenCutsInTopSignal = True
-mcpufile = "TopAnalysis/TopUtils/data/MC_PUDist_Summer11_TTJets_TuneZ2_7TeV_madgraph_tauola.root"
 
-if mcname == 'data':
-    isdata = True
-
-if mcname == 'ttbarsignal':
+if options.samplename == 'ttbarsignal':
     topfilter = True
     signal = True
     viaTau = False
        
-if mcname == 'ttbarsignalviatau':
+if options.samplename == 'ttbarsignalviatau':
     topfilter = True
     signal = True
     viaTau = True
        
-if mcname == 'ttbarsignalplustau':
+if options.samplename == 'ttbarsignalplustau':
     topfilter = True
     signal = True
     viaTau = False
     alsoViaTau = True
        
-if mcname == 'ttbarbg':
+if options.samplename == 'ttbarbg':
     topfilter = True
        
-if mcname == 'dyee1050':
+if options.samplename == 'dyee1050':
     zfilter = True
     zfilterValue = 11
     zrange = (10,50)
 
-if mcname == 'dymumu1050':
+if options.samplename == 'dymumu1050':
     zfilter = True
     zfilterValue = 13
     zrange = (10,50)
 
-if mcname == 'dytautau1050':
+if options.samplename == 'dytautau1050':
     zfilter = True
     zfilterValue = 15
     zrange = (10,50)
 
-if mcname == 'dyee50inf':
+if options.samplename == 'dyee50inf':
     zfilter = True
     zfilterValue = 11
     zrange = (50,1e9)
 
-if mcname == 'dymumu50inf':
+if options.samplename == 'dymumu50inf':
     zfilter = True
     zfilterValue = 13
     zrange = (50,1e9)
 
-if mcname == 'dytautau50inf':
+if options.samplename == 'dytautau50inf':
     zfilter = True
     zfilterValue = 15
     zrange = (50,1e9)
-
-if mcname == 'wjets':
-    pass
-
-if options.pu != '':
-    print "Using user-definded PU file", options.pu
-    mcpufile = options.pu
 
 if signal:
     print "Not skipping if no leptons -- need true level info\n"
@@ -351,47 +331,6 @@ if signal:
 #-------------------------------------------------
 # process configuration
 #-------------------------------------------------
-
-# Pileup Reweighting
-eventWeightPuTag = cms.InputTag('eventWeightPU', 'eventWeightPU')
-eventWeightPuTag_Up = cms.InputTag('eventWeightPUsysUp', 'eventWeightPUUp')
-eventWeightPuTag_Down = cms.InputTag('eventWeightPUsysDown', 'eventWeightPUDown')
-# lepton SF
-eventWeightDileptonSfTag = cms.InputTag('eventWeightDileptonSF', 'eventWeightDileptonSF')
-
-
-if options.runOnMC:
-    process.load("TopAnalysis.TopUtils.EventWeightPU_cfi")
-    process.eventWeightPU        = process.eventWeightPU.clone()
-    process.eventWeightPUsysUp   = process.eventWeightPU.clone()
-    process.eventWeightPUsysDown = process.eventWeightPU.clone()
-
-    process.eventWeightPU.WeightName          = "eventWeightPU"
-    process.eventWeightPU.MCSampleTag         = cms.string("Summer12")
-    process.eventWeightPU.MCSampleHistoName   = cms.string("puhisto")
-    process.eventWeightPU.MCSampleFile        = cms.FileInPath("TopAnalysis/TopUtils/data/MC_PUDist_Summer12_S10.root")
-    process.eventWeightPU.DataHistoName       = cms.string("pileup")
-    process.eventWeightPU.DataFile            = cms.FileInPath("TopAnalysis/TopUtils/data/Data_PUDist_sysNo_69400_2012ABReReco.root")
-
-    #Systematics: PU Up/Down
-    process.eventWeightPUsysUp.WeightName          = "eventWeightPUUp"
-    process.eventWeightPUsysUp.MCSampleTag         = cms.string("Summer12")
-    process.eventWeightPUsysUp.MCSampleHistoName   = cms.string("puhisto")
-    process.eventWeightPUsysUp.MCSampleFile        = cms.FileInPath("TopAnalysis/TopUtils/data/MC_PUDist_Summer12_S10.root")
-    process.eventWeightPUsysUp.DataHistoName       = cms.string("pileup")
-    process.eventWeightPUsysUp.DataFile            = cms.FileInPath("TopAnalysis/TopUtils/data/Data_PUDist_sysUp_72870_2012ABReReco.root")
- 
-    process.eventWeightPUsysDown.WeightName          = "eventWeightPUDown"
-    process.eventWeightPUsysDown.MCSampleTag         = cms.string("Summer12")
-    process.eventWeightPUsysDown.MCSampleHistoName   = cms.string("puhisto")
-    process.eventWeightPUsysDown.MCSampleFile        = cms.FileInPath("TopAnalysis/TopUtils/data/MC_PUDist_Summer12_S10.root")
-    process.eventWeightPUsysDown.DataHistoName       = cms.string("pileup")
-    process.eventWeightPUsysDown.DataFile            = cms.FileInPath("TopAnalysis/TopUtils/data/Data_PUDist_sysDown_65930_2012ABReReco.root")
-
-else:
-    process.eventWeightPU = cms.Sequence()
-    process.eventWeightPUsysUp = cms.Sequence()
-    process.eventWeightPUsysDown = cms.Sequence()
 
 ## define which collections and correction you want to be used
 isolatedMuonCollection = "fullySelectedPatMuons"
@@ -521,14 +460,6 @@ process.triggerMatching = cms.Sequence( process.patTrigger
                                         * process.triggerEmbedders )
 
 ###############################################################
-###############################################################
-## analyze and filter trigger
-process.load("TopAnalysis.TopAnalyzer.TriggerAnalyzer_cfi")
-process.analyzeTrigger.weightPU = eventWeightPuTag
-process.analyzeTrigger.weightLepSF = ""
-#process.analyzeTrigger.TriggerResults = cms.InputTag('TriggerResults',         '','REDIGI38X')
-#process.analyzeTrigger.TriggerEvent   = cms.InputTag('hltTriggerSummaryAOD',   '','REDIGI38X')
-#process.analyzeTrigger.TriggerFilter  = cms.InputTag('hltSingleMu9L3Filtered9','','REDIGI38X')
 
 
 ## Build Jet Collections
@@ -545,7 +476,7 @@ process.goodIdJets.jetType = cms.string('PF')
 process.goodIdJets.version = cms.string('FIRSTDATA')
 process.goodIdJets.quality = cms.string('LOOSE')
 
-process.hardJets = selectedPatJets.clone(src = 'goodIdJets', cut = 'pt > 30 & abs(eta) < 2.4')
+process.hardJets = selectedPatJets.clone(src = 'goodIdJets', cut = 'pt > 20 & abs(eta) < 2.4') 
 process.buildJets = cms.Sequence(process.goodIdJets * process.hardJets)
 
 ## Lepton-Vertex matching
@@ -594,10 +525,6 @@ process.filterDiLeptonMassQCDveto.Cut       = (0.,12.)
 
 ##Write Ntuple
 from TopAnalysis.TopAnalyzer.NTupleWriter_cfi import writeNTuple
-writeNTuple.weightPU    = eventWeightPuTag
-writeNTuple.weightPU_Up    = eventWeightPuTag_Up
-writeNTuple.weightPU_Down    = eventWeightPuTag_Down
-writeNTuple.weightLepSF = eventWeightDileptonSfTag
 
 writeNTuple.sampleName = options.samplename
 writeNTuple.channelName = options.mode
@@ -610,20 +537,12 @@ process.writeNTuple = writeNTuple.clone(
     elecs=isolatedElecCollection,
     jets=jetCollection,
     met=metCollection,
-    weightKinFit = cms.InputTag("eventWeightDileptonKinEffSF", "eventWeightDileptonKinEffSF"),
+    genMET="genMetTrue",
 )
 
 if options.triggerStudy:
     process.writeNTuple.muons = 'triggerMatchedMuons'
     process.writeNTuple.elecs = 'triggerMatchedElectrons'
-
-
-## dilepton analyzer
-from TopAnalysis.TopAnalyzer.DiLeptonAnalyzer_cfi import analyzeLeptonPair
-analyzeLeptonPair.fileOutput = False
-analyzeLeptonPair.jets = jetCollection
-analyzeLeptonPair.weightPU    = eventWeightPuTag
-analyzeLeptonPair.weightLepSF = eventWeightDileptonSfTag
 
 
 ## std sequence to produce the ttFullLepEvent
@@ -634,8 +553,8 @@ if not signal:
 
 setForAllTtFullLepHypotheses(process,"muons"    ,finalLeptons)
 setForAllTtFullLepHypotheses(process,"electrons",finalLeptons)
-setForAllTtFullLepHypotheses(process,"jets"     ,jetCollection         )
-setForAllTtFullLepHypotheses(process,"mets"     ,metCollection        )
+setForAllTtFullLepHypotheses(process,"jets"     ,jetCollection)
+setForAllTtFullLepHypotheses(process,"mets"     ,metCollection)
 if options.runOnMC:
     setForAllTtFullLepHypotheses(process,"jetCorrectionLevel","L3Absolute")
     print "L3Absolute"
@@ -670,23 +589,6 @@ elif options.mode == 'ee':
     process.ttFullLepEvent.decayChannel2 = cms.int32(1)
 
 
-## analyze hypotheses
-process.load("TopAnalysis.TopAnalyzer.FullLepKinAnalyzer_cfi")
-from TopAnalysis.TopAnalyzer.FullLepKinAnalyzer_cfi import analyzeFullLepKinematics
-analyzeFullLepKinematics.weightPU    = eventWeightPuTag
-analyzeFullLepKinematics.weightLepSF = eventWeightDileptonSfTag
-
-if signal:
-        analyzeFullLepKinematics.isSignalMC = True
-
-## filter hypotheses
-process.load("TopAnalysis.TopFilter.filters.FullLepHypothesesFilter_cfi")
-process.filterFullLepHypothesis.useLeadingJets = False
-process.filterFullLepHypothesis.weightCut = 0
-process.filterFullLepHypothesis.jets = "hardJets"
-process.filterFullLepHypothesis.bAlgorithm = 'trackCountingHighEffBJetTags'
-process.filterFullLepHypothesis.bDiscriminator = cms.vdouble()
-
 #-------------------------------------------------
 # analysis path
 #-------------------------------------------------
@@ -712,13 +614,8 @@ if topfilter:
 		process.generatorTopFilter *
 	        process.produceHadronLevelBJets *
                 process.produceGenLevelBJets
-
 	)
 
-        if signal:
-                from TopAnalysis.TopAnalyzer.FullLepGenAnalyzer_cfi import analyzeFullLepGenEvent
-                analyzeFullLepGenEvent.weightPU = eventWeightPuTag
-		analyzeFullLepGenEvent.weightLepSF = ""
 else:
         process.topsequence = cms.Sequence()
 
@@ -784,14 +681,8 @@ prependPF2PATSequence(process, options = { 'switchOffEmbedding': False,
                                            #'skipIfNoPFElec': False,
                                            #'addNoCutPFMuon': True,
                                            #'addNoCutPFElec': True,
-                                           #'analyzersBeforeMuonIso': cms.Sequence(
-                                           #     process.unisolatedMuons *
-                                           #     process.analyzeMuons1),
-                                           #'analyzersBeforeElecIso': cms.Sequence(
-                                           #     process.unisolatedElectrons *
-                                           #     process.analyzeMuons2*
-                                           #     process.analyzeElecs2
-                                           #     ),
+                                           #'analyzersBeforeMuonIso': cms.Sequence(),
+                                           #'analyzersBeforeElecIso': cms.Sequence(),
                                            'METCorrectionLevel': 1,
                                            }
                       )
@@ -806,34 +697,32 @@ for pathname in pathnames:
         process.EventsBeforeSelection *
         process.topsequence *
         process.zsequence *
-        process.eventWeightPU *
-        process.eventWeightPUsysUp *
-        process.eventWeightPUsysDown *
-        process.analyzeTrigger *
         process.filterTrigger
         ))
 if signal:
-    process.pNtuple.remove(process.analyzeTrigger)
     process.pNtuple.remove(process.filterTrigger)
 
 
 if options.runOnMC:
+    process.scaledJetEnergy.JECUncSrcFile        = cms.FileInPath("TopAnalysis/TopUtils/data/Summer12_V2_DATA_AK5PF_UncertaintySources.txt")
+    process.scaledJetEnergy.scaleType = "abs"   #abs = 1, jes:up, jes:down
+    # process.scaledJetEnergy.scaleType = "jes:up"
+    # process.scaledJetEnergy.scaleType = "jes:down"
+    process.scaledJetEnergy.resolutionEtaRanges  = cms.vdouble(0, 0.5, 0.5, 1.1, 1.1, 1.7, 1.7, 2.3, 2.3, -1)
+    process.scaledJetEnergy.resolutionFactors    = cms.vdouble(1.052, 1.057, 1.096, 1.134, 1.288) # JER standard
+    # process.scaledJetEnergy.resolutionFactors = cms.vdouble(1.114, 1.113, 1.159, 1.221, 1.443) #JERUP
+    # process.scaledJetEnergy.resolutionFactors = cms.vdouble(0.991, 1.002, 1.034, 1.049, 1.135) #JERDOWN
+    
+
     for pathname in pathnames:
         getattr(process, pathname).replace(process.selectedPatJets,
-                                        process.scaledJetEnergy * process.selectedPatJets)
+             process.scaledJetEnergy * process.selectedPatJets)
 
-    process.selectedPatJets.src = cms.InputTag("scaledJetEnergy", "patJets")
-    process.scaledJetEnergy.scaleType = "abs" #abs = 1, jes:up, jes:down
-    #process.scaledJetEnergy.scaleType = "jes:up" #abs = 1, jes:up, jes:down
-    #process.scaledJetEnergy.scaleType = "jes:down" #abs = 1, jes:up, jes:down
-
-    process.scaledJetEnergy.resolutionEtaRanges  = cms.vdouble(0, 0.5, 0.5, 1.1, 1.1, 1.7, 1.7, 2.3, 2.3, -1)
-
-    #process.scaledJetEnergy.resolutionFactors    = cms.vdouble(0.991, 1.002, 1.034, 1.049, 1.135) # JER down
-    process.scaledJetEnergy.resolutionFactors    = cms.vdouble(1.052, 1.057, 1.096, 1.134, 1.288) # JER standard
-    #process.scaledJetEnergy.resolutionFactors    = cms.vdouble(1.114, 1.113, 1.159, 1.221, 1.443) # JER up
-
-    process.scaledJetEnergy.JECUncSrcFile        = cms.FileInPath("TopAnalysis/TopUtils/data/Summer12_V2_DATA_AK5PF_UncertaintySources.txt")
-
+else:
+    #process.load("RecoMET.METFilters.ecalLaserCorrFilter_cfi")
+    #for pathname in pathnames:
+        #getattr(process, pathname).replace(process.HBHENoiseFilter,
+             #process.HBHENoiseFilter * process.ecalLaserCorrFilter)
+    pass
 
 process.load("TopAnalysis.TopUtils.SignalCatcher_cfi")

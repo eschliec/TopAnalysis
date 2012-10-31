@@ -325,6 +325,8 @@ void Analysis::SlaveBegin ( TTree * )
 
 Bool_t Analysis::Process ( Long64_t entry )
 {
+    static const double JETPTCUT = 30;
+    
     if ( ++EventCounter % 100000 == 0 ) cout << "Event Counter: " << EventCounter << endl;
     GetRecoBranches(entry);
     
@@ -395,7 +397,7 @@ Bool_t Analysis::Process ( Long64_t entry )
         
         //Case 1: highest pT genJet matched to a BHadron
         for ( size_t genJet = 0; 
-              genJet < allGenJets->size() && allGenJets->at(genJet).pt() >= 30; 
+              genJet < allGenJets->size() && allGenJets->at(genJet).pt() >= JETPTCUT; 
               ++genJet ) 
         {
             for ( size_t bHadron=0; bHadron < BHadrons->size(); bHadron++ ) {
@@ -515,6 +517,7 @@ Bool_t Analysis::Process ( Long64_t entry )
 
     }
 
+    
     double BtagWP = 0.244; //CSV Loose working point
     vector<int> BJetIndex;
     for ( vector<double>::iterator it = jetBTagCSV->begin(); it<jetBTagCSV->end(); it++ ) {
@@ -527,19 +530,24 @@ Bool_t Analysis::Process ( Long64_t entry )
 
 
     //Should we just look for two Bjets above 0.244 or the two highest bjets?:: Make this a function
+    bool hasSolution = false;
     int solutionIndex = 0;
-    bool oneTag = false;
-    for ( size_t i =0; i < HypTop->size(); i++ ) {
-        if ( ( *jetBTagCSV ) [ ( *HypJet0index ) [i]] > BtagWP && ( *jetBTagCSV ) [ ( *HypJet1index ) [i]]>BtagWP ) {
+    for ( size_t i =0; i < HypTop->size(); ++i ) {
+        if (jet->at((*HypJet0index)[i]).pt() < JETPTCUT || jet->at((*HypJet1index)[i]).pt() < JETPTCUT) continue;
+        bool jet0tagged = jetBTagCSV->at( (*HypJet0index)[i] ) > BtagWP;
+        bool jet1tagged = jetBTagCSV->at( (*HypJet1index)[i] ) > BtagWP;
+        if (jet0tagged && jet1tagged) {   
+            //solution with 2 tags found, so take it and stop
             solutionIndex = i;
+            hasSolution = true;
             break;
         }
-        if ( oneTag == false && ( ( *jetBTagCSV ) [ ( *HypJet0index ) [i]] > BtagWP || ( *jetBTagCSV ) [ ( *HypJet1index ) [i]]>BtagWP ) ) {
+        if (!hasSolution && (jet0tagged || jet1tagged)) {
+            //one btag found, save solution if it is the first one
             solutionIndex = i;
-            oneTag=true;
+            hasSolution = true;
         }
     }
-    //solutionIndex = 0;
     
     
     if ( isSignal ) {
@@ -547,11 +555,11 @@ Bool_t Analysis::Process ( Long64_t entry )
         h_GenAll->Fill(GenTop->M(), trueLevelWeight);
         if ( GenLepton->pt() > 20 && GenAntiLepton->pt() > 20 
               && abs( GenLepton->eta() ) < 2.4 && abs ( GenAntiLepton->eta() ) < 2.4 ) {
-            //if (LVGenBQuark.Pt()>30 && LVGenAntiBQuark.Pt()>30 && abs(LVGenBQuark.Eta())<2.4 && abs(LVGenAntiBQuark.Eta())<2.4){
+            //if (LVGenBQuark.Pt()>JETPTCUT && LVGenAntiBQuark.Pt()>JETPTCUT && abs(LVGenBQuark.Eta())<2.4 && abs(LVGenAntiBQuark.Eta())<2.4){
             if ( BHadronIndex != -1 && AntiBHadronIndex != -1 ) {
-                if ( allGenJets->at(BHadronIndex).pt() > 30 && 
+                if ( allGenJets->at(BHadronIndex).pt() > JETPTCUT && 
                     abs ( allGenJets->at(BHadronIndex).eta() ) < 2.4 &&
-                    allGenJets->at(AntiBHadronIndex).pt() > 30 &&
+                    allGenJets->at(AntiBHadronIndex).pt() > JETPTCUT &&
                     abs ( allGenJets->at(AntiBHadronIndex).Eta() ) < 2.4 )
                 {
 
@@ -649,10 +657,9 @@ Bool_t Analysis::Process ( Long64_t entry )
     //handle inverted Z cut
     // Fill loose dilepton mass histogram before any jet cuts
     bool isZregion = dilepton.M() > 76 && dilepton.M() < 106;
-    bool hasJets = jet->size() > 1 && jet->at(1).Pt() > 30;
+    bool hasJets = jet->size() > 1 && jet->at(1).Pt() > JETPTCUT;
     bool hasMetOrEmu = channel == "emu" || *(metEt->begin()) > 30;
     bool hasBtag = BJetIndex.size() > 0;
-    bool hasSolution = HypTop->size() > 0;
     double weightKinFit = 1;
     double btagSF = -1; //trick: initialize to -1 to avoid calculation of the btagSF twice
     
@@ -699,7 +706,7 @@ Bool_t Analysis::Process ( Long64_t entry )
     h_jetMulti->Fill(jet->size(), weight);
     
     //for HT, count only >= 30 GeV jets
-    double jetHT = getJetHT(*jet, 30);
+    double jetHT = getJetHT(*jet, JETPTCUT);
     h_jetHT->Fill(jetHT, weight);
     for ( size_t i = 0; i < 2; ++i ) {
         h_jetpT->Fill(jet->at(i).Pt(), weight);

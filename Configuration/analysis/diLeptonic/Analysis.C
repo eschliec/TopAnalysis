@@ -67,8 +67,8 @@ void Analysis::Begin ( TTree * )
         return;
     }
 
-    if ( bEfficiencies->IsZombie() ) {
-        cout<<"File "<<bEfficiencies->GetName() <<" is zombie. Check that!!!"<<endl;
+    if ( bEfficiencies ) {
+        cout<<"File "<< btagFile << " does not exist. Running without btagsf!!!"<<endl;
         return;
     }
     bEff = dynamic_cast<TH2*>(bEfficiencies->Get( "BEffPerJet" ));

@@ -4,85 +4,101 @@
 
 ###### MU E channel
 
-20  Summer12.TTJets_MatchingUp_TuneZ2star_8TeV_madgraph_tauola_Summer12_DR53X_PU_S10_START53_V7A_v1_cff     emu_ttbarsignalplustau_matchingup.root     ttbarsignalplustau
-20  Summer12.TTJets_MatchingUp_TuneZ2star_8TeV_madgraph_tauola_Summer12_DR53X_PU_S10_START53_V7A_v1_cff     emu_ttbarbg_matchingup.root		       ttbarbg
+20  Summer12.TTJets_MatchingUp_TuneZ2star_8TeV_madgraph_tauola_Summer12_DR53X_PU_S10_START53_V7A_v1_cff     emu_ttbarsignalplustau_matchingup.root     ttbarsignalplustau,runOnAOD=True
+20  Summer12.TTJets_MatchingUp_TuneZ2star_8TeV_madgraph_tauola_Summer12_DR53X_PU_S10_START53_V7A_v1_cff     emu_ttbarbg_matchingup.root		       ttbarbg,runOnAOD=True
 
-20  Summer12.TTJets_MatchingDown_TuneZ2star_8TeV_madgraph_tauola_Summer12_DR53X_PU_S10_START53_V7A_v1_cff   emu_ttbarsignalplustau_matchingdown.root   ttbarsignalplustau
-20  Summer12.TTJets_MatchingDown_TuneZ2star_8TeV_madgraph_tauola_Summer12_DR53X_PU_S10_START53_V7A_v1_cff   emu_ttbarbg_matchingdown.root              ttbarbg
+20  Summer12.TTJets_MatchingDown_TuneZ2star_8TeV_madgraph_tauola_Summer12_DR53X_PU_S10_START53_V7A_v1_cff   emu_ttbarsignalplustau_matchingdown.root   ttbarsignalplustau,runOnAOD=true
+20  Summer12.TTJets_MatchingDown_TuneZ2star_8TeV_madgraph_tauola_Summer12_DR53X_PU_S10_START53_V7A_v1_cff   emu_ttbarbg_matchingdown.root              ttbarbg,runOnAOD=True
 
-20  Summer12.TTJets_ScaleUp_TuneZ2star_8TeV_madgraph_tauola_Summer12_DR53X_PU_S10_START53_V7A_v1_cff        emu_ttbarsignalplustau_scaleup.root        ttbarsignalplustau
-20  Summer12.TTJets_ScaleUp_TuneZ2star_8TeV_madgraph_tauola_Summer12_DR53X_PU_S10_START53_V7A_v1_cff        emu_ttbarbg_scaleup.root                   ttbarbg
+20  Summer12.TTJets_ScaleUp_TuneZ2star_8TeV_madgraph_tauola_Summer12_DR53X_PU_S10_START53_V7A_v1_cff        emu_ttbarsignalplustau_scaleup.root        ttbarsignalplustau,runOnAOD=True
+20  Summer12.TTJets_ScaleUp_TuneZ2star_8TeV_madgraph_tauola_Summer12_DR53X_PU_S10_START53_V7A_v1_cff        emu_ttbarbg_scaleup.root                   ttbarbg,runOnAOD=True
 
-20  Summer12.TTJets_ScaleDown_TuneZ2star_8TeV_madgraph_tauola_Summer12_DR53X_PU_S10_START53_V7A_v1_cff      emu_ttbarsignalplustau_scaledown.root      ttbarsignalplustau
-20  Summer12.TTJets_ScaleDown_TuneZ2star_8TeV_madgraph_tauola_Summer12_DR53X_PU_S10_START53_V7A_v1_cff      emu_ttbarbg_scaledown.root                 ttbarbg
+20  Summer12.TTJets_ScaleDown_TuneZ2star_8TeV_madgraph_tauola_Summer12_DR53X_PU_S10_START53_V7A_v1_cff      emu_ttbarsignalplustau_scaledown.root      ttbarsignalplustau,runOnAOD=true
+20  Summer12.TTJets_ScaleDown_TuneZ2star_8TeV_madgraph_tauola_Summer12_DR53X_PU_S10_START53_V7A_v1_cff      emu_ttbarbg_scaledown.root                 ttbarbg,runOnAOD=True
 
-20  Summer12.TTJets_mass184_5_TuneZ2star_8TeV_madgraph_tauola_Summer12_DR53X_PU_S10_START53_V7A_v1_cff      emu_ttbarsignalplustau_massup.root	       ttbarsignalplustau
-20  Summer12.TTJets_mass184_5_TuneZ2star_8TeV_madgraph_tauola_Summer12_DR53X_PU_S10_START53_V7A_v1_cff      emu_ttbarbg_massup.root		       ttbarbg
+20  Summer12.TTJets_mass184_5_TuneZ2star_8TeV_madgraph_tauola_Summer12_DR53X_PU_S10_START53_V7A_v1_cff      emu_ttbarsignalplustau_massup.root	       ttbarsignalplustau,runOnAOD=True
+20  Summer12.TTJets_mass184_5_TuneZ2star_8TeV_madgraph_tauola_Summer12_DR53X_PU_S10_START53_V7A_v1_cff      emu_ttbarbg_massup.root		       ttbarbg,runOnAOD=True
  
-20  Summer12.TTJets_mass161_5_TuneZ2star_8TeV_madgraph_tauola_Summer12_DR53X_PU_S10_START53_V7A_v1_cff      emu_ttbarsignalplustau_massdown.root       ttbarsignalplustau
-20  Summer12.TTJets_mass161_5_TuneZ2star_8TeV_madgraph_tauola_Summer12_DR53X_PU_S10_START53_V7A_v1_cff      emu_ttbarbg_massdown.root		       ttbarbg
+20  Summer12.TTJets_mass161_5_TuneZ2star_8TeV_madgraph_tauola_Summer12_DR53X_PU_S10_START53_V7A_v1_cff      emu_ttbarsignalplustau_massdown.root       ttbarsignalplustau,runOnAOD=True
+20  Summer12.TTJets_mass161_5_TuneZ2star_8TeV_madgraph_tauola_Summer12_DR53X_PU_S10_START53_V7A_v1_cff      emu_ttbarbg_massdown.root		       ttbarbg,runOnAOD=True
 
-20  Summer12.TTTo2L2Nu2B_8TeV_powheg_pythia6_Summer12_DR53X_PU_S10_START53_V7A_v1_cff            emu_ttbarsignalplustau_powheg.root	 ttbarsignalplustau
-20  Summer12.TTTo2L2Nu2B_8TeV_powheg_pythia6_Summer12_DR53X_PU_S10_START53_V7A_v1_cff            emu_ttbarbg_powheg.root	         ttbarbg
+20  Summer12.TTTo2L2Nu2B_8TeV_powheg_pythia6_Summer12_DR53X_PU_S10_START53_V7A_v1_cff            emu_ttbarsignalplustau_powheg.root	 ttbarsignalplustau,runOnAOD=True
+20  Summer12.TTTo2L2Nu2B_8TeV_powheg_pythia6_Summer12_DR53X_PU_S10_START53_V7A_v1_cff            emu_ttbarbg_powheg.root	         ttbarbg,runOnAOD=True
 
-#30  Fall11.tt_Z2_mcatnlo_Fall11_AOD_cff           emu_ttbarsignalplustau_mcatnlo.root   ttbarsignalplustau
-#30  Fall11.tt_Z2_mcatnlo_Fall11_AOD_cff           emu_ttbarbg_mcatnlo.root	         ttbarbg
+#30  Fall11.tt_Z2_mcatnlo_Fall11_AOD_cff           emu_ttbarsignalplustau_mcatnlo.root   ttbarsignalplustau,runOnAOD=True
+#30  Fall11.tt_Z2_mcatnlo_Fall11_AOD_cff           emu_ttbarbg_mcatnlo.root	         ttbarbg,runOnAOD=True
 
-20  Summer12.TTJets_FullLeptMGDecays_8TeV_madgraph_Summer12_DR53X_PU_S10_START53_V7A_v1_cff            emu_ttbarsignalplustau_madgraphWithSpinCorrelation.root	 ttbarsignalplustau
-20  Summer12.TTJets_FullLeptMGDecays_8TeV_madgraph_Summer12_DR53X_PU_S10_START53_V7A_v1_cff            emu_ttbarbg_madgraphWithSpinCorrelation.root	         ttbarbg
+#Madgrpah with spin correlations exclusive samples
+20  Summer12.TTJets_FullLeptMGDecays_8TeV_madgraph_Summer12_DR53X_PU_S10_START53_V7A_v1_cff            emu_ttbarsignalplustau_FullLeptMadgraphWithSpinCorrelation.root	 ttbarsignalplustau,runOnAOD=True
+20  Summer12.TTJets_FullLeptMGDecays_8TeV_madgraph_Summer12_DR53X_PU_S10_START53_V7A_v1_cff            emu_ttbarbg_FullLeptMadgraphWithSpinCorrelation.root	         ttbarbg,runOnAOD=True
+20  Summer12.TTJets_SemiLeptMGDecays_8TeV_madgraph_Summer12_DR53X_PU_S10_START53_V7A_v1_cff            emu_ttbarsignalplustau_SemiLeptMadgraphWithSpinCorrelation.root	 ttbarsignalplustau,runOnAOD=True
+20  Summer12.TTJets_SemiLeptMGDecays_8TeV_madgraph_Summer12_DR53X_PU_S10_START53_V7A_v1_cff            emu_ttbarbg_SemiLeptMadgraphWithSpinCorrelation.root	         ttbarbg,runOnAOD=True
+20  Summer12.TTJets_HadronicMGDecays_8TeV_madgraph_Summer12_DR53X_PU_S10_START53_V7A_v1_cff            emu_ttbarsignalplustau_HadronicMadgraphWithSpinCorrelation.root	 ttbarsignalplustau,runOnAOD=True
+20  Summer12.TTJets_HadronicMGDecays_8TeV_madgraph_Summer12_DR53X_PU_S10_START53_V7A_v1_cff            emu_ttbarbg_HadronicMadgraphWithSpinCorrelation.root	         ttbarbg,runOnAOD=True
+
 
 ###### MUMU channel
-20  Summer12.TTJets_MatchingUp_TuneZ2star_8TeV_madgraph_tauola_Summer12_DR53X_PU_S10_START53_V7A_v1_cff     mumu_ttbarsignalplustau_matchingup.root     ttbarsignalplustau
-20  Summer12.TTJets_MatchingUp_TuneZ2star_8TeV_madgraph_tauola_Summer12_DR53X_PU_S10_START53_V7A_v1_cff     mumu_ttbarbg_matchingup.root                ttbarbg
+20  Summer12.TTJets_MatchingUp_TuneZ2star_8TeV_madgraph_tauola_Summer12_DR53X_PU_S10_START53_V7A_v1_cff     mumu_ttbarsignalplustau_matchingup.root     ttbarsignalplustau,runOnAOD=True
+20  Summer12.TTJets_MatchingUp_TuneZ2star_8TeV_madgraph_tauola_Summer12_DR53X_PU_S10_START53_V7A_v1_cff     mumu_ttbarbg_matchingup.root                ttbarbg,runOnAOD=True
 
-20  Summer12.TTJets_MatchingDown_TuneZ2star_8TeV_madgraph_tauola_Summer12_DR53X_PU_S10_START53_V7A_v1_cff   mumu_ttbarsignalplustau_matchingdown.root   ttbarsignalplustau
-20  Summer12.TTJets_MatchingDown_TuneZ2star_8TeV_madgraph_tauola_Summer12_DR53X_PU_S10_START53_V7A_v1_cff   mumu_ttbarbg_matchingdown.root              ttbarbg
+20  Summer12.TTJets_MatchingDown_TuneZ2star_8TeV_madgraph_tauola_Summer12_DR53X_PU_S10_START53_V7A_v1_cff   mumu_ttbarsignalplustau_matchingdown.root   ttbarsignalplustau,runOnAOD=true
+20  Summer12.TTJets_MatchingDown_TuneZ2star_8TeV_madgraph_tauola_Summer12_DR53X_PU_S10_START53_V7A_v1_cff   mumu_ttbarbg_matchingdown.root              ttbarbg,runOnAOD=True
 
-20  Summer12.TTJets_ScaleUp_TuneZ2star_8TeV_madgraph_tauola_Summer12_DR53X_PU_S10_START53_V7A_v1_cff        mumu_ttbarsignalplustau_scaleup.root        ttbarsignalplustau
-20  Summer12.TTJets_ScaleUp_TuneZ2star_8TeV_madgraph_tauola_Summer12_DR53X_PU_S10_START53_V7A_v1_cff        mumu_ttbarbg_scaleup.root                   ttbarbg
+20  Summer12.TTJets_ScaleUp_TuneZ2star_8TeV_madgraph_tauola_Summer12_DR53X_PU_S10_START53_V7A_v1_cff        mumu_ttbarsignalplustau_scaleup.root        ttbarsignalplustau,runOnAOD=True
+20  Summer12.TTJets_ScaleUp_TuneZ2star_8TeV_madgraph_tauola_Summer12_DR53X_PU_S10_START53_V7A_v1_cff        mumu_ttbarbg_scaleup.root                   ttbarbg,runOnAOD=True
 
-20  Summer12.TTJets_ScaleDown_TuneZ2star_8TeV_madgraph_tauola_Summer12_DR53X_PU_S10_START53_V7A_v1_cff      mumu_ttbarsignalplustau_scaledown.root      ttbarsignalplustau
-20  Summer12.TTJets_ScaleDown_TuneZ2star_8TeV_madgraph_tauola_Summer12_DR53X_PU_S10_START53_V7A_v1_cff      mumu_ttbarbg_scaledown.root                 ttbarbg
+20  Summer12.TTJets_ScaleDown_TuneZ2star_8TeV_madgraph_tauola_Summer12_DR53X_PU_S10_START53_V7A_v1_cff      mumu_ttbarsignalplustau_scaledown.root      ttbarsignalplustau,runOnAOD=true
+20  Summer12.TTJets_ScaleDown_TuneZ2star_8TeV_madgraph_tauola_Summer12_DR53X_PU_S10_START53_V7A_v1_cff      mumu_ttbarbg_scaledown.root                 ttbarbg,runOnAOD=True
 
-20  Summer12.TTJets_mass184_5_TuneZ2star_8TeV_madgraph_tauola_Summer12_DR53X_PU_S10_START53_V7A_v1_cff      mumu_ttbarsignalplustau_massup.root         ttbarsignalplustau
-20  Summer12.TTJets_mass184_5_TuneZ2star_8TeV_madgraph_tauola_Summer12_DR53X_PU_S10_START53_V7A_v1_cff      mumu_ttbarbg_massup.root		        ttbarbg
+20  Summer12.TTJets_mass184_5_TuneZ2star_8TeV_madgraph_tauola_Summer12_DR53X_PU_S10_START53_V7A_v1_cff      mumu_ttbarsignalplustau_massup.root         ttbarsignalplustau,runOnAOD=True
+20  Summer12.TTJets_mass184_5_TuneZ2star_8TeV_madgraph_tauola_Summer12_DR53X_PU_S10_START53_V7A_v1_cff      mumu_ttbarbg_massup.root		        ttbarbg,runOnAOD=True
 
-20  Summer12.TTJets_mass161_5_TuneZ2star_8TeV_madgraph_tauola_Summer12_DR53X_PU_S10_START53_V7A_v1_cff      mumu_ttbarsignalplustau_massdown.root       ttbarsignalplustau
-20  Summer12.TTJets_mass161_5_TuneZ2star_8TeV_madgraph_tauola_Summer12_DR53X_PU_S10_START53_V7A_v1_cff      mumu_ttbarbg_massdown.root		        ttbarbg
+20  Summer12.TTJets_mass161_5_TuneZ2star_8TeV_madgraph_tauola_Summer12_DR53X_PU_S10_START53_V7A_v1_cff      mumu_ttbarsignalplustau_massdown.root       ttbarsignalplustau,runOnAOD=True
+20  Summer12.TTJets_mass161_5_TuneZ2star_8TeV_madgraph_tauola_Summer12_DR53X_PU_S10_START53_V7A_v1_cff      mumu_ttbarbg_massdown.root		        ttbarbg,runOnAOD=True
 
-20  Summer12.TTTo2L2Nu2B_8TeV_powheg_pythia6_Summer12_DR53X_PU_S10_START53_V7A_v1_cff            mumu_ttbarsignalplustau_powheg.root	   ttbarsignalplustau
-20  Summer12.TTTo2L2Nu2B_8TeV_powheg_pythia6_Summer12_DR53X_PU_S10_START53_V7A_v1_cff            mumu_ttbarbg_powheg.root	           ttbarbg
+20  Summer12.TTTo2L2Nu2B_8TeV_powheg_pythia6_Summer12_DR53X_PU_S10_START53_V7A_v1_cff            mumu_ttbarsignalplustau_powheg.root	   ttbarsignalplustau,runOnAOD=True
+20  Summer12.TTTo2L2Nu2B_8TeV_powheg_pythia6_Summer12_DR53X_PU_S10_START53_V7A_v1_cff            mumu_ttbarbg_powheg.root	           ttbarbg,runOnAOD=True
 
-#30  Fall11.tt_Z2_mcatnlo_Fall11_AOD_cff           mumu_ttbarsignalplustau_mcatnlo.root	   ttbarsignalplustau
-#30  Fall11.tt_Z2_mcatnlo_Fall11_AOD_cff           mumu_ttbarbg_mcatnlo.root	           ttbarbg
+#30  Fall11.tt_Z2_mcatnlo_Fall11_AOD_cff           mumu_ttbarsignalplustau_mcatnlo.root	   ttbarsignalplustau,runOnAOD=True
+#30  Fall11.tt_Z2_mcatnlo_Fall11_AOD_cff           mumu_ttbarbg_mcatnlo.root	           ttbarbg,runOnAOD=True
 
-20  Summer12.TTJets_FullLeptMGDecays_8TeV_madgraph_Summer12_DR53X_PU_S10_START53_V7A_v1_cff            mumu_ttbarsignalplustau_madgraphWithSpinCorrelation.root	 ttbarsignalplustau
-20  Summer12.TTJets_FullLeptMGDecays_8TeV_madgraph_Summer12_DR53X_PU_S10_START53_V7A_v1_cff            mumu_ttbarbg_madgraphWithSpinCorrelation.root	         ttbarbg
+#Madgrpah with spin correlations exclusive samples
+20  Summer12.TTJets_FullLeptMGDecays_8TeV_madgraph_Summer12_DR53X_PU_S10_START53_V7A_v1_cff            mumu_ttbarsignalplustau_FullLeptMadgraphWithSpinCorrelation.root	 ttbarsignalplustau,runOnAOD=True
+20  Summer12.TTJets_FullLeptMGDecays_8TeV_madgraph_Summer12_DR53X_PU_S10_START53_V7A_v1_cff            mumu_ttbarbg_FullLeptMadgraphWithSpinCorrelation.root	         ttbarbg,runOnAOD=True
+20  Summer12.TTJets_SemiLeptMGDecays_8TeV_madgraph_Summer12_DR53X_PU_S10_START53_V7A_v1_cff            mumu_ttbarsignalplustau_SemiLeptMadgraphWithSpinCorrelation.root	 ttbarsignalplustau,runOnAOD=True
+20  Summer12.TTJets_SemiLeptMGDecays_8TeV_madgraph_Summer12_DR53X_PU_S10_START53_V7A_v1_cff            mumu_ttbarbg_SemiLeptMadgraphWithSpinCorrelation.root	         ttbarbg,runOnAOD=True
+20  Summer12.TTJets_HadronicMGDecays_8TeV_madgraph_Summer12_DR53X_PU_S10_START53_V7A_v1_cff            mumu_ttbarsignalplustau_HadronicMadgraphWithSpinCorrelation.root	 ttbarsignalplustau,runOnAOD=True
+20  Summer12.TTJets_HadronicMGDecays_8TeV_madgraph_Summer12_DR53X_PU_S10_START53_V7A_v1_cff            mumu_ttbarbg_HadronicMadgraphWithSpinCorrelation.root	         ttbarbg,runOnAOD=True
 
 #### EE channel
-20  Summer12.TTJets_MatchingUp_TuneZ2star_8TeV_madgraph_tauola_Summer12_DR53X_PU_S10_START53_V7A_v1_cff     ee_ttbarsignalplustau_matchingup.root    ttbarsignalplustau
-20  Summer12.TTJets_MatchingUp_TuneZ2star_8TeV_madgraph_tauola_Summer12_DR53X_PU_S10_START53_V7A_v1_cff     ee_ttbarbg_matchingup.root               ttbarbg
+20  Summer12.TTJets_MatchingUp_TuneZ2star_8TeV_madgraph_tauola_Summer12_DR53X_PU_S10_START53_V7A_v1_cff     ee_ttbarsignalplustau_matchingup.root    ttbarsignalplustau,runOnAOD=True
+20  Summer12.TTJets_MatchingUp_TuneZ2star_8TeV_madgraph_tauola_Summer12_DR53X_PU_S10_START53_V7A_v1_cff     ee_ttbarbg_matchingup.root               ttbarbg,runOnAOD=True
 
-20  Summer12.TTJets_MatchingDown_TuneZ2star_8TeV_madgraph_tauola_Summer12_DR53X_PU_S10_START53_V7A_v1_cff   ee_ttbarsignalplustau_matchingdown.root  ttbarsignalplustau
-20  Summer12.TTJets_MatchingDown_TuneZ2star_8TeV_madgraph_tauola_Summer12_DR53X_PU_S10_START53_V7A_v1_cff   ee_ttbarbg_matchingdown.root             ttbarbg
+20  Summer12.TTJets_MatchingDown_TuneZ2star_8TeV_madgraph_tauola_Summer12_DR53X_PU_S10_START53_V7A_v1_cff   ee_ttbarsignalplustau_matchingdown.root  ttbarsignalplustau,runOnAOD=true
+20  Summer12.TTJets_MatchingDown_TuneZ2star_8TeV_madgraph_tauola_Summer12_DR53X_PU_S10_START53_V7A_v1_cff   ee_ttbarbg_matchingdown.root             ttbarbg,runOnAOD=True
 
-20  Summer12.TTJets_ScaleUp_TuneZ2star_8TeV_madgraph_tauola_Summer12_DR53X_PU_S10_START53_V7A_v1_cff        ee_ttbarsignalplustau_scaleup.root       ttbarsignalplustau
-20  Summer12.TTJets_ScaleUp_TuneZ2star_8TeV_madgraph_tauola_Summer12_DR53X_PU_S10_START53_V7A_v1_cff        ee_ttbarbg_scaleup.root                  ttbarbg
+20  Summer12.TTJets_ScaleUp_TuneZ2star_8TeV_madgraph_tauola_Summer12_DR53X_PU_S10_START53_V7A_v1_cff        ee_ttbarsignalplustau_scaleup.root       ttbarsignalplustau,runOnAOD=True
+20  Summer12.TTJets_ScaleUp_TuneZ2star_8TeV_madgraph_tauola_Summer12_DR53X_PU_S10_START53_V7A_v1_cff        ee_ttbarbg_scaleup.root                  ttbarbg,runOnAOD=True
 
-20  Summer12.TTJets_ScaleDown_TuneZ2star_8TeV_madgraph_tauola_Summer12_DR53X_PU_S10_START53_V7A_v1_cff      ee_ttbarsignalplustau_scaledown.root     ttbarsignalplustau
-20  Summer12.TTJets_ScaleDown_TuneZ2star_8TeV_madgraph_tauola_Summer12_DR53X_PU_S10_START53_V7A_v1_cff      ee_ttbarbg_scaledown.root                ttbarbg
+20  Summer12.TTJets_ScaleDown_TuneZ2star_8TeV_madgraph_tauola_Summer12_DR53X_PU_S10_START53_V7A_v1_cff      ee_ttbarsignalplustau_scaledown.root     ttbarsignalplustau,runOnAOD=true
+20  Summer12.TTJets_ScaleDown_TuneZ2star_8TeV_madgraph_tauola_Summer12_DR53X_PU_S10_START53_V7A_v1_cff      ee_ttbarbg_scaledown.root                ttbarbg,runOnAOD=True
 
-20  Summer12.TTJets_mass184_5_TuneZ2star_8TeV_madgraph_tauola_Summer12_DR53X_PU_S10_START53_V7A_v1_cff      ee_ttbarsignalplustau_massup.root        ttbarsignalplustau
-20  Summer12.TTJets_mass184_5_TuneZ2star_8TeV_madgraph_tauola_Summer12_DR53X_PU_S10_START53_V7A_v1_cff      ee_ttbarbg_massup.root		     ttbarbg
+20  Summer12.TTJets_mass184_5_TuneZ2star_8TeV_madgraph_tauola_Summer12_DR53X_PU_S10_START53_V7A_v1_cff      ee_ttbarsignalplustau_massup.root        ttbarsignalplustau,runOnAOD=True
+20  Summer12.TTJets_mass184_5_TuneZ2star_8TeV_madgraph_tauola_Summer12_DR53X_PU_S10_START53_V7A_v1_cff      ee_ttbarbg_massup.root		     ttbarbg,runOnAOD=True
 
-20  Summer12.TTJets_mass161_5_TuneZ2star_8TeV_madgraph_tauola_Summer12_DR53X_PU_S10_START53_V7A_v1_cff      ee_ttbarsignalplustau_massdown.root      ttbarsignalplustau
-20  Summer12.TTJets_mass161_5_TuneZ2star_8TeV_madgraph_tauola_Summer12_DR53X_PU_S10_START53_V7A_v1_cff      ee_ttbarbg_massdown.root                 ttbarbg
+20  Summer12.TTJets_mass161_5_TuneZ2star_8TeV_madgraph_tauola_Summer12_DR53X_PU_S10_START53_V7A_v1_cff      ee_ttbarsignalplustau_massdown.root      ttbarsignalplustau,runOnAOD=True
+20  Summer12.TTJets_mass161_5_TuneZ2star_8TeV_madgraph_tauola_Summer12_DR53X_PU_S10_START53_V7A_v1_cff      ee_ttbarbg_massdown.root                 ttbarbg,runOnAOD=True
 
-20  Summer12.TTTo2L2Nu2B_8TeV_powheg_pythia6_Summer12_DR53X_PU_S10_START53_V7A_v1_cff            ee_ttbarsignalplustau_powheg.root         ttbarsignalplustau
-20  Summer12.TTTo2L2Nu2B_8TeV_powheg_pythia6_Summer12_DR53X_PU_S10_START53_V7A_v1_cff            ee_ttbarbg_powheg.root                    ttbarbg
+20  Summer12.TTTo2L2Nu2B_8TeV_powheg_pythia6_Summer12_DR53X_PU_S10_START53_V7A_v1_cff            ee_ttbarsignalplustau_powheg.root         ttbarsignalplustau,runOnAOD=True
+20  Summer12.TTTo2L2Nu2B_8TeV_powheg_pythia6_Summer12_DR53X_PU_S10_START53_V7A_v1_cff            ee_ttbarbg_powheg.root                    ttbarbg,runOnAOD=True
 
-#30  Fall11.tt_Z2_mcatnlo_Fall11_AOD_cff            ee_ttbarsignalplustau_mcatnlo.root	   ttbarsignalplustau
-#30  Fall11.tt_Z2_mcatnlo_Fall11_AOD_cff            ee_ttbarbg_mcatnlo.root	           ttbarbg
+#30  Fall11.tt_Z2_mcatnlo_Fall11_AOD_cff            ee_ttbarsignalplustau_mcatnlo.root	   ttbarsignalplustau,runOnAOD=True
+#30  Fall11.tt_Z2_mcatnlo_Fall11_AOD_cff            ee_ttbarbg_mcatnlo.root	           ttbarbg,runOnAOD=True
 
-20  Summer12.TTJets_FullLeptMGDecays_8TeV_madgraph_Summer12_DR53X_PU_S10_START53_V7A_v1_cff            ee_ttbarsignalplustau_madgraphWithSpinCorrelation.root	 ttbarsignalplustau
-20  Summer12.TTJets_FullLeptMGDecays_8TeV_madgraph_Summer12_DR53X_PU_S10_START53_V7A_v1_cff            ee_ttbarbg_madgraphWithSpinCorrelation.root	         ttbarbg
+#Madgrpah with spin correlations exclusive samples
+20  Summer12.TTJets_FullLeptMGDecays_8TeV_madgraph_Summer12_DR53X_PU_S10_START53_V7A_v1_cff            ee_ttbarsignalplustau_FullLeptMadgraphWithSpinCorrelation.root	 ttbarsignalplustau,runOnAOD=True
+20  Summer12.TTJets_FullLeptMGDecays_8TeV_madgraph_Summer12_DR53X_PU_S10_START53_V7A_v1_cff            ee_ttbarbg_FullLeptMadgraphWithSpinCorrelation.root	         ttbarbg,runOnAOD=True
+20  Summer12.TTJets_SemiLeptMGDecays_8TeV_madgraph_Summer12_DR53X_PU_S10_START53_V7A_v1_cff            ee_ttbarsignalplustau_SemiLeptMadgraphWithSpinCorrelation.root	 ttbarsignalplustau,runOnAOD=True
+20  Summer12.TTJets_SemiLeptMGDecays_8TeV_madgraph_Summer12_DR53X_PU_S10_START53_V7A_v1_cff            ee_ttbarbg_SemiLeptMadgraphWithSpinCorrelation.root	         ttbarbg,runOnAOD=True
+20  Summer12.TTJets_HadronicMGDecays_8TeV_madgraph_Summer12_DR53X_PU_S10_START53_V7A_v1_cff            ee_ttbarsignalplustau_HadronicMadgraphWithSpinCorrelation.root	 ttbarsignalplustau,runOnAOD=True
+20  Summer12.TTJets_HadronicMGDecays_8TeV_madgraph_Summer12_DR53X_PU_S10_START53_V7A_v1_cff            ee_ttbarbg_HadronicMadgraphWithSpinCorrelation.root	         ttbarbg,runOnAOD=True

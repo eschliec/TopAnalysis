@@ -8,7 +8,7 @@ import FWCore.ParameterSet.Config as cms
 ## ---
 ##    example to run this cfg file
 ## ---
-## cmsRun analyzeTopDiffXSec_cfg.py triggerTag=HLT,sample=ttbar,lepton=muon,mctag=Fall11,eventsToProcess=5000
+## cmsRun analyzeTopDiffXSec_cfg.py triggerTag=HLT,sample=ttbar,lepton=muon,mctag=Summer12,eventsToProcess=5000
 
 ## ---
 ##    options
@@ -32,7 +32,7 @@ options.register('lepton', 'unset',VarParsing.VarParsing.multiplicity.singleton,
 # create label to select version of MC samples (Summer11, Fall11)
 # a) important for trigger
 # b) also used to automatically select the mode for PU event reweighting
-options.register('mctag', 'Fall11',VarParsing.VarParsing.multiplicity.singleton,VarParsing.VarParsing.varType.string, "label for version of MC samples (Fall11, Summer11")
+options.register('mctag', 'Fall11',VarParsing.VarParsing.multiplicity.singleton,VarParsing.VarParsing.varType.string, "label for version of MC samples (Summer12, Fall11, Summer11")
 # create variable to indicate number of processed events
 # -42 means nothing is changed wrt number typed below
 options.register('eventsToProcess', -42,VarParsing.VarParsing.multiplicity.singleton,VarParsing.VarParsing.varType.int, "events to process")
@@ -170,7 +170,6 @@ if(not globals().has_key('additionalEventWeights')):
 ## enable/ disable systematic shape distortion event reweighting
 if(not globals().has_key('sysDistort')):
     sysDistort =  ''
-    #sysDistort =  'data'
     #sysDistort =  'Up'
     #sysDistort =  'Down'
 # only done for ttbar
@@ -233,227 +232,237 @@ usedSample="none"
 if(not options.sample=="none"):
     outputFileName+="DiffXSec"    
     if(options.sample=="ttbar"):
-        # limited statistics
-        usedSample="TopAnalysis/Configuration/Fall11/ttjets_MadgraphZ2_Fall11_v1_AOD_cff"        
-        # full statistics
-        if(genFull):
-            usedSample="TopAnalysis/Configuration/Fall11/ttjets_MadgraphZ2_Fall11_v1_and_2_AOD_cff"
-	if(eventFilter=='signal only'):
-	    outputFileName+="Sig"
-	elif(eventFilter=='background only'):
-	    outputFileName+="Bkg"
+        # limited statistics (wo spin correlation inclusive sample)
+        usedSample="TopAnalysis/Configuration/Summer12/TTJets_MassiveBinDECAY_TuneZ2star_8TeV_madgraph_tauola_Summer12_DR53X_PU_S10_START53_V7A_v1_cff"
+        # full statistics: FIXME not available yet
+##         if(genFull):
+##             usedSample="TopAnalysis/Configuration/Fall11/ttjets_MadgraphZ2_Fall11_v1_and_2_AOD_cff"
+## 	if(eventFilter=='signal only'):
+## 	    outputFileName+="Sig"
+## 	elif(eventFilter=='background only'):
+## 	    outputFileName+="Bkg"
 	if(sysDistort!=""):
 	    additionalEventWeights=False
 	    outputFileName+="SysDistort"+sysDistort
-    elif(options.sample=="powheg"):
-        usedSample="TopAnalysis/Configuration/Fall11/tt_Z2_powheg_Fall11_AOD_cff"
-	if(eventFilter=='signal only'):
-	    outputFileName+="SigPowheg"
-	elif(eventFilter=='background only'):
-	    outputFileName+="BkgPowheg"
-    elif(options.sample=="mcatnlo"):
-        usedSample="TopAnalysis/Configuration/Fall11/tt_Z2_mcatnlo_Fall11_AOD_cff"
-        PythiaSample="True"
-	if(eventFilter=='signal only'):
-	    outputFileName+="SigMcatnlo"
-	elif(eventFilter=='background only'):
-	    outputFileName+="BkgMcatnlo"
+            
+# FIXME: other generators not available yet   
+##     elif(options.sample=="powheg"):
+##         usedSample="TopAnalysis/Configuration/Fall11/tt_Z2_powheg_Fall11_AOD_cff" 
+##         if(eventFilter=='signal only'):
+##             outputFileName+="SigPowheg"
+##         elif(eventFilter=='background only'):
+##             outputFileName+="BkgPowheg"
+##     elif(options.sample=="mcatnlo"):
+##         usedSample="TopAnalysis/Configuration/Fall11/tt_Z2_mcatnlo_Fall11_AOD_cff"
+##         PythiaSample="True"
+##         if(eventFilter=='signal only'):
+##             outputFileName+="SigMcatnlo"
+##         elif(eventFilter=='background only'):
+##             outputFileName+="BkgMcatnlo"
     elif(options.sample=="ttbarMatchingDown"):        
-        usedSample="TopAnalysis/Configuration/Fall11/ttjets_matching_down_MadgraphZ2_Fall11_AOD_cff"
+        usedSample="TopAnalysis/Configuration/Summer12/TTJets_MatchingDown_TuneZ2star_8TeV_madgraph_tauola_Summer12_DR53X_PU_S10_START53_V7A_v1_cff"
 	additionalEventWeights=False
 	if(eventFilter=='signal only'):
 	    outputFileName+="SigMatchDown"
 	elif(eventFilter=='background only'):
 	    outputFileName+="BkgMatchDown"
     elif(options.sample=="ttbarMatchingUp"):        
-        usedSample="TopAnalysis/Configuration/Fall11/ttjets_matching_up_MadgraphZ2_Fall11_AOD_cff"
+        usedSample="TopAnalysis/Configuration/Summer12/TTJets_MatchingUp_TuneZ2star_8TeV_madgraph_tauola_Summer12_DR53X_PU_S10_START53_V7A_v1_cff"
 	additionalEventWeights=False
 	if(eventFilter=='signal only'):
 	    outputFileName+="SigMatchUp"
 	elif(eventFilter=='background only'):
 	    outputFileName+="BkgMatchUp"
     elif(options.sample=="ttbarScaleDown"):        
-        usedSample="TopAnalysis/Configuration/Fall11/ttjets_scale_down_MadgraphZ2_Fall11_AOD_cff"
+        usedSample="TopAnalysis/Configuration/Summer12/TTJets_ScaleDown_TuneZ2star_8TeV_madgraph_tauola_Summer12_DR53X_PU_S10_START53_V7A_v1_cff"
 	additionalEventWeights=False
 	if(eventFilter=='signal only'):
 	    outputFileName+="SigScaleDown"
 	elif(eventFilter=='background only'):
 	    outputFileName+="BkgScaleDown"
     elif(options.sample=="ttbarScaleUp"):        
-        usedSample="TopAnalysis/Configuration/Fall11/ttjets_scale_up_MadgraphZ2_Fall11_AOD_cff"
+        usedSample="TopAnalysis/Configuration/Summer12/TTJets_ScaleUp_TuneZ2star_8TeV_madgraph_tauola_Summer12_DR53X_PU_S10_START53_V7A_v1_cff"
 	additionalEventWeights=False
 	if(eventFilter=='signal only'):
 	    outputFileName+="SigScaleUp"
 	elif(eventFilter=='background only'):
 	    outputFileName+="BkgScaleUp"
     elif(options.sample=="ttbarMassDown"):        
-        usedSample="TopAnalysis/Configuration/Fall11/ttjets_mass161_5_MadgraphZ2_Fall11_AOD_cff"
+        usedSample="TopAnalysis/Configuration/Summer12/TTJets_mass161_5_TuneZ2star_8TeV_madgraph_tauola_Summer12_DR53X_PU_S10_START53_V7A_v1_cff"
 	additionalEventWeights=False
 	if(eventFilter=='signal only'):
 	    outputFileName+="SigTopMassDown"
 	elif(eventFilter=='background only'):
 	    outputFileName+="BkgTopMassDown"
     elif(options.sample=="ttbarMassUp"):        
-        usedSample="TopAnalysis/Configuration/Fall11/ttjets_mass184_5_MadgraphZ2_Fall11_AOD_cff"
+        usedSample="TopAnalysis/Configuration/Summer12/TTJets_mass184_5_TuneZ2star_8TeV_madgraph_tauola_Summer12_DR53X_PU_S10_START53_V7A_v1_cff"
 	additionalEventWeights=False
 	if(eventFilter=='signal only'):
 	    outputFileName+="SigTopMassUp"
 	elif(eventFilter=='background only'):
 	    outputFileName+="BkgTopMassUp"
     elif(options.sample=="wjets"):        
-        usedSample="TopAnalysis/Configuration/Fall11/wlnujets_MadgraphZ2_Fall11_AOD_cff"
+        usedSample="TopAnalysis/Configuration/Summer12/WJetsToLNu_TuneZ2Star_8TeV_madgraph_tarball_Summer12_DR53X_PU_S10_START53_V7A_v2_cff"
 	outputFileName+="Wjets"
-    elif(options.sample=="wjetsMatchingUp"):        
-        usedSample="TopAnalysis/Configuration/Fall11/wlnujets_matching_up_MadgraphZ2_Fall11_AOD_cff"
-	additionalEventWeights=False
-	outputFileName+="WjetsMatchUp"
-    elif(options.sample=="wjetsMatchingDown"):        
-        usedSample="TopAnalysis/Configuration/Fall11/wlnujets_matching_down_MadgraphZ2_Fall11_AOD_cff"
-	additionalEventWeights=False
-	outputFileName+="WjetsMatchDown"
-    elif(options.sample=="wjetsScaleUp"):        
-        usedSample="TopAnalysis/Configuration/Fall11/wlnujets_scale_up_MadgraphZ2_Fall11_AOD_cff"
-	additionalEventWeights=False
-	outputFileName+="WjetsScaleUp"
-    elif(options.sample=="wjetsScaleDown"):
-        usedSample="TopAnalysis/Configuration/Fall11/wlnujets_scale_down_MadgraphZ2_Fall11_AOD_cff"
-	additionalEventWeights=False        
-	outputFileName+="WjetsScaleDown"
+# FIXME: W+jets systematics not available yet 
+##     elif(options.sample=="wjetsMatchingUp"):        
+##         usedSample="TopAnalysis/Configuration/Fall11/wlnujets_matching_up_MadgraphZ2_Fall11_AOD_cff"
+## 	additionalEventWeights=False
+## 	outputFileName+="WjetsMatchUp"
+##     elif(options.sample=="wjetsMatchingDown"):        
+##         usedSample="TopAnalysis/Configuration/Fall11/wlnujets_matching_down_MadgraphZ2_Fall11_AOD_cff"
+## 	additionalEventWeights=False
+## 	outputFileName+="WjetsMatchDown"
+##     elif(options.sample=="wjetsScaleUp"):        
+##         usedSample="TopAnalysis/Configuration/Fall11/wlnujets_scale_up_MadgraphZ2_Fall11_AOD_cff"
+## 	additionalEventWeights=False
+## 	outputFileName+="WjetsScaleUp"
+##     elif(options.sample=="wjetsScaleDown"):
+##         usedSample="TopAnalysis/Configuration/Fall11/wlnujets_scale_down_MadgraphZ2_Fall11_AOD_cff"
+## 	additionalEventWeights=False        
+## 	outputFileName+="WjetsScaleDown"
     elif(options.sample=="zjets"):        
-        usedSample="TopAnalysis/Configuration/Fall11/dylljetsM50_MadgraphZ2_Fall11_AOD_cff"
-	outputFileName+="Zjets"
-    elif(options.sample=="zjetsMatchingUp"):        
-        usedSample="TopAnalysis/Configuration/zlljets_matching_up_MadgraphZ2_Summer11_AOD_cff"
-	additionalEventWeights=False
-	outputFileName+="ZjetsMatchUp"
-    elif(options.sample=="zjetsMatchingDown"):        
-        usedSample="TopAnalysis/Configuration/zlljets_matching_down_MadgraphZ2_Summer11_AOD_cff"
-	additionalEventWeights=False
-	outputFileName+="ZjetsMatchDown"
-    elif(options.sample=="zjetsScaleUp"):        
-        usedSample="TopAnalysis/Configuration/zlljets_scale_up_MadgraphZ2_Summer11_AOD_cff"
-	additionalEventWeights=False
-	outputFileName+="ZjetsScaleUp"
-    elif(options.sample=="zjetsScaleDown"):        
-        usedSample="TopAnalysis/Configuration/zlljets_scale_down_MadgraphZ2_Summer11_AOD_cff"
-	additionalEventWeights=False      
-	outputFileName+="ZjetsScaleDown"
-    elif(options.sample=="singleTopS"):        
-        usedSample="TopAnalysis/Configuration/Fall11/singleTop_schannel_PythiaPowhegZ2_Fall11_AOD_cff"
-	outputFileName+="SingleTopS"
-    elif(options.sample=="singleTopSScaleDown"):        
-        usedSample="TopAnalysis/Configuration/Fall11/singleTop_schannel_scale_down_PythiaPowhegZ2_Fall11_AOD_cff"
-	additionalEventWeights=False   
-	outputFileName+="SingleTopSScaleDown"
-    elif(options.sample=="singleTopSScaleUp"):        
-        usedSample="TopAnalysis/Configuration/Fall11/singleTop_schannel_scale_up_PythiaPowhegZ2_Fall11_AOD_cff"
-	additionalEventWeights=False
-	outputFileName+="SingleTopSScaleUp"
-    elif(options.sample=="singleAntiTopS"):        
-        usedSample="TopAnalysis/Configuration/Fall11/singleAntiTop_schannel_PythiaPowhegZ2_Fall11_AOD_cff"
-	outputFileName+="SingleAntiTopS"
-    elif(options.sample=="singleAntiTopSScaleDown"):        
-        usedSample="TopAnalysis/Configuration/Fall11/singleAntiTop_schannel_scale_down_PythiaPowhegZ2_Fall11_AOD_cff"
-	additionalEventWeights=False
-	outputFileName+="SingleAntiTopSScaleDown"
-    elif(options.sample=="singleAntiTopSScaleUp"):        
-        usedSample="TopAnalysis/Configuration/Fall11/singleAntiTop_schannel_scale_up_PythiaPowhegZ2_Fall11_AOD_cff"
-	additionalEventWeights=False
-	outputFileName+="SingleAntiTopSScaleUp"
-    elif(options.sample=="singleTopT"):        
-        usedSample="TopAnalysis/Configuration/Fall11/singleTop_tchannel_PythiaPowhegZ2_Fall11_AOD_cff"
-	outputFileName+="SingleTopT"
-    elif(options.sample=="singleTopTScaleDown"):        
-        usedSample="TopAnalysis/Configuration/Fall11/singleTop_tchannel_scale_down_PythiaPowhegZ2_Fall11_AOD_cff"
-	additionalEventWeights=False
-	outputFileName+="SingleTopTScaleDown"
-    elif(options.sample=="singleTopTScaleUp"):        
-        usedSample="TopAnalysis/Configuration/Fall11/singleTop_tchannel_scale_up_PythiaPowhegZ2_Fall11_AOD_cff"
-	additionalEventWeights=False
-	outputFileName+="SingleTopTScaleUp"
-    elif(options.sample=="singleAntiTopT"):        
-        usedSample="TopAnalysis/Configuration/Fall11/singleAntiTop_tchannel_PythiaPowhegZ2_Fall11_AOD_cff"
-	outputFileName+="SingleAntiTopT"
-    elif(options.sample=="singleAntiTopTScaleDown"):        
-        usedSample="TopAnalysis/Configuration/Fall11/singleAntiTop_tchannel_scale_down_PythiaPowhegZ2_Fall11_AOD_cff"
-	additionalEventWeights=False
-	outputFileName+="SingleAntiTopTScaleDown"
-    elif(options.sample=="singleAntiTopTScaleUp"):        
-        usedSample="TopAnalysis/Configuration/Fall11/singleAntiTop_tchannel_scale_up_PythiaPowhegZ2_Fall11_AOD_cff"
-	additionalEventWeights=False
-	outputFileName+="SingleAntiTopTScaleUp"
+         usedSample="TopAnalysis/Configuration/Summer12/DYJetsToLL_M_50_TuneZ2Star_8TeV_madgraph_tarball_Summer12_DR53X_PU_S10_START53_V7A_v1_cff"
+         outputFileName+="Zjets"
+# FIXME: Z+jets systematics not available yet 
+##     elif(options.sample=="zjetsMatchingUp"):        
+##         usedSample="TopAnalysis/Configuration/zlljets_matching_up_MadgraphZ2_Summer11_AOD_cff"
+## 	additionalEventWeights=False
+## 	outputFileName+="ZjetsMatchUp"
+##     elif(options.sample=="zjetsMatchingDown"):        
+##         usedSample="TopAnalysis/Configuration/zlljets_matching_down_MadgraphZ2_Summer11_AOD_cff"
+## 	additionalEventWeights=False
+## 	outputFileName+="ZjetsMatchDown"
+##     elif(options.sample=="zjetsScaleUp"):        
+##         usedSample="TopAnalysis/Configuration/zlljets_scale_up_MadgraphZ2_Summer11_AOD_cff"
+## 	additionalEventWeights=False
+## 	outputFileName+="ZjetsScaleUp"
+##     elif(options.sample=="zjetsScaleDown"):        
+##         usedSample="TopAnalysis/Configuration/zlljets_scale_down_MadgraphZ2_Summer11_AOD_cff"
+## 	additionalEventWeights=False      
+## 	outputFileName+="ZjetsScaleDown"
+##     elif(options.sample=="singleTopS"):        
+##         usedSample="TopAnalysis/Configuration/Fall11/singleTop_schannel_PythiaPowhegZ2_Fall11_AOD_cff"
+
+# FIXME: single to s channel not available yet 
+## 	outputFileName+="SingleTopS"
+##     elif(options.sample=="singleTopSScaleDown"):        
+##         usedSample="TopAnalysis/Configuration/Fall11/singleTop_schannel_scale_down_PythiaPowhegZ2_Fall11_AOD_cff"
+## 	additionalEventWeights=False   
+## 	outputFileName+="SingleTopSScaleDown"
+##     elif(options.sample=="singleTopSScaleUp"):        
+##         usedSample="TopAnalysis/Configuration/Fall11/singleTop_schannel_scale_up_PythiaPowhegZ2_Fall11_AOD_cff"
+## 	additionalEventWeights=False
+## 	outputFileName+="SingleTopSScaleUp"
+##     elif(options.sample=="singleAntiTopS"):        
+##         usedSample="TopAnalysis/Configuration/Fall11/singleAntiTop_schannel_PythiaPowhegZ2_Fall11_AOD_cff"
+## 	outputFileName+="SingleAntiTopS"
+##     elif(options.sample=="singleAntiTopSScaleDown"):        
+##         usedSample="TopAnalysis/Configuration/Fall11/singleAntiTop_schannel_scale_down_PythiaPowhegZ2_Fall11_AOD_cff"
+## 	additionalEventWeights=False
+## 	outputFileName+="SingleAntiTopSScaleDown"
+##     elif(options.sample=="singleAntiTopSScaleUp"):        
+##         usedSample="TopAnalysis/Configuration/Fall11/singleAntiTop_schannel_scale_up_PythiaPowhegZ2_Fall11_AOD_cff"
+## 	additionalEventWeights=False
+## 	outputFileName+="SingleAntiTopSScaleUp"
+# FIXME: single to t channel not available yet 
+##     elif(options.sample=="singleTopT"):        
+##         usedSample="TopAnalysis/Configuration/Fall11/singleTop_tchannel_PythiaPowhegZ2_Fall11_AOD_cff"
+## 	outputFileName+="SingleTopT"
+##     elif(options.sample=="singleTopTScaleDown"):        
+##         usedSample="TopAnalysis/Configuration/Fall11/singleTop_tchannel_scale_down_PythiaPowhegZ2_Fall11_AOD_cff"
+## 	additionalEventWeights=False
+## 	outputFileName+="SingleTopTScaleDown"
+##     elif(options.sample=="singleTopTScaleUp"):        
+##         usedSample="TopAnalysis/Configuration/Fall11/singleTop_tchannel_scale_up_PythiaPowhegZ2_Fall11_AOD_cff"
+## 	additionalEventWeights=False
+## 	outputFileName+="SingleTopTScaleUp"
+##     elif(options.sample=="singleAntiTopT"):        
+##         usedSample="TopAnalysis/Configuration/Fall11/singleAntiTop_tchannel_PythiaPowhegZ2_Fall11_AOD_cff"
+## 	outputFileName+="SingleAntiTopT"
+##     elif(options.sample=="singleAntiTopTScaleDown"):        
+##         usedSample="TopAnalysis/Configuration/Fall11/singleAntiTop_tchannel_scale_down_PythiaPowhegZ2_Fall11_AOD_cff"
+## 	additionalEventWeights=False
+## 	outputFileName+="SingleAntiTopTScaleDown"
+##     elif(options.sample=="singleAntiTopTScaleUp"):        
+##         usedSample="TopAnalysis/Configuration/Fall11/singleAntiTop_tchannel_scale_up_PythiaPowhegZ2_Fall11_AOD_cff"
+## 	additionalEventWeights=False
+## 	outputFileName+="SingleAntiTopTScaleUp"
     elif(options.sample=="singleTopTw"):        
-        usedSample="TopAnalysis/Configuration/Fall11/singleTop_twchannelDR_PythiaPowhegZ2_Fall11_AOD_cff"
+        usedSample="TopAnalysis/Configuration/Summer12/T_tW_channel_DR_TuneZ2star_8TeV_powheg_tauola_Summer12_DR53X_PU_S10_START53_V7A_v1_cff"
 	outputFileName+="SingleTopTW"
-    elif(options.sample=="singleTopTwScaleDown"):        
-        usedSample="TopAnalysis/Configuration/Fall11/singleTop_twchannelDR_scale_down_PythiaPowhegZ2_Fall11_AOD_cff"
-	additionalEventWeights=False
-	outputFileName+="SingleTopTWScaleDown"
-    elif(options.sample=="singleTopTwScaleUp"):        
-        usedSample="TopAnalysis/Configuration/Fall11/singleTop_twchannelDR_scale_up_PythiaPowhegZ2_Fall11_AOD_cff"
-	additionalEventWeights=False
-	outputFileName+="SingleTopTWScaleUp"
+# FIXME: single to tW channel systematics not available yet 
+##     elif(options.sample=="singleTopTwScaleDown"):        
+##         usedSample="TopAnalysis/Configuration/Fall11/singleTop_twchannelDR_scale_down_PythiaPowhegZ2_Fall11_AOD_cff"
+## 	additionalEventWeights=False
+## 	outputFileName+="SingleTopTWScaleDown"
+##     elif(options.sample=="singleTopTwScaleUp"):        
+##         usedSample="TopAnalysis/Configuration/Fall11/singleTop_twchannelDR_scale_up_PythiaPowhegZ2_Fall11_AOD_cff"
+## 	additionalEventWeights=False
+## 	outputFileName+="SingleTopTWScaleUp"
     elif(options.sample=="singleAntiTopTw"):        
-        usedSample="TopAnalysis/Configuration/Fall11/singleAntiTop_twchannelDR_PythiaPowhegZ2_Fall11_AOD_cff"
+        usedSample="TopAnalysis/Configuration/Summer12/Tbar_tW_channel_DR_TuneZ2star_8TeV_powheg_tauola_Summer12_DR53X_PU_S10_START53_V7A_v1_cff"
 	outputFileName+="SingleAntiTopTW"
-    elif(options.sample=="singleAntiTopTwScaleDown"):        
-        usedSample="TopAnalysis/Configuration/Fall11/singleAntiTop_twchannelDR_scale_down_PythiaPowhegZ2_Fall11_AOD_cff"
-	additionalEventWeights=False
-	outputFileName+="SingleAntiTopTWScaleDown"
-    elif(options.sample=="singleAntiTopTwScaleUp"):        
-        usedSample="TopAnalysis/Configuration/Fall11/singleAntiTop_twchannelDR_scale_up_PythiaPowhegZ2_Fall11_AOD_cff"
-	additionalEventWeights=False
-	outputFileName+="SingleAntiTopTWScaleUp"
-    elif(options.sample=="zprime_m500gev_w5000mev"):        
-        usedSample="TopAnalysis/Configuration/Fall11/zprime_M500GeV_W5000MeV_Madgraph_Fall11_AOD_cff"
-	additionalEventWeights=False
-	if(eventFilter=='signal only'):
-	    outputFileName+="Sig"
-	outputFileName+="Zprime_M500_W5000_"
-    elif(options.sample=="zprime_m750gev_w7500mev"):        
-        usedSample="TopAnalysis/Configuration/Fall11/zprime_M750GeV_W7500MeV_Madgraph_Fall11_AOD_cff"
-	if(eventFilter=='signal only'):
-	    outputFileName+="Sig"
-	additionalEventWeights=False
-	outputFileName+="Zprime_M750_W7500_"
+##     elif(options.sample=="singleAntiTopTwScaleDown"):        
+##         usedSample="TopAnalysis/Configuration/Fall11/singleAntiTop_twchannelDR_scale_down_PythiaPowhegZ2_Fall11_AOD_cff"
+## 	additionalEventWeights=False
+## 	outputFileName+="SingleAntiTopTWScaleDown"
+##     elif(options.sample=="singleAntiTopTwScaleUp"):        
+##         usedSample="TopAnalysis/Configuration/Fall11/singleAntiTop_twchannelDR_scale_up_PythiaPowhegZ2_Fall11_AOD_cff"
+## 	additionalEventWeights=False
+## 	outputFileName+="SingleAntiTopTWScaleUp"
+# FIXME: Z prime to be updated for 8 TeV
+##     elif(options.sample=="zprime_m500gev_w5000mev"):        
+##         usedSample="TopAnalysis/Configuration/Fall11/zprime_M500GeV_W5000MeV_Madgraph_Fall11_AOD_cff"
+## 	additionalEventWeights=False
+## 	if(eventFilter=='signal only'):
+## 	    outputFileName+="Sig"
+## 	outputFileName+="Zprime_M500_W5000_"
+##     elif(options.sample=="zprime_m750gev_w7500mev"):        
+##         usedSample="TopAnalysis/Configuration/Fall11/zprime_M750GeV_W7500MeV_Madgraph_Fall11_AOD_cff"
+## 	if(eventFilter=='signal only'):
+## 	    outputFileName+="Sig"
+## 	additionalEventWeights=False
+## 	outputFileName+="Zprime_M750_W7500_"
     elif(options.sample=="qcd" and decayChannel=='muon'):
-        usedSample="TopAnalysis/Configuration/Fall11/qcdmu15enriched_Pythia6_Fall11_AOD_cff"
+        usedSample="TopAnalysis/Configuration/Summer12/QCD_Pt_20_MuEnrichedPt_15_TuneZ2star_8TeV_pythia6_Summer12_DR53X_PU_S10_START53_V7A_v3_cff"
         PythiaSample="True"
         outputFileName+="QCD"
     elif(options.sample=="qcdEM1" and decayChannel=='electron'):
-        usedSample="TopAnalysis/Configuration/Fall11/qcdEMenrichedPt20to30_Pythia6_Fall11_AOD_cff"
+        usedSample="TopAnalysis/Configuration/Summer12/QCD_Pt_20_30_EMEnriched_TuneZ2star_8TeV_pythia6_Summer12_DR53X_PU_S10_START53_V7A_v1_cff"
         PythiaSample="True"
         outputFileName+="QCDEM1"
     elif(options.sample=="qcdEM2" and decayChannel=='electron'):
-        usedSample="TopAnalysis/Configuration/Fall11/qcdEMenrichedPt30to80_Pythia6_Fall11_AOD_cff"
+        usedSample="TopAnalysis/Configuration/Summer12/QCD_Pt_30_80_EMEnriched_TuneZ2star_8TeV_pythia6_Summer12_DR53X_PU_S10_START53_V7A_v1_cff"
         PythiaSample="True"
         outputFileName+="QCDEM2"
     elif(options.sample=="qcdEM3" and decayChannel=='electron'):
-        usedSample="TopAnalysis/Configuration/Fall11/qcdEMenrichedPt80to170_Pythia6_Fall11_AOD_cff"
+        usedSample="TopAnalysis/Configuration/Summer12/QCD_Pt_80_170_EMEnriched_TuneZ2star_8TeV_pythia6_Summer12_DR53X_PU_S10_START53_V7A_v1_cff"
         PythiaSample="True"
         outputFileName+="QCDEM3"
     elif(options.sample=="qcdBCE1" and decayChannel=='electron'):
-        usedSample="TopAnalysis/Configuration/Fall11/qcdBCtoEPt20to30_Pythia6_Fall11_AOD_cff"
+        usedSample="TopAnalysis/Configuration/Summer12/QCD_Pt_20_30_BCtoE_TuneZ2star_8TeV_pythia6_Summer12_DR53X_PU_S10_START53_V7A_v1_cff"
         PythiaSample="True"
         outputFileName+="QCDBCE1"
-    elif(options.sample=="qcdBCE2" and decayChannel=='electron'):
-        usedSample="TopAnalysis/Configuration/Fall11/qcdBCtoEPt30to80_Pythia6_Fall11_AOD_cff"
-        PythiaSample="True"
-        outputFileName+="QCDBCE2"
-    elif(options.sample=="qcdBCE3" and decayChannel=='electron'):
-        usedSample="TopAnalysis/Configuration/Fall11/qcdBCtoEPt80to170_Pythia6_Fall11_AOD_cff"
-        PythiaSample="True"
-        outputFileName+="QCDBCE3"
+    # FIXME: two qcd BC to E files missing
+##     elif(options.sample=="qcdBCE2" and decayChannel=='electron'):
+##         usedSample="TopAnalysis/Configuration/Summer12/"
+##         PythiaSample="True"
+##         outputFileName+="QCDBCE2"
+##     elif(options.sample=="qcdBCE3" and decayChannel=='electron'):
+##         usedSample="TopAnalysis/Configuration/Summer12/"
+##         PythiaSample="True"
+##         outputFileName+="QCDBCE3"
     elif(options.sample=="WW"):        
-        usedSample="TopAnalysis/Configuration/Fall11/wwtoall_Pythia6Z2_Fall11_AOD_cff"
+        usedSample="TopAnalysis/Configuration/Summer12/WW_TuneZ2star_8TeV_pythia6_tauola_Summer12_DR53X_PU_S10_START53_V7A_v1_cff"
         PythiaSample="True"
 	outputFileName+="WW"
     elif(options.sample=="WZ"):        
-        usedSample="TopAnalysis/Configuration/Fall11/wztoall_Pythia6Z2_Fall11_AOD_cff"
+        usedSample="TopAnalysis/Configuration/Summer12/WZ_TuneZ2star_8TeV_pythia6_tauola_Summer12_DR53X_PU_S10_START53_V7A_v1_cff"
         PythiaSample="True"
 	outputFileName+="WZ"
     elif(options.sample=="ZZ"):        
-        usedSample="TopAnalysis/Configuration/Fall11/zztoall_Pythia6Z2_Fall11_AOD_cff"
+        usedSample="TopAnalysis/Configuration/Summer12/ZZ_TuneZ2star_8TeV_pythia6_tauola_Summer12_DR53X_PU_S10_START53_V7A_v1_cff"
         PythiaSample="True"
 	outputFileName+="ZZ"
     else:
@@ -536,12 +545,11 @@ process.load("Configuration.StandardSequences.MagneticField_cff")
 # b) 4_2:
 #from Configuration.PyReleaseValidation.autoCond import autoCond
 if(runningOnData=="MC"):
+    process.GlobalTag.globaltag = cms.string('START53_V13::All')
     #process.GlobalTag.globaltag = cms.string('START52_V9::All')
-    process.GlobalTag.globaltag = cms.string('START42_V17::All')
-    #process.GlobalTag.globaltag = cms.string( autoCond[ 'startup' ] )
 else:
+    process.GlobalTag.globaltag = cms.string('GR_R_53_V15::All')
     #process.GlobalTag.globaltag = cms.string('GR_R_52_V7::All')
-    process.GlobalTag.globaltag = cms.string('GR_R_42_V23::All')
 
 ## Needed for redoing the ak5GenJets
 #if(runningOnData=="MC" and pfToPAT==False):
@@ -578,8 +586,11 @@ from HLTrigger.HLTfilters.hltHighLevel_cfi import *
 process.hltFilter = hltHighLevel.clone(TriggerResultsTag = "TriggerResults::"+options.triggerTag, HLTPaths = ["HLT_IsoMu24_eta2p1_v*"], throw=False)
 if(options.mctag=="Summer11"):
     process.hltFilter.HLTPaths=["HLT_IsoMu24_v*"]
+if(options.mctag=="Summer12"):
+    process.hltFilter.HLTPaths=["HLT_IsoMu24_eta2p1_v*"]
 #process.hltFilter = hltHighLevel.clone(TriggerResultsTag = "TriggerResults::HLT", HLTPaths = ["HLT_Mu15_v*"], throw=False)
 #process.hltFilter.HLTPaths = ["HLT_Mu17_TriCentralJet30_v*"]
+# check availability of HLT path via "edmProvDump file.root"
 
 ## semileptonic selection
 process.load("TopAnalysis.TopFilter.sequences.semiLeptonicSelection_cff")
@@ -1403,7 +1414,12 @@ if (options.mctag == "Fall11"):
 elif (options.mctag == "Summer11"):    
     process.eventWeightPU.MCSampleHistoName        = "histoSummer11_flat_true"
     process.eventWeightPU.DataHistoName            = "histoData_true_fineBinning"
-
+elif (options.mctag == "Summer12"):
+    process.eventWeightPU.MCSampleHistoName        = "puhisto"
+    process.eventWeightPU.DataHistoName            = "pileup"
+    process.eventWeightPU.MCSampleFile             = "TopAnalysis/TopUtils/data/MC_PUDist_Summer2012.root"
+    process.eventWeightPU.DataFile                 = "TopAnalysis/TopUtils/data/Data_PUDist_sysNo_69300_2012B_194270-196531.root"
+    
 process.eventWeightPUsysNo   = process.eventWeightPU.clone()
 process.eventWeightPUsysUp   = process.eventWeightPU.clone()
 process.eventWeightPUsysDown = process.eventWeightPU.clone()
@@ -1413,21 +1429,36 @@ process.eventWeightPUsysDown = process.eventWeightPU.clone()
 #### Configuration for Nominal PU Weights
 
 process.eventWeightPUsysNo.WeightName          = "eventWeightPU"
-process.eventWeightPUsysNo.DataFile            = "TopAnalysis/TopUtils/data/Data_PUDist_2011Full.root"
+if ("11" in options.mctag):
+    process.eventWeightPUsysNo.DataFile        = "TopAnalysis/TopUtils/data/Data_PUDist_2011Full.root"
+elif ("12" in options.mctag):
+    process.eventWeightPUsysNo.DataFile        = "TopAnalysis/TopUtils/data/Data_PUDist_sysNo_69300_2012B_194270-196531.root"
+else:
+    print "only configured for 2011 and 2012 so far!"
 process.eventWeightPUsysNo.CreateWeight3DHisto = False 
 process.eventWeightPUsysNo.Weight3DHistoFile   = "TopAnalysis/TopUtils/data/DefaultWeight3D.root"
 
 #### Configuration for PU Up Variations
 
 process.eventWeightPUsysUp.WeightName          = "eventWeightPUUp"
-process.eventWeightPUsysUp.DataFile            = "TopAnalysis/TopUtils/data/Data_PUDist_sysUp_2011Full.root"
+if ("11" in options.mctag):
+    process.eventWeightPUsysUp.DataFile        = "TopAnalysis/TopUtils/data/Data_PUDist_sysUp_2011Full.root"
+elif ("12" in options.mctag):
+    process.eventWeightPUsysNo.DataFile        = "TopAnalysis/TopUtils/data/Data_PUDist_sysUp_71715_2012B_194270-196531.root"
+else:
+    print "only configured for 2011 and 2012 so far!"
 process.eventWeightPUsysUp.CreateWeight3DHisto = False
 process.eventWeightPUsysUp.Weight3DHistoFile   = "TopAnalysis/TopUtils/data/DefaultWeight3DUp.root"
 
 #### Configuration for PU Down Variations
 
 process.eventWeightPUsysDown.WeightName          = "eventWeightPUDown"
-process.eventWeightPUsysDown.DataFile            = "TopAnalysis/TopUtils/data/Data_PUDist_sysDown_2011Full.root"
+if ("11" in options.mctag):
+    process.eventWeightPUsysDown.DataFile        = "TopAnalysis/TopUtils/data/Data_PUDist_sysDown_2011Full.root"
+elif ("12" in options.mctag):
+    process.eventWeightPUsysNo.DataFile          = "TopAnalysis/TopUtils/data/Data_PUDist_sysDn_64885_2012B_194270-196531.root"
+else:
+    print "only configured for 2011 and 2012 so far!"
 process.eventWeightPUsysDown.CreateWeight3DHisto = False
 process.eventWeightPUsysDown.Weight3DHistoFile   = "TopAnalysis/TopUtils/data/DefaultWeight3DDown.root"
 
@@ -1470,11 +1501,6 @@ if(sysDistort=='Up0p015'):
     process.eventWeightDileptonModelVariation.slope = cms.double(0.015)
 if(sysDistort=='Down0p015'):
     process.eventWeightDileptonModelVariation.slope = cms.double(-0.015)
-if(sysDistort=='data'):
-    process.eventWeightDileptonModelVariation.weightVariable= cms.string('data')
-    process.eventWeightDileptonModelVariation.minWeight = cms.double(0.   )
-    process.eventWeightDileptonModelVariation.maxWeight = cms.double(1000.)
-    
 # multiply with PU weight
 eventWeightDileptonModelVariation=cms.InputTag("eventWeightDileptonModelVariation")
 weightlistDistortPU=cms.VInputTag()
@@ -1552,9 +1578,9 @@ process.effSFMuonEventWeight.particles=cms.InputTag("tightMuons")
 process.effSFMuonEventWeight.sysVar   = cms.string("")
 process.effSFMuonEventWeight.filename= "TopAnalysis/Configuration/data/MuonEffSF2011.root"
 process.effSFMuonEventWeight.verbose=cms.int32(0)
-process.effSFMuonEventWeight.additionalFactor=1. ## lepton selection and trigger eff. SF both included in loaded histo
-process.effSFMuonEventWeight.additionalFactorErr=0.01 ## 1% sys error to account for non-flatness
-process.effSFMuonEventWeight.meanTriggerEffSF=0.9824
+process.effSFMuonEventWeight.additionalFactor=1.0 ## lepton selection and trigger eff. SF both included in loaded histo
+process.effSFMuonEventWeight.additionalFactorErr=0.0 ## 1% sys error to account for non-flatness
+process.effSFMuonEventWeight.meanTriggerEffSF=1.0
 process.effSFMuonEventWeight.shapeDistortionFactor=-1
 
 process.effSFMuonEventWeightPUup              = process.effSFMuonEventWeight.clone(sysVar = "PUup")
@@ -1578,15 +1604,15 @@ process.effSFElectronEventWeight.sysVar   = cms.string("")
 process.effSFElectronEventWeight.verbose=cms.int32(0)
 process.effSFElectronEventWeight.filenameJetLeg="TopAnalysis/Configuration/data/JetLegTriggerEfficiencyIsoLepTriJetJetMult4.root"
 process.effSFElectronEventWeight.additionalFactor=1. ## lepton selection eff. SF
-process.effSFElectronEventWeight.additionalFactorErr=0.02 ## 2% sys error to account for selection difference Z - ttbar
-process.effSFElectronEventWeight.meanTriggerEffSF=0.968
-process.effSFElectronEventWeight.meanTriggerEffSFErr=0.004
-process.effSFElectronEventWeight.shapeDistortionErr=0.02
-process.effSFElectronEventWeight.jetTriggerEffsSFNormSysErr =0.01
-process.effSFElectronEventWeight.jetTriggerEffsSFShapeSysErr=0.005
+process.effSFElectronEventWeight.additionalFactorErr=0.0 ## 2% sys error to account for selection difference Z - ttbar
+process.effSFElectronEventWeight.meanTriggerEffSF=1.0
+process.effSFElectronEventWeight.meanTriggerEffSFErr=0.0
+process.effSFElectronEventWeight.shapeDistortionErr=0.00
+process.effSFElectronEventWeight.jetTriggerEffsSFNormSysErr =0.00
+process.effSFElectronEventWeight.jetTriggerEffsSFShapeSysErr=0.00
 
-process.effSFElectronEventWeightPUup              = process.effSFElectronEventWeight.clone(meanTriggerEffSF=0.991)
-process.effSFElectronEventWeightPUdown            = process.effSFElectronEventWeight.clone(meanTriggerEffSF=0.946)
+process.effSFElectronEventWeightPUup              = process.effSFElectronEventWeight.clone(meanTriggerEffSF=1.0)
+process.effSFElectronEventWeightPUdown            = process.effSFElectronEventWeight.clone(meanTriggerEffSF=1.0)
 process.effSFElectronEventWeightFlatEffSF         = process.effSFElectronEventWeight.clone(sysVar = "")
 process.effSFElectronEventWeightEffSFNormUpStat   = process.effSFElectronEventWeight.clone(sysVar = "combinedEffSFNormUpStat")
 process.effSFElectronEventWeightEffSFNormDownStat = process.effSFElectronEventWeight.clone(sysVar = "combinedEffSFNormDownStat")
@@ -2450,6 +2476,9 @@ if(decayChannel=="electron"):
     elif(options.mctag=="Fall11"):
       process.hltFilter.HLTPaths=["HLT_Ele25_CaloIdVT_CaloIsoT_TrkIdT_TrkIsoT_TriCentralJet30_v*"]
       process.dummy.HLTPaths=["HLT_Ele25_CaloIdVT_CaloIsoT_TrkIdT_TrkIsoT_TriCentralJet30_v*"]
+    elif(options.mctag=="Summer12"):
+      process.hltFilter.HLTPaths=["HLT_Ele27_WP80_v*"]
+      process.dummy.HLTPaths=["HLT_Ele27_WP80_v*"]
     # adapt gen filter
     process.ttSemiLeptonicFilter.allowedTopDecays.decayBranchA.electron = True
     process.ttSemiLeptonicFilter.allowedTopDecays.decayBranchA.muon= False
@@ -2600,10 +2629,11 @@ if(pfToPAT):
 
 ## generator kinematics (check E-p conservation on gen level)
 if (PythiaSample=="False" and runningOnData=="MC"):
-    print
-    print "Applying MC Kinematics Filter"
-    for path in allpaths:
-        getattr(process,path).insert(0,process.totalKinematicsFilterDefault)
+    if (options.mctag=='Fall11' or options.mctag=='Summer11'):
+        print
+        print "Applying MC Kinematics Filter"
+        for path in allpaths:
+            getattr(process,path).insert(0,process.totalKinematicsFilterDefault)
 
 ## Output Module Configuration
 if(writeOutput):

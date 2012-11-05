@@ -1,5 +1,5 @@
 ROOTLIBS=`root-config --ldflags --libs --glibs`
-COMPFLAGS=`root-config --cflags` -Wall -Wextra -O2 -g
+COMPFLAGS=`root-config --cflags` -Wall -Wextra -O2 -g -std=c++0x
 
 
 all: load_Analysis

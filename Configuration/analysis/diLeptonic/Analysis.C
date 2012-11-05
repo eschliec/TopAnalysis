@@ -720,8 +720,16 @@ Bool_t Analysis::Process ( Long64_t entry )
     h_MET->Fill(*(metEt->begin()), weight);
 
     //loop over both leptons
-    FillLeptonHisto(LeadLeptonNumber, weight);
-    FillLeptonHisto(NLeadLeptonNumber, weight);
+    for (auto i : {LeadLeptonNumber, NLeadLeptonNumber}) {
+        if ( lepType->at(i) == LEP_TYPE_ELECTRON ) {
+            h_ElectronpT->Fill(lepton->at(i).Pt(), weight);
+            h_ElectronEta->Fill(lepton->at(i).Eta(), weight);
+        }
+        if ( lepType->at(i) == LEP_TYPE_MUON ) {
+            h_MuonpT->Fill(lepton->at(i).Pt(), weight);
+            h_MuonEta->Fill(lepton->at(i).Eta(), weight);
+        }
+    }
                 
     //=== CUT ===
     //Require at least one solution for the kinematic event reconstruction
@@ -889,18 +897,6 @@ Bool_t Analysis::Process ( Long64_t entry )
 
     return kTRUE;
 }
-
-void Analysis::FillLeptonHisto(size_t i, double weight) {
-    if ( lepType->at(i) == LEP_TYPE_ELECTRON ) {
-        h_ElectronpT->Fill(lepton->at(i).Pt(), weight);
-        h_ElectronEta->Fill(lepton->at(i).Eta(), weight);
-    }
-    if ( lepType->at(i) == LEP_TYPE_MUON ) {
-        h_MuonpT->Fill(lepton->at(i).Pt(), weight);
-        h_MuonEta->Fill(lepton->at(i).Eta(), weight);
-    }
-}
-
 
 void Analysis::SlaveTerminate()
 {

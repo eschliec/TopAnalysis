@@ -33,6 +33,7 @@ double SampleXSection(TString sample){
     if(sample.Contains("1050"))        {return 860.5; } //5745.25;}
     if(sample.Contains("50inf"))       {return 3532.8; } //3503.71;}
     if(sample.Contains("wtolnu"))      {return 36257.2;}
+    if(sample.Contains("wjets"))       {return 36257.2;}
     if(sample.Contains("qcdmu15"))     {return 3.640E8*3.7E-4;}
     if(sample.Contains("qcdmu2030"))   {return 2.870E8*6.500E-3;}
     if(sample.Contains("qcdmu3050"))   {return 6.609E7*12.20E-3;}
@@ -46,7 +47,8 @@ double SampleXSection(TString sample){
     if(sample.Contains("qcdbcem3080")) {return 7.424E7*2.250E-3;}
     if(sample.Contains("qcdbcem80170")){return 1.191E6*10.90E-3;}
 
-    return -1;
+    std::cerr << "No cross section found for sample: " << sample << std::endl;
+    exit(2);
 }
 
 void Analysis::Begin ( TTree * )
@@ -396,6 +398,10 @@ Bool_t Analysis::Process ( Long64_t entry )
         int antihadrontop_index = -1;
         
         //Case 1: highest pT genJet matched to a BHadron
+        //need to remove jets from the genJetCollection which are below the JETPTCUT
+        //while (allGenJets->size() > 0 && allGenJets->back().Pt() < JETPTCUT) allGenJets->pop_back();
+        //while (jet->size() > 0 && jet->back().Pt() < JETPTCUT) jet->pop_back();
+        
         for ( size_t genJet = 0; 
               genJet < allGenJets->size() && allGenJets->at(genJet).pt() >= JETPTCUT; 
               ++genJet ) 

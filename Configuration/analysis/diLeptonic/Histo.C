@@ -4,28 +4,8 @@ void Histo::MakePlots(){
 
   gROOT->SetBatch(kTRUE);
 
-  std::vector<double> Xbins;
   std::vector<double> binCenters;
-  Plotter h_XSecPlot;
-  h_XSecPlot.setOptions("HypjetMultiXSec","Standard", "N_{Events}","N_{jets}", 1, true, false, false, 0.0, 0, 0, 0,0,Xbins, binCenters);
-  h_XSecPlot.DYScaleFactor();
-  h_XSecPlot.setDataSet("mumu");
-  h_XSecPlot.fillHisto();
-  h_XSecPlot.PlotXSec();
-  h_XSecPlot.MakeTable();
-  h_XSecPlot.setDataSet("emu");
-  h_XSecPlot.fillHisto();
-  h_XSecPlot.PlotXSec();
-  h_XSecPlot.MakeTable();
-  h_XSecPlot.setDataSet("ee");
-  h_XSecPlot.fillHisto();
-  h_XSecPlot.PlotXSec();
-  h_XSecPlot.MakeTable();
-  h_XSecPlot.setDataSet("combined");
-  h_XSecPlot.fillHisto();
-  h_XSecPlot.PlotXSec();
-  h_XSecPlot.MakeTable();
-  //  h_XSecPlot.PlotXSec();
+  std::vector<double> Xbins;
 
   string histolist = "HistoList";
   ifstream HistStream;
@@ -77,26 +57,12 @@ void Histo::MakePlots(){
     
     h_generalPlot.setOptions(name,specialComment,YAxis,XAxis, rebin, DYScale, logX, logY, ymin, ymax, xmin, xmax, bins, Xbins, binCenters);
     h_generalPlot.DYScaleFactor();
-    h_generalPlot.setDataSet("mumu");
-    h_generalPlot.fillHisto();
-    h_generalPlot.write();  
-    h_generalPlot.PlotDiffXSec(); 
-    h_generalPlot.DYScaleFactor();
-    h_generalPlot.setDataSet("emu");
-    h_generalPlot.fillHisto();
-    h_generalPlot.write();
-    h_generalPlot.PlotDiffXSec();
-    h_generalPlot.DYScaleFactor();
-    h_generalPlot.setDataSet("ee");
-    h_generalPlot.fillHisto();
-    h_generalPlot.write();
-    h_generalPlot.PlotDiffXSec();
-    h_generalPlot.DYScaleFactor();
-    h_generalPlot.setDataSet("combined");
-    h_generalPlot.fillHisto();
-    h_generalPlot.write();
-    h_generalPlot.PlotDiffXSec();
-    
+    h_generalPlot.preunfolding();
+    h_generalPlot.unfolding();
+    h_generalPlot.PlotDiffXSec("emu");
+    h_generalPlot.PlotDiffXSec("mumu");
+    h_generalPlot.PlotDiffXSec("ee");
+    h_generalPlot.PlotDiffXSec("combined");
   }
   
   string controlhistolist = "HistoList_control";
@@ -146,21 +112,7 @@ void Histo::MakePlots(){
 
     h_generalPlot.setOptions(name,specialComment,YAxis,XAxis, rebin, DYScale, logX, logY, ymin, ymax, xmin, xmax, bins, Xbins, binCenters);
     h_generalPlot.DYScaleFactor();
-    h_generalPlot.setDataSet("mumu");
-    h_generalPlot.fillHisto();
-    h_generalPlot.write();
-    h_generalPlot.DYScaleFactor();
-    h_generalPlot.setDataSet("emu");
-    h_generalPlot.fillHisto();
-    h_generalPlot.write();
-    h_generalPlot.DYScaleFactor();
-    h_generalPlot.setDataSet("ee");
-    h_generalPlot.fillHisto();
-    h_generalPlot.write();
-    h_generalPlot.DYScaleFactor();
-    h_generalPlot.setDataSet("combined");
-    h_generalPlot.fillHisto();
-    h_generalPlot.write();
+    h_generalPlot.preunfolding();
   }
   return;
 }

@@ -43,16 +43,12 @@ class Analysis : public TSelector
     vector<double>  *jetBTagSSVHE;
     vector<int>     *jetType;
     VLV             *genJet;
-    vector<double>  *metEt;
-    vector<double>  *metPhi;
+    LV              *met;
     UInt_t          runNumber;
     UInt_t          lumiBlock;
     UInt_t          eventNumber;
     UInt_t          triggerBits;
     Double_t        weightGenerator;
-    Double_t        weightPU;
-    Double_t        weightPU_Up;
-    Double_t        weightPU_Down;
     Int_t           vertMulti;
     Int_t           vertMultiTrue;
 
@@ -106,8 +102,7 @@ class Analysis : public TSelector
     TBranch        *b_jetBTagSSVHE;   //!
     TBranch        *b_jetType;   //!
     TBranch        *b_genJet;   //!
-    TBranch        *b_metEt;   //!
-    TBranch        *b_metPhi;   //!
+    TBranch        *b_met;   //!
     TBranch        *b_runNumber;   //!
     TBranch        *b_lumiBlock;   //!
     TBranch        *b_eventNumber;   //!

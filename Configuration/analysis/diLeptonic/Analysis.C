@@ -348,17 +348,13 @@ Bool_t Analysis::Process ( Long64_t entry )
         }
     }
     
-    if (isMC) { //still have lumi weights for old plotterclass
+    double weightPU = 1;
+    if (isMC) { 
+        //still have lumi weights for old plotterclass
         weightGenerator *= lumiWeight;
         
         if (pureweighter) {
             weightPU = pureweighter->getPUweight(vertMultiTrue);
-        } else {
-            if ( systematic == "PU_UP" ) {
-                weightPU = weightPU_Up;   //only for PU systematic run
-            } else if ( systematic == "PU_DOWN" ) {
-                weightPU = weightPU_Down;   //only for PU systematic run
-            }
         }
     }
 
@@ -664,7 +660,7 @@ Bool_t Analysis::Process ( Long64_t entry )
     // Fill loose dilepton mass histogram before any jet cuts
     bool isZregion = dilepton.M() > 76 && dilepton.M() < 106;
     bool hasJets = jet->size() > 1 && jet->at(1).Pt() > JETPTCUT;
-    bool hasMetOrEmu = channel == "emu" || *(metEt->begin()) > 30;
+    bool hasMetOrEmu = channel == "emu" || met->Et() > 30;
     bool hasBtag = BJetIndex.size() > 0;
     double weightKinFit = 1;
     double btagSF = -1; //trick: initialize to -1 to avoid calculation of the btagSF twice
@@ -723,7 +719,7 @@ Bool_t Analysis::Process ( Long64_t entry )
     h_LeptonEta->Fill(leptonMinus.Eta(), weight);
     h_AntiLeptonEta->Fill(leptonPlus.Eta(), weight);
 
-    h_MET->Fill(*(metEt->begin()), weight);
+    h_MET->Fill(met->Et(), weight);
 
     //loop over both leptons
     for (auto i : {LeadLeptonNumber, NLeadLeptonNumber}) {
@@ -1305,8 +1301,7 @@ void Analysis::Init ( TTree *tree )
     jetBTagCSV = 0;
     jetBTagSSVHE = 0;
     jetType = 0;
-    metEt = 0;
-    metPhi = 0;
+    met = 0;
     HypJet0index = 0;
     HypJet1index = 0;
     HypTop = 0;
@@ -1355,16 +1350,12 @@ void Analysis::Init ( TTree *tree )
     fChain->SetBranchAddress("jetBTagSSVHE", &jetBTagSSVHE, &b_jetBTagSSVHE );
     fChain->SetBranchAddress("jetType", &jetType, &b_jetType );
     fChain->SetBranchAddress("genJet", &genJet, &b_genJet );
-    fChain->SetBranchAddress("metEt", &metEt, &b_metEt );
-    fChain->SetBranchAddress("metPhi", &metPhi, &b_metPhi );
+    fChain->SetBranchAddress("met", &met, &b_met );
     fChain->SetBranchAddress("runNumber", &runNumber, &b_runNumber );
     fChain->SetBranchAddress("triggerBits", &triggerBits, &b_triggerBits );
     fChain->SetBranchAddress("lumiBlock", &lumiBlock, &b_lumiBlock );
     fChain->SetBranchAddress("eventNumber", &eventNumber, &b_eventNumber );
     fChain->SetBranchAddress("weightGenerator", &weightGenerator, &b_weightGenerator );
-    fChain->SetBranchAddress("weightPU", &weightPU, &b_weightPU );
-    fChain->SetBranchAddress("weightPU_Up", &weightPU_Up, &b_weightPU_Up );
-    fChain->SetBranchAddress("weightPU_Down", &weightPU_Down, &b_weightPU_Down );
     fChain->SetBranchAddress("vertMulti", &vertMulti, &b_vertMulti );
     fChain->SetBranchAddress("vertMultiTrue", &vertMultiTrue, &b_vertMultiTrue );
 
@@ -1427,7 +1418,7 @@ Bool_t Analysis::Notify()
 void Analysis::GetRecoBranches ( Long64_t & entry )
 {
 
-    b_metEt->GetEntry(entry); //!
+    b_met->GetEntry(entry); //!
     b_eventNumber->GetEntry(entry); //!
     b_lepton->GetEntry(entry); //!
     b_jet->GetEntry(entry); //!
@@ -1439,14 +1430,10 @@ void Analysis::GetRecoBranches ( Long64_t & entry )
     b_jetBTagCSV->GetEntry(entry); //!
     b_jetBTagSSVHE->GetEntry(entry); //!
     b_jetType->GetEntry(entry); //!
-    b_metPhi->GetEntry(entry); //!
     b_runNumber->GetEntry(entry); //!
     b_triggerBits->GetEntry(entry); //!
     b_lumiBlock->GetEntry(entry); //!
     b_weightGenerator->GetEntry(entry); //!
-    b_weightPU->GetEntry(entry); //!
-    b_weightPU_Up->GetEntry(entry); //!
-    b_weightPU_Down->GetEntry(entry); //!
     b_vertMulti->GetEntry(entry); //!
     b_vertMultiTrue->GetEntry(entry); //!
 

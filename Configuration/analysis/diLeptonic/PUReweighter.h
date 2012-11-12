@@ -17,6 +17,7 @@ public:
     void setDataTruePUInput(const char * rootfile);
     double getPUweight(size_t trueBX);
     void setMCDistrSum12(TString scenario="S10");
+    void setMCDistrFall11(TString scenario="S06");
     void clear();
     
 private:

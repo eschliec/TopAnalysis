@@ -351,7 +351,7 @@ Bool_t Analysis::Process ( Long64_t entry )
     double weightPU = 1;
     if (isMC) { 
         //still have lumi weights for old plotterclass
-        weightGenerator *= lumiWeight;
+//         weightGenerator *= lumiWeight;
         
         if (pureweighter) {
             weightPU = pureweighter->getPUweight(vertMultiTrue);
@@ -1246,7 +1246,8 @@ void Analysis::SetSamplename(TString samplename)
     this->samplename = samplename;
     isTtbarPlusTauSample = samplename.BeginsWith("ttbar") && !samplename.Contains("bg");
     correctMadgraphBR = samplename.BeginsWith("ttbar");
-    lumiWeight = 5100*SampleXSection(samplename)/weightedEvents->GetBinContent(1);
+    //lumiWeight = 5100*SampleXSection(samplename)/weightedEvents->GetBinContent(1);
+    lumiWeight = 12100*SampleXSection(samplename)/weightedEvents->GetBinContent(1);
 }
 
 void Analysis::SetMC(bool isMC)

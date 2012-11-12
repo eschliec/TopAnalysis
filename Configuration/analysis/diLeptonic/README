@@ -57,3 +57,7 @@ To run the new analysis:
 
 make
 ./load_Analysis
+
+To run over a certain sample only, use e.g. ./load_Analysis -f emu_ttbarsignal
+To run over PU, use ./load_Analysis -s PU_UP and ./load_Analysis -s PU_DOWN
+

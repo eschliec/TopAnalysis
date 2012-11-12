@@ -1,6 +1,21 @@
-#include "Histo.h"
+#include "THStack.h"
+#include "TFile.h"
+#include "TString.h"
+#include "TH1.h"
+#include "TH1F.h"
+#include <vector>
+#include <iostream>
+#include "TCanvas.h"
+#include "TLegend.h"
+#include <sstream>
+#include "plotterclass.h"
+#include "HHStyle.h"
+#include "basicFunctions.h"
 
-void Histo::MakePlots(){
+
+void Histo() {
+
+  const double lumi = 12100;
 
   gROOT->SetBatch(kTRUE);
 
@@ -25,6 +40,7 @@ void Histo::MakePlots(){
     
     // Create Plotter 
     Plotter h_generalPlot;
+    h_generalPlot.setLumi(lumi);
     Xbins.clear();
     binCenters.clear();
     
@@ -81,6 +97,7 @@ void Histo::MakePlots(){
     if ( name.CompareTo("") == 0 ) continue;
     // Create Plotter 
     Plotter h_generalPlot;
+    h_generalPlot.setLumi(lumi);
     Xbins.clear();
     binCenters.clear();
     
@@ -114,13 +131,5 @@ void Histo::MakePlots(){
     h_generalPlot.DYScaleFactor();
     h_generalPlot.preunfolding();
   }
-  return;
-}
-
-Histo::Histo(){
-  MakePlots();
-}
-
-Histo::~Histo(){
 }
 

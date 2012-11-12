@@ -9,7 +9,7 @@
 #include "Analysis.h"
 #include "PUReweighter.h"
 
-void load_Analysis(TString validFilenamePattern){
+void load_Analysis(TString validFilenamePattern, TString systematic){
    
     int filecounter = 0;
 
@@ -21,7 +21,17 @@ void load_Analysis(TString validFilenamePattern){
     pu->setMCDistrSum12("S10");
     std::string pu_path(getenv("CMSSW_BASE"));
 //     pu_path.append("/src/TopAnalysis/TopUtils/data/Data_PUDist_sysNo_69400_2012ABReReco.root");
-    pu_path.append("/src/TopAnalysis/TopUtils/data/PU_Data_2012_5fbinv.root");
+//     pu_path.append("/src/TopAnalysis/TopUtils/data/PU_Data_2012_5fbinv.root");
+    if (systematic == "") {
+        pu_path.append("/src/TopAnalysis/TopUtils/data/Data_PUDist_12fb.root");
+    } else if (systematic == "PU_UP") {
+        pu_path.append("/src/TopAnalysis/TopUtils/data/Data_PUDist_12fb_sysUp.root");
+    } else if (systematic == "PU_DOWN") {
+        pu_path.append("/src/TopAnalysis/TopUtils/data/Data_PUDist_12fb_sysDown.root");
+    } else {
+        cerr << "Systematics unknown!\n"; exit(3);
+    }
+    
     pu->setDataTruePUInput(pu_path.c_str());
     selector->SetPUReweighter(pu);
     
@@ -40,12 +50,12 @@ void load_Analysis(TString validFilenamePattern){
         if (file.IsZombie()) { std::cerr << "Cannot open " << filename << std::endl; return; }
 
         TObjString *channel = dynamic_cast<TObjString*>(file.Get("writeNTuple/channelName"));
-        TObjString *systematics = dynamic_cast<TObjString*>(file.Get("writeNTuple/systematicsName"));
+        TObjString *systematics_from_file = dynamic_cast<TObjString*>(file.Get("writeNTuple/systematicsName"));
         TObjString *samplename = dynamic_cast<TObjString*>(file.Get("writeNTuple/sampleName"));
         TObjString *o_isSignal = dynamic_cast<TObjString*>(file.Get("writeNTuple/isSignal"));
         TObjString *o_isMC = dynamic_cast<TObjString*>(file.Get("writeNTuple/isMC"));
         TH1* weightedEvents = dynamic_cast<TH1*>(file.Get("EventsBeforeSelection/weightedEvents"));
-        if (!channel || !systematics || !o_isSignal || !o_isMC || !samplename) { 
+        if (!channel || !systematics_from_file || !o_isSignal || !o_isMC || !samplename) { 
             std::cout << "Error: info about sample missing!" << std::endl; 
             return;  
         }
@@ -57,7 +67,11 @@ void load_Analysis(TString validFilenamePattern){
         selector->SetChannel(channel->GetString());
         selector->SetSignal(isSignal);
         selector->SetMC(isMC);
-        selector->SetSystematic(systematics->GetString());
+        if (systematic == "") {
+            selector->SetSystematic(systematics_from_file->GetString());
+        } else {
+            selector->SetSystematic(systematic);
+        }
         selector->SetWeightedEvents(weightedEvents);
         selector->SetSamplename(samplename->GetString());
         selector->SetOutputfilename(filename);
@@ -83,11 +97,32 @@ void load_Analysis(TString validFilenamePattern){
     }
 }
 
-int main(int argc, const char* argv[]) {
-    TString validFilenamePattern = argc > 1 ? argv[1] : "";
+void syntaxError() {
+    std::cerr << 
+        "\nload_Analysis: Invalid syntax!\n---------------------------------\n" <<
+        "Valid Parameters:\n" <<
+        "-f pattern  -->  only process filenames containing the pattern\n" <<
+        "-s [ PU_UP | PU_DOWN ]  -->  run with a systematic that runs on the normal ntuples\n" <<
+        "\n";
+    exit(1);
+}
 
+int main(int argc, char* const argv[]) {
+    char opt;
+    TString validFilenamePattern{""};
+    TString syst{""};
+    while ((opt = getopt(argc, argv, "f:s:")) != -1) {
+        if (opt == 'f') {
+            validFilenamePattern = optarg;
+        } else if (opt == 's') {
+            syst = optarg;
+        } else {
+            syntaxError();
+        }
+    }
+    if (optind < argc) syntaxError();
 //     TProof* p = TProof::Open(""); // not before ROOT 5.34
-    load_Analysis(validFilenamePattern);
+    load_Analysis(validFilenamePattern, syst);
 //     delete p;
 }
 

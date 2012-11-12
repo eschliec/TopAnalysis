@@ -36,14 +36,12 @@ class Plotter {
   void   setOptions(TString, TString, TString, TString, int, bool, bool, bool, double, double, double, double, int, std::vector<double>, std::vector<double>);
   void   setDataSet(std::vector<TString>, std::vector<double>, std::vector<TString>, std::vector<int>, TString);
   void   setDataSet(TString, TString);
-  void   fillSystHisto();
   void   fillHisto();
-  void   setStyle(TH1D&, unsigned int);
-  void   setStyle(TH1&, unsigned int);
+  void   setStyle(TH1*, unsigned int, bool = false);
   void   unfolding();
   void   preunfolding();
   void   write(TString, TString);
-
+  void   setLumi(double);
 
   double CalcXSec(std::vector<TString> datasetVec, double InclusiveXsectionVec[4],double InclusiveXsectionStatErrorVec[4], TString Systematic, TString Shift);
   void MakeTable();
@@ -111,6 +109,7 @@ class Plotter {
   TString channelLabel[4];
 
   double SignalEventswithWeight;
+  static const double topxsec = 220.0;//again changes with normalization;
 
   // DAVID
   bool doUnfolding; 
@@ -122,6 +121,12 @@ class Plotter {
   TString subfolderChannel;
   TString subfolderSpecial;
 };
+
+
+void Plotter::setLumi(double lumi)
+{
+    this->lumi = lumi;
+}
 
 
 // DAVID
@@ -142,8 +147,8 @@ void Plotter::SetOutpath(TString path)
 void Plotter::unfolding()
 {
 
-  TString sys_array[] = {"DY_","BG_","Lepton"};//just for testing right now
-  double sys_array_flat_value[] = {0.0,0.0,0.5};//perhaps this can be done better, but here a non-zero value will be a flat systematic (be carefult to match with the systematic in sys_array
+  TString sys_array[] = {"DY_","BG_","PU_", "Lepton"};//just for testing right now
+  double sys_array_flat_value[] = {0.0,0.0,0,0.05};//perhaps this can be done better, but here a non-zero value will be a flat systematic (be carefult to match with the systematic in sys_array
   TString channel_array[] = {"ee","mumu","emu","combined"};
 
   for(int chan = 0; chan < 4; chan++){ //loop over channels
@@ -151,7 +156,7 @@ void Plotter::unfolding()
     CalcDiffXSec(channel_array[chan],"Nominal");    
   
     if(doSystematics){//############### Syst ################
-      for(int sys = 0; sys < 2; sys++){ //loop over systematics
+      for(int sys = 0; sys < 3; sys++){ //loop over systematics
 	cout << endl;
 	cout << "<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>" << endl;
 	cout << "Starting Calculation of Differential Systematics for '" << name << "' in Channel '" << channel_array[chan] << "':" << endl;  
@@ -172,12 +177,12 @@ void Plotter::unfolding()
 void Plotter::preunfolding()
 {
 
-  TString sys_array[] = {"Nominal","DY_UP","DY_DOWN","BG_UP","BG_DOWN"};
+  TString sys_array[] = {"Nominal","DY_UP","DY_DOWN","BG_UP","BG_DOWN","PU_UP","PU_DOWN"};
   TString channel_array[] = {"ee","mumu","emu","combined"};
 
   for(int chan = 0; chan < 4; chan++){ //loop over channels
     
-    for(int sys = 0; sys < 5; sys++){ //loop over systematics
+    for(int sys = 0; sys < 7; sys++){ //loop over systematics
     
       write(channel_array[chan],sys_array[sys]);
       
@@ -204,7 +209,7 @@ void Plotter::DYScaleFactor(){
     FileList>>filename;
     if(filename!=""){
       double LumiWeight = CalcLumiWeight(filename);
-      cout<<"filename: "<<filename<<" lumiWeight: "<<LumiWeight<<endl; 
+      //cout<<"filename: "<<filename<<" lumiWeight: "<<LumiWeight<<endl; 
       TFile *ftemp = TFile::Open(filename);
       if(filename.Contains("ee")){
 	if(filename.Contains("run")){
@@ -489,7 +494,7 @@ void Plotter::CalcDiffSystematics(TString Channel, TString Systematic, TString S
             // Save it
 
 	    //	    cout<<"XAxisbinCenters[bin]: "<<XAxisbinCenters[i]<<" bin: "<<Xbins[i]<<" to "<<Xbins[i+1]<<" SystematicError: "<<Sys_Error<<endl;;
-	    ResultsFile<<"XAxisbinCenters[bin]: "<<XAxisbinCenters[i]<<" bin: "<<Xbins[i]<<" to "<<Xbins[i+1]<<" SystematicError: "<<endl;
+	    ResultsFile<<"XAxisbinCenters[bin]: "<<XAxisbinCenters[i]<<" bin: "<<Xbins[i]<<" to "<<Xbins[i+1]<<" SystematicError: "<<Sys_Error<<endl;
         }
     }
     else{
@@ -622,10 +627,7 @@ void Plotter::setDataSet(TString mode, TString Systematic)
   	subfolderSpecial = specialComment;
   	subfolderSpecial.Prepend("/");
   }
-  
-
-  lumi=5100;
-  
+    
   DYEntry = "Z / #gamma* #rightarrow ee/#mu#mu";
 
   if(Systematic.Contains("DY_") || Systematic.Contains("BG_")){Systematic = "Nominal";}//We just need to vary the nominal DY and BG systematics
@@ -679,7 +681,7 @@ void Plotter::fillHisto()
 
         //Rescaling to the data luminosity
         double LumiWeight = CalcLumiWeight(dataset[i]);
-        cout << "LumiWeight for " << dataset[i] << " = " << LumiWeight << endl;
+//         cout << "LumiWeight for " << dataset[i] << " = " << LumiWeight << endl;
         ApplyFlatWeights(hist, LumiWeight);
 
 //         //Apply any other flat weight (still to do: define the weights somewhere else)
@@ -809,7 +811,7 @@ void Plotter::write(TString Channel, TString Systematic) // do scaling, stacking
   for(unsigned int i=0; i<hists.size() ; i++){ // prepare histos and leg
     drawhists[i]=(TH1D*) hists[i].Clone();//rebin and scale the histograms
     if(rebin>1) drawhists[i]->Rebin(rebin);
-    setStyle(*drawhists[i], i);
+    setStyle(drawhists[i], i, true);
 
   }
 
@@ -996,7 +998,6 @@ void Plotter::write(TString Channel, TString Systematic) // do scaling, stacking
     Double_t topunc = 0; // uncertainty on top xsec
     
     //Kidonakis
-    double topxsec = 165.6;
     double topxsecErr2 = 2.2*2.2 + 4.4*4.4 + 5.5*5.5; //topxsecErr2 = lumiErr*lumiErr + topxsecScaleErr*topxsecScaleErr + topxsecPDFErr*topxsecPDFErr
 
     double topRelUnc =  TMath::Sqrt(topxsecErr2)/topxsec;
@@ -1065,9 +1066,9 @@ void Plotter::write(TString Channel, TString Systematic) // do scaling, stacking
   // Create Directory for Output Plots 
   gSystem->MakeDirectory(outpathPlots);
   
-  gSystem->MakeDirectory(outpathPlots+"/"+subfolderChannel+"/"+subfolderSpecial);  
-  c->Print(outpathPlots+subfolderChannel+subfolderSpecial+"/"+name+".eps");  
-  c->Print(outpathPlots+subfolderChannel+subfolderSpecial+"/"+name+".C");  
+  gSystem->MakeDirectory(outpathPlots+"/"+subfolderChannel+"/"+Systematic);  
+  c->Print(outpathPlots+subfolderChannel+"/"+Systematic+"/"+name+".eps");  
+  //c->Print(outpathPlots+subfolderChannel+"/"+Systematic+"/"+name+".C");  
   c->Clear();  
   leg->Clear();  
   delete c;  
@@ -1077,63 +1078,34 @@ void Plotter::write(TString Channel, TString Systematic) // do scaling, stacking
   //  else std::cout << "Histogram " << name << " not filled during the process." << std::endl;
 }
 
-void Plotter::setStyle(TH1 &hist, unsigned int i)
+void Plotter::setStyle(TH1 *hist, unsigned int i, bool isControlPlot)
 {
-  hist.SetFillColor(colors[i]);
-  hist.SetLineColor(colors[i]);
-  hist.SetLineWidth(1);
-  
+    hist->SetFillColor(colors[i]);
+    hist->SetLineColor(colors[i]);
+    hist->SetLineWidth(1);
 
-  if(legends[i] == "Data"){
-    hist.SetFillColor(0);
-    hist.SetMarkerStyle(20); 
-    hist.SetMarkerSize(1.);
-    hist.SetLineWidth(1);
-    hist.GetXaxis()->SetLabelFont(42);
-    hist.GetYaxis()->SetLabelFont(42);
-    hist.GetXaxis()->SetTitleFont(42);
-    hist.GetYaxis()->SetTitleFont(42);
-    hist.GetYaxis()->SetTitleOffset(1.7);
-    hist.GetXaxis()->SetTitleOffset(1.25);
-    if(name.Contains("pT") ||name.Contains("Mass") ){
-      hist.GetXaxis()->SetTitle(XAxis+" #left[GeV#right]");
-      if(name.Contains("Rapidity")) hist.GetXaxis()->SetTitle(XAxis);
-    }else  hist.GetXaxis()->SetTitle(XAxis);
-    
-    if(name.Contains("pT") ||name.Contains("Mass")){
-      hist.GetYaxis()->SetTitle("#frac{1}{#sigma} #frac{d#sigma}{d"+XAxis+"}"+" #left[GeV^{-1}#right]"); 
-      if(name.Contains("Rapidity")) hist.GetYaxis()->SetTitle("#frac{1}{#sigma} #frac{d#sigma}{d"+XAxis+"}");     
-    }else{hist.GetYaxis()->SetTitle("#frac{1}{#sigma} #frac{d#sigma}{d"+XAxis+"}");
+    if(legends[i] == "Data"){
+        hist->SetFillColor(0);
+        hist->SetMarkerStyle(20); 
+        hist->SetMarkerSize(1.);
+        hist->SetLineWidth(1);
+        hist->GetXaxis()->SetLabelFont(42);
+        hist->GetYaxis()->SetLabelFont(42);
+        hist->GetXaxis()->SetTitleFont(42);
+        hist->GetYaxis()->SetTitleFont(42);
+        hist->GetYaxis()->SetTitleOffset(1.7);
+        hist->GetXaxis()->SetTitleOffset(1.25);
+        if ((name.Contains("pT") || name.Contains("Mass")) && !name.Contains("Rapidity")) {
+            hist->GetXaxis()->SetTitle(XAxis+" #left[GeV#right]");
+            hist->GetYaxis()->SetTitle("#frac{1}{#sigma} #frac{d#sigma}{d"+XAxis+"}"+" #left[GeV^{-1}#right]"); 
+        } else {
+            hist->GetXaxis()->SetTitle(XAxis);
+            hist->GetYaxis()->SetTitle("#frac{1}{#sigma} #frac{d#sigma}{d"+XAxis+"}");     
+        }
+        if (isControlPlot) hist->GetYaxis()->SetTitle(YAxis);
     }
-  }
 }
 
-void Plotter::setStyle(TH1D &hist, unsigned int i)
-{
-  hist.SetFillColor(colors[i]);
-  hist.SetLineColor(colors[i]);
-  
-
-  if(legends[i] == "Data"){
-    hist.SetMarkerStyle(20); 
-    hist.SetMarkerSize(1.);
-    hist.SetLineWidth(1);
-    hist.GetXaxis()->SetLabelFont(42);
-    hist.GetYaxis()->SetLabelFont(42);
-    hist.GetXaxis()->SetTitleSize(0.04);
-    hist.GetYaxis()->SetTitleSize(0.04);
-    hist.GetXaxis()->SetTitleFont(42);
-    hist.GetYaxis()->SetTitleFont(42);
-    if(name.Contains("pT") || name.Contains("Mass")){
-      hist.GetXaxis()->SetTitle(XAxis+" #left[GeV#right]");
-      if(name.Contains("Rapidity")) hist.GetXaxis()->SetTitle(XAxis);
-    }else    hist.GetXaxis()->SetTitle(XAxis);
-    //hist.GetXaxis()->SetTitle(XAxis);
-    hist.GetYaxis()->SetTitle(YAxis);
-    hist.GetYaxis()->SetTitleOffset(1.7);
-    hist.GetXaxis()->SetTitleOffset(1.25);
-  }
-}
 
 void Plotter::PlotXSec(){
 
@@ -1405,7 +1377,6 @@ void Plotter::MakeTable(){
 double Plotter::CalcXSec(std::vector<TString> datasetVec, double InclusiveXsectionVec[4],double InclusiveXsectionStatErrorVec[4], TString Systematic, TString Shift){
 
   double BranchingFraction[4]={0.01166, 0.01166, 0.02332, 0.04666};//[ee, mumu, emu, combined] not including tau
-  lumi = 4966;
 
   TH1D *numhists[hists.size()];
   double numbers[4]={0., 0., 0., 0.};//[0]=data, [1]=Signal, [2]Signal(only lumi & PU weights), [3]background (non-ttbar)
@@ -1539,7 +1510,6 @@ void Plotter::CalcDiffXSec(TString Channel, TString Systematic){
 
   double Xbins[XAxisbins.size()];
   double binWidth[XAxisbinCenters.size()];
-  double topxsec = 220.0;//again changes with normalization
   for(unsigned int i = 0; i<XAxisbins.size();i++){Xbins[i]=XAxisbins[i];}
   double GenSignalSum[XAxisbinCenters.size()];
 
@@ -1736,8 +1706,6 @@ void Plotter::PlotDiffXSec(TString Channel){
     TH1::AddDirectory(kFALSE); 
     TGaxis::SetMaxDigits(2);
 
-    double topxsec = 165.6;
-
     double Xbins[XAxisbins.size()];
     for(unsigned int i = 0; i<XAxisbins.size();i++){Xbins[i]=XAxisbins[i];}
     double binCenters[XAxisbinCenters.size()];
@@ -1772,7 +1740,7 @@ void Plotter::PlotDiffXSec(TString Channel){
 
     for (unsigned int i =0; i<hists.size(); i++){
       varhists[i]=hists[i].Rebin(bins,"varhists",Xbins);  
-      setStyle(*varhists[i], i);
+      setStyle(varhists[i], i);
     }
 
     GenPlot = GenPlotTheory->Rebin(bins,"genplot",Xbins);	
@@ -1784,7 +1752,7 @@ void Plotter::PlotDiffXSec(TString Channel){
 
 
     for(unsigned int i=0; i<hists.size() ; i++){ // prepare histos and leg
-      setStyle(*varhists[i], i);
+      setStyle(varhists[i], i);
       varhistsPlotting[i]=(TH1*)varhists[i]->Clone();
       if(legends[i] != "Data"){
 	if((legends[i] == DYEntry) && channelType!=2){
@@ -1928,7 +1896,7 @@ void Plotter::PlotDiffXSec(TString Channel){
 
 
     cESP->Print(outpathPlots+subfolderChannel+subfolderSpecial+"/ESP_"+name+".eps");
-    cESP->Print(outpathPlots+subfolderChannel+subfolderSpecial+"/ESP_"+name+".C");
+    //cESP->Print(outpathPlots+subfolderChannel+subfolderSpecial+"/ESP_"+name+".C");
     cESP->Clear();
     delete cESP;
     double efficiencies[XAxisbinCenters.size()];
@@ -2140,7 +2108,7 @@ void Plotter::PlotDiffXSec(TString Channel){
 	}
 	AvgSyst=TotalSyst/(bins-2);
 	SqAvgSys=TMath::Sqrt(TotalSqSyst/(bins-2));
-	fprintf(systfile, "Lin.Avg.(%)= %.5f  Quad.Avg.(%)=%.5f\n", 100*AvgSyst, 100*SqAvgSys);
+	fprintf(systfile, "Lin.Avg.(%%)= %.5f  Quad.Avg.(%%)=%.5f\n", 100*AvgSyst, 100*SqAvgSys);
 	systtemp->SetFillColor(15-systs);
 	SystHists->Add((TH1D*)systtemp->Clone());
 	leg10->AddEntry(systtemp->Clone(), sys_array[syst], "f");
@@ -2161,7 +2129,7 @@ void Plotter::PlotDiffXSec(TString Channel){
       leg10->SetFillColor(0);
       leg10->Draw("SAME");
       c10->Print(outpathPlots+subfolderChannel+subfolderSpecial+"/MSP_"+name+".eps");
-      c10->Print(outpathPlots+subfolderChannel+subfolderSpecial+"/MSP_"+name+".C");
+      //c10->Print(outpathPlots+subfolderChannel+subfolderSpecial+"/MSP_"+name+".C");
       c10->Clear();
       delete leg10;
       delete c10;
@@ -2195,7 +2163,7 @@ void Plotter::PlotDiffXSec(TString Channel){
       leg11->Draw("SAME");
       TotalHist->GetXaxis()->SetNoExponent(kTRUE);
       c11->Print(outpathPlots+subfolderChannel+subfolderSpecial+"/SEM_"+name+".eps");
-      c11->Print(outpathPlots+subfolderChannel+subfolderSpecial+"/SEM_"+name+".C");
+      //c11->Print(outpathPlots+subfolderChannel+subfolderSpecial+"/SEM_"+name+".C");
       c11->Clear();
       delete ExpHist;delete StatHist;delete ModelHist;delete TotalHist;
       delete leg11;
@@ -2490,7 +2458,7 @@ void Plotter::PlotDiffXSec(TString Channel){
     gPad->RedrawAxis();
     
     c->Print(outpathPlots+subfolderChannel+subfolderSpecial+"/DiffXS_"+name+".eps"); 
-    c->Print(outpathPlots+subfolderChannel+subfolderSpecial+"/DiffXS_"+name+".C"); 
+    //c->Print(outpathPlots+subfolderChannel+subfolderSpecial+"/DiffXS_"+name+".C"); 
     c->Clear();
     delete c;
     gStyle->SetEndErrorSize(0);
@@ -2519,7 +2487,6 @@ void Plotter::PlotDiffXSec(TString Channel){
       Double_t binerr2 = binc*binc*lumierr*lumierr;
       Double_t topunc = 0; // uncertainty on top xsec
       
-      double topxsec = 165.6;
       double topxsecErr2 = 2.2*2.2 + 11.6*11.6;
       
       double topRelUnc =  TMath::Sqrt(topxsecErr2)/topxsec;
@@ -2572,7 +2539,7 @@ void Plotter::PlotDiffXSec(TString Channel){
     //varhists[0]->Write(name+"_"+channel+"_Data");
     //f1->Close();
     c1->Print(outpathPlots+subfolderChannel+subfolderSpecial+"/preunfolded_"+name+".eps");
-    c1->Print(outpathPlots+subfolderChannel+subfolderSpecial+"/preunfolded_"+name+".C");
+    //c1->Print(outpathPlots+subfolderChannel+subfolderSpecial+"/preunfolded_"+name+".C");
     c1->Clear();
     delete c1; 	
 
@@ -2597,7 +2564,7 @@ TH1* Plotter::GetNloCurve(const char *particle, const char *quantity, const char
   
   TH1* hist;
   
-  TFile* file = new TFile;
+  TFile* file = 0;
   
   if(strcmp(generator, "Powheg")==0){file = TFile::Open("selectionRoot/Nominal/emu/ttbarsignalplustau_powheg.root","READ");}
   else if(strcmp(generator, "MCatNLO")==0){file = TFile::Open("MCatNLO_status3_v20120729.root","READ");}
@@ -2643,9 +2610,9 @@ TH1* Plotter::GetNloCurve(TString NewName, TString Generator){
   
   TH1* hist;
   
-  TFile* file = new TFile;
-  TFile* file1 = new TFile;
-  TFile* file2 = new TFile;
+  TFile* file = 0;
+  TFile* file1 = 0;
+  TFile* file2 = 0;
 
     
   if(Generator=="MCATNLO"){
@@ -2935,7 +2902,7 @@ void Plotter::DrawLabel(TString text, const double x1, const double y1, const do
 void Plotter::ApplyFlatWeights(TH1* varhists, const double weight){
 
     if(weight == 0) {cout<<"Warning: the weight your applying is 0. This will remove your distribution."<<endl;}
-    if(weight >=1e3){cout<<"Warning: the weight your applying is >= 1e3. This will enlarge too much your distribution."<<endl;}
+    //if(weight >=1e3){cout<<"Warning: the weight your applying is >= 1e3. This will enlarge too much your distribution."<<endl;}
     varhists->Scale(weight);
 }
 
@@ -2951,7 +2918,6 @@ void Plotter::ApplyFlatWeights(TH1* varhists[], const double weight){
 
 double Plotter::CalcLumiWeight(TString WhichSample){
     if (WhichSample.Contains("run")) return 1;
-    lumi = 5100;
     double lumiWeight=0;
     if(WhichSample!=""){
         double XSection = SampleXSection(WhichSample);

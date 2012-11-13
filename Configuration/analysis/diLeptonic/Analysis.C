@@ -1797,5 +1797,3 @@ double Analysis::getJetHT(const VLV& jet, int pt_cut)
     }
     return result;
 }
-
-

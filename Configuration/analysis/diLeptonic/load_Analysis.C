@@ -20,8 +20,6 @@ void load_Analysis(TString validFilenamePattern, TString systematic){
     PUReweighter *pu = new PUReweighter();
     pu->setMCDistrSum12("S10");
     std::string pu_path(getenv("CMSSW_BASE"));
-//     pu_path.append("/src/TopAnalysis/TopUtils/data/Data_PUDist_sysNo_69400_2012ABReReco.root");
-//     pu_path.append("/src/TopAnalysis/TopUtils/data/PU_Data_2012_5fbinv.root");
     if (systematic == "") {
         pu_path.append("/src/TopAnalysis/TopUtils/data/Data_PUDist_12fb.root");
     } else if (systematic == "PU_UP") {
@@ -126,4 +124,3 @@ int main(int argc, char* const argv[]) {
     load_Analysis(validFilenamePattern, syst);
 //     delete p;
 }
-

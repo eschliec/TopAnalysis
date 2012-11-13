@@ -57,62 +57,9 @@ void Analysis::Begin ( TTree * )
     EventCounter = 0;
     bEff = 0;
     
-    //some defaults for the median, overwritten if btag files exist
-    ptmedian = 75; 
-    etamedian = 0.75;
-
-    //By now defined the per-jet SFs vary according to:
-    //   BTag_Up   ==> pt>ptmedian vary DOWN, pt<ptmedian vary UP
-    //   BTag_Down ==> pt>ptmedian vary UP, pt<ptmedian vary DOWN
-
-    //load per-jet efficienciies file and Histograms
-    TFile *bEfficiencies;
-    if (btagFile!="") {
-        bEfficiencies = TFile::Open(btagFile);
-    } else {
-        cout<<"WARNING!!! Provide b tag efficiencies before running"<<endl;
-        return;
-    }
-
-    if (!bEfficiencies) {
-        cout << "\n******************************************************\n"
-             << "File " << btagFile << " does not exist. Running without btagsf!!!\n"
-             << "To create the file, run:\n" 
-             << "   ./load_Analysis -f ttbarsignal\n"
-             << "and copy the selectionRoot/BTagEff directory to the cwd:\n"
-             << "   cp -r selectionRoot/BTagEff .\n"
-             << "This error is NOT fatal, using a btag SF = 1 everywhere\n"
-             << "*******************************************************\n\n";
-        return;
-    }
-    bEff = dynamic_cast<TH2*>(bEfficiencies->Get("BEffPerJet"));
-    if (!bEff) {
-        cout<<"Histogram bEff is not in the file "<<bEfficiencies->GetName();
-        return;
-    }
-    cEff = dynamic_cast<TH2*>(bEfficiencies->Get("CEffPerJet"));
-    if (!cEff) {
-        cout<<"Histogram cEff is not in the file "<<bEfficiencies->GetName();
-        return;
-    }
-    lEff = dynamic_cast<TH2*>(bEfficiencies->Get("LEffPerJet"));
-    if (!lEff) {
-        cout<<"Histogram lEff is not in the file "<<bEfficiencies->GetName();
-        return;
-    }
-    
-    TH1* medians = dynamic_cast<TH1*>(bEfficiencies->Get("Medians"));
-    ptmedian = medians->GetBinContent(1);
-    etamedian = medians->GetBinContent(2);
-    printf("Using medians: pT = %.0f, eta = %.2f\n", ptmedian, etamedian);
-
-    //load the histograms in memory, to avoid memory leaks
-    bEff->SetDirectory(0);
-    cEff->SetDirectory(0);
-    lEff->SetDirectory(0);
-    bEfficiencies->Close();
-    bEfficiencies->Delete();
-    // END: BTag SF calculation neccessary stuff
+    prepareTriggerSF();
+    prepareLeptonIDSF();
+    prepareBtagSF();    
 }
 
 void Analysis::SlaveBegin ( TTree * )
@@ -399,9 +346,6 @@ Bool_t Analysis::Process ( Long64_t entry )
             weightPU = pureweighter->getPUweight(vertMultiTrue);
         }
     }
-
-    double weightLepSF = isMC ? leptonSF : 1;
-    double trigEFF = 1.0; //set trigger efficiency scale factor to 1.
     
     int BHadronIndex=-1;
     int AntiBHadronIndex=-1;
@@ -650,7 +594,7 @@ Bool_t Analysis::Process ( Long64_t entry )
     //===CUT===
     // check if event was triggered (only needed for the signal sample which does not
     // contain trigger preselection cuts)
-    if (false && isTtbarPlusTauSample) {
+    if (isTtbarPlusTauSample) {
         if (!(((triggerBits & 0x0000FF) && channel == "mumu")    //mumu triggers in rightmost byte
            || ((triggerBits & 0x00FF00) && channel == "emu")     //emu in 2nd byte
            || ((triggerBits & 0xFF0000) && channel == "ee")))    //ee in 3rd byte
@@ -683,9 +627,13 @@ Bool_t Analysis::Process ( Long64_t entry )
         leptonMinus = lepton->at(LeadLeptonNumber);
         leptonPlus = lepton->at(NLeadLeptonNumber);            
     }        
+
+    //Now determine the lepton trigger and ID scale factors
+    double weightLepSF = isMC ? getLeptonIDSF(leptonPlus, leptonMinus) : 1;
+    double weightTrigSF = isMC ? getTriggerSF(leptonPlus, leptonMinus) : 1;
     
     //First control plots after dilepton selection (without Z cut)
-    double weight = weightGenerator*trigEFF*weightLepSF;
+    double weight = weightGenerator*weightTrigSF*weightLepSF;
     //weight even without PU reweighting
     h_vertMulti_noPU->Fill(vertMulti, weight);
     
@@ -705,13 +653,13 @@ Bool_t Analysis::Process ( Long64_t entry )
     bool hasMetOrEmu = channel == "emu" || met->Et() > 30;
     bool hasBtag = BJetIndex.size() > 0;
     double weightKinFit = 1;
-    double btagSF = -1; //trick: initialize to -1 to avoid calculation of the btagSF twice
+    double weightBtagSF = -1; //trick: initialize to -1 to avoid calculation of the btagSF twice
     
     if ( isZregion ) {
         Looseh1->Fill(dilepton.M(), weight);
         if ( hasJets && hasMetOrEmu && hasBtag && hasSolution) {
-            btagSF = isMC ? calculateBtagSF() : 1;
-            double fullWeights = weightGenerator*weightPU*weightLepSF*btagSF*trigEFF*weightKinFit;
+            weightBtagSF = isMC ? calculateBtagSF() : 1;
+            double fullWeights = weightGenerator*weightPU*weightLepSF*weightBtagSF*weightTrigSF*weightKinFit;
             Zh1->Fill(dilepton.M(), fullWeights);
             Allh1->Fill(dilepton.M(), fullWeights);
         }
@@ -741,9 +689,9 @@ Bool_t Analysis::Process ( Long64_t entry )
     //Require at least one b tagged jet
     if (!hasBtag) return kTRUE;
 
-    if (btagSF == -1) btagSF = isMC ? calculateBtagSF() : 1; //avoid calculation of the btagSF twice
-    weight *= btagSF;
-    h_BTagSF->Fill(btagSF );                    
+    if (weightBtagSF == -1) weightBtagSF = isMC ? calculateBtagSF() : 1; //avoid calculation of the btagSF twice
+    weight *= weightBtagSF;
+    h_BTagSF->Fill(weightBtagSF );                    
     h_step8->Fill(1, weight );
 
     h_BjetMulti->Fill(BJetIndex.size(), weight);
@@ -1316,14 +1264,14 @@ void Analysis::Terminate()
     fOutput->Clear();
 }
 
-double Analysis::BJetSF ( double pt, double eta )
+double Analysis::BJetSF( double pt, double eta )
 {
     //CSVL b-jet SF
     //From BTV-11-004 and https://twiki.cern.ch/twiki/pub/CMS/BtagPOG/SFb-mujet_payload.txt
 
     if ( abs(eta) > 2.4 ) {
         cout<<"Jet Eta out of the selected range. Check it"<<endl;
-        return 0.0;
+        exit(9);
     }
     
     if ( pt < 30 ) pt = 30;
@@ -1346,7 +1294,7 @@ double Analysis::LJetSF ( double pt, double eta )
 
     double eta_abs = abs(eta);
     if (eta_abs > 2.4) {
-        cout<<"There is a jet out of the selected ETA region. Check that!!!!!";
+        cout<<"There is a jet out of the selected ETA region. Check that!!!!!\n";
         return 1;
     }
     if ( pt > 670 ) {
@@ -1388,10 +1336,6 @@ void Analysis::SetBTagFile(TString btagFile)
 void Analysis::SetChannel(TString channel)
 {
     this->channel = channel;
-    if (channel == "emu") leptonSF = 0.957;
-    else if (channel == "ee") leptonSF = 0.935;
-    else leptonSF = 0.987;
-
 }
 
 void Analysis::SetSignal(bool isSignal)
@@ -1707,6 +1651,17 @@ bool Analysis::getLeptonPair(size_t &LeadLeptonNumber, size_t &NLeadLeptonNumber
     return false;
 }
 
+double Analysis::get2DSF(TH2* histo, const double x, const double y)
+{
+    int xbin, ybin, dummy;
+    histo->GetBinXYZ(histo->FindBin(x, y), xbin, ybin, dummy);
+    //overflow to last bin
+    xbin = std::min(xbin, histo->GetNbinsX());
+    ybin = std::min(ybin, histo->GetNbinsY());
+    return histo->GetBinContent(xbin, ybin);
+}
+
+
 double Analysis::calculateBtagSF()
 {
     if (!bEff) return 1; //no btag file given, so return 1
@@ -1725,15 +1680,15 @@ double Analysis::calculateBtagSF()
             etabin = std::min(etabin, bEff->GetNbinsY());
             //do the type-jet selection & Eff and SF obtention
             double SF_Error=0;
-            if ( ( *jetType ) [i] == 2 ) { //b-quark
+            if ( ( *jetType )[i] == 2 ) { //b-quark
                 eff=bEff->GetBinContent ( ptbin, etabin );
-                SFPerJet=BJetSF ( pt, eta );
+                SFPerJet=BJetSF( pt, eta );
                 SF_Error = BJetSFAbsErr ( ptbin );
-            } else if ( ( *jetType ) [i] == 1 ) { //c-quark
-                SFPerJet=CJetSF ( pt, eta );
+            } else if ( ( *jetType )[i] == 1 ) { //c-quark
+                SFPerJet=CJetSF( pt, eta );
                 eff=cEff->GetBinContent ( ptbin, etabin );
-            } else if ( ( *jetType ) [i] == 0 ) { //l-quark
-                SFPerJet=LJetSF ( pt, eta );
+            } else if ( ( *jetType )[i] == 0 ) { //l-quark
+                SFPerJet=LJetSF( pt, eta );
                 eff=lEff->GetBinContent ( ptbin, etabin );
             } else {
                 cout<<"I found a jet in event "<<eventNumber<<" which is not b, c nor light"<<endl;
@@ -1752,28 +1707,28 @@ double Analysis::calculateBtagSF()
                 sf = SFPerJet - SF_Error;
             }
             else if ( systematic == "BTAG_PT_UP" ) {
-                if ( pt>ptmedian )  {
+                if ( pt>btag_ptmedian )  {
                     sf = SFPerJet - 0.5 * SF_Error;
                 } else {
                     sf = SFPerJet + 0.5 * SF_Error;
                 }
             }
             else if ( systematic == "BTAG_PT_DOWN" ) {
-                if ( pt>ptmedian )  {
+                if ( pt>btag_ptmedian )  {
                     sf = SFPerJet + 0.5 * SF_Error;
                 } else {
                     sf = SFPerJet - 0.5 * SF_Error;
                 }
             }
             else if ( systematic == "BTAG_ETA_UP" ) {
-                if ( eta>etamedian )  {
+                if ( eta>btag_etamedian )  {
                     sf = SFPerJet - 0.5 * SF_Error;
                 } else {
                     sf = SFPerJet + 0.5 * SF_Error;
                 }
             }
             else if ( systematic == "BTAG_ETA_DOWN" ) {
-                if ( eta>etamedian )  {
+                if ( eta>btag_etamedian )  {
                     sf = SFPerJet + 0.5 * SF_Error;
                 } else {
                     sf = SFPerJet - 0.5 * SF_Error;
@@ -1796,4 +1751,117 @@ double Analysis::getJetHT(const VLV& jet, int pt_cut)
         result += pt;
     }
     return result;
+}
+
+void Analysis::prepareTriggerSF()
+{
+    h_TrigSFeta = nullptr;
+    
+    TFile trigEfficiencies(TString("triggerSummary_").Append(channel).Append(".root"));
+    if (trigEfficiencies.IsZombie()) {
+        cout << "Trigger efficiencies not found. Assuming ScaleFactor = 1.\n";
+        cout << "Currently triggerEfficieny files can be found in Jan's NAF public afs\n\n";
+        return;
+    }
+    
+    //Right now pT efficiency flat ==> Not used
+    h_TrigSFeta = dynamic_cast<TH1*>(trigEfficiencies.Get("TH scalefactor eta incl corrErr"));
+    if ( !h_TrigSFeta ) {
+        cout<<"TH1 >>TH scalefactor eta<< is not in the file "<<trigEfficiencies.GetName()<<"\n";
+        return;
+    }
+    
+    if (systematic.BeginsWith("TRIG_")) {
+        double factor = systematic.EndsWith("_UP") ? 1 : -1;
+        for (int i = 1; i <= h_TrigSFeta->GetNbinsX(); ++i) {
+            h_TrigSFeta->SetBinContent(i, 
+                h_TrigSFeta->GetBinContent(i) + factor*h_TrigSFeta->GetBinError(i));
+        }
+    }
+    
+    h_TrigSFeta->SetDirectory(0);
+    trigEfficiencies.Close();
+}
+
+double Analysis::getTriggerSF(const LV& lep1, const LV& lep2) {
+    if (!h_TrigSFeta) return 1;
+    return TMath::Sqrt(        
+        h_TrigSFeta->GetBinContent(h_TrigSFeta->FindBin(lep1.eta()))
+        * h_TrigSFeta->GetBinContent(h_TrigSFeta->FindBin(lep2.eta())));
+}
+
+double Analysis::getLeptonIDSF(const LV& lep1, const LV& lep2) {
+    if (!h_LepIDSFpteta) return 1;
+    return TMath::Sqrt(
+        get2DSF(h_LepIDSFpteta, lep1.pt(), lep1.Eta())
+        * get2DSF(h_LepIDSFpteta, lep2.pt(), lep2.Eta()));
+}
+
+void Analysis::prepareLeptonIDSF()
+{
+    h_LepIDSFpteta = nullptr;
+    std::cout << "Please implement reading the TH2* for the lepton SF\n\n";
+    //...
+}
+
+
+void Analysis::prepareBtagSF()
+{
+    //some defaults for the median, overwritten if btag files exist
+    btag_ptmedian = 75; 
+    btag_etamedian = 0.75;
+
+    //By now defined the per-jet SFs vary according to:
+    //   BTag_Up   ==> pt>ptmedian vary DOWN, pt<ptmedian vary UP
+    //   BTag_Down ==> pt>ptmedian vary UP, pt<ptmedian vary DOWN
+
+    //load per-jet efficienciies file and Histograms
+    TFile *bEfficiencies;
+    if (btagFile!="") {
+        bEfficiencies = TFile::Open(btagFile);
+    } else {
+        cout<<"WARNING!!! Provide b tag efficiencies before running"<<endl;
+        return;
+    }
+
+    if (!bEfficiencies) {
+        cout << "\n******************************************************\n"
+             << "File " << btagFile << " does not exist. Running without btagsf!!!\n"
+             << "To create the file, run:\n" 
+             << "   ./load_Analysis -f ttbarsignal\n"
+             << "and copy the selectionRoot/BTagEff directory to the cwd:\n"
+             << "   cp -r selectionRoot/BTagEff .\n"
+             << "This error is NOT fatal, using a btag SF = 1 everywhere\n"
+             << "*******************************************************\n\n";
+        return;
+    }
+    bEff = dynamic_cast<TH2*>(bEfficiencies->Get("BEffPerJet"));
+    if (!bEff) {
+        cout<<"Histogram bEff is not in the file "<<bEfficiencies->GetName();
+        return;
+    }
+    cEff = dynamic_cast<TH2*>(bEfficiencies->Get("CEffPerJet"));
+    if (!cEff) {
+        cout<<"Histogram cEff is not in the file "<<bEfficiencies->GetName();
+        return;
+    }
+    lEff = dynamic_cast<TH2*>(bEfficiencies->Get("LEffPerJet"));
+    if (!lEff) {
+        cout<<"Histogram lEff is not in the file "<<bEfficiencies->GetName();
+        return;
+    }
+    
+    TH1* medians = dynamic_cast<TH1*>(bEfficiencies->Get("Medians"));
+    btag_ptmedian = medians->GetBinContent(1);
+    btag_etamedian = medians->GetBinContent(2);
+    printf("BTagSF: Using medians: pT = %.0f, eta = %.2f\n", btag_ptmedian, btag_etamedian);
+
+    //load the histograms in memory, to avoid memory leaks
+    bEff->SetDirectory(0);
+    cEff->SetDirectory(0);
+    lEff->SetDirectory(0);
+    bEfficiencies->Close();
+    bEfficiencies->Delete();
+    // END: BTag SF calculation neccessary stuff
+
 }

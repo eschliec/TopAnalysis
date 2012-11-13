@@ -276,15 +276,22 @@ class Analysis : public TSelector
     double CJetSF ( double, double );
     double LJetSF ( double, double );
     double BJetSFAbsErr ( int );
-    double ptmedian, etamedian;
+    double btag_ptmedian, btag_etamedian;
     // END of btag SF stuff
     
     //other SF
-    double leptonSF;
     double lumiWeight; //needed while using old plotterclass
     
-    void FillLeptonHisto(size_t i, double weight);
-
+    TH1* h_TrigSFeta;
+    TH2* h_LepIDSFpteta;
+    
+    void prepareTriggerSF();
+    void prepareBtagSF();
+    void prepareLeptonIDSF();
+    double getTriggerSF(const LV& lep1, const LV& lep2);
+    double getLeptonIDSF(const LV& lep1, const LV& lep2);
+    double get2DSF(TH2* histo, const double x, const double y);
+    
     // Variables added from the outside
     TString btagFile;
     TString channel;

@@ -20,14 +20,17 @@ void load_Analysis(TString validFilenamePattern, TString systematic){
     PUReweighter *pu = new PUReweighter();
     pu->setMCDistrSum12("S10");
     std::string pu_path(getenv("CMSSW_BASE"));
-    if (systematic == "") {
-        pu_path.append("/src/TopAnalysis/TopUtils/data/Data_PUDist_12fb.root");
-    } else if (systematic == "PU_UP") {
+    if (systematic == "PU_UP") {
         pu_path.append("/src/TopAnalysis/TopUtils/data/Data_PUDist_12fb_sysUp.root");
+        cout << "using pilup-up distribution\n";
     } else if (systematic == "PU_DOWN") {
         pu_path.append("/src/TopAnalysis/TopUtils/data/Data_PUDist_12fb_sysDown.root");
+        cout << "using pilup-down distribution\n";
     } else {
-        cerr << "Systematics unknown!\n"; exit(3);
+        pu_path.append("/src/TopAnalysis/TopUtils/data/Data_PUDist_12fb.root");
+        if (systematic != "") {
+            cout << "Using Nominal PU distribution for " << systematic << " systematic!\n";
+        }
     }
     
     pu->setDataTruePUInput(pu_path.c_str());
@@ -100,8 +103,10 @@ void syntaxError() {
     std::cerr << 
         "\nload_Analysis: Invalid syntax!\n---------------------------------\n" <<
         "Valid Parameters:\n" <<
-        "-f pattern  -->  only process filenames containing the pattern\n" <<
-        "-s [ PU_UP | PU_DOWN ]  -->  run with a systematic that runs on the normal ntuples\n" <<
+        "-f pattern\n" <<
+        "   only process filenames containing the pattern\n" <<
+        "-s [ PU_UP | PU_DOWN | TRIG_UP | TRIG_DOWN | BTAG_... ]\n" << 
+        "   run with a systematic that runs on the normal ntuples\n" <<
         "\n";
     exit(1);
 }

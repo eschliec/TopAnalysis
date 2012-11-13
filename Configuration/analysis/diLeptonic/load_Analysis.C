@@ -61,7 +61,8 @@ void load_Analysis(TString validFilenamePattern, TString systematic){
         }
         bool isSignal = o_isSignal->GetString() == "1";
         bool isMC = o_isMC->GetString() == "1";
-        TString btagFile = "BTagEff/" + channel->GetString() + "/ttbarsignalplustau.root";
+        TString btagFile = "BTagEff/Nominal/" + channel->GetString() + "/" 
+            + channel->GetString() + "_ttbarsignalplustau.root";
         
         selector->SetBTagFile(btagFile);
         selector->SetChannel(channel->GetString());

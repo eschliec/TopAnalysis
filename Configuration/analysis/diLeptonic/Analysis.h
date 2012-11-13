@@ -263,15 +263,20 @@ class Analysis : public TSelector
     
     
     // BEGIN of btag SF stuff
-    vector<double>  ptbinning, etabinning;
-
+    TH2 *h_bjets, *h_btaggedjets;
+    TH2 *h_cjets, *h_ctaggedjets;
+    TH2 *h_ljets, *h_ltaggedjets;
+    
+    //btag calculation
     TH2 *bEff, *cEff, *lEff;
     TH1 *h_BTagSF;
 
+    double Median(TH1 *); 
     double BJetSF ( double, double );
     double CJetSF ( double, double );
     double LJetSF ( double, double );
     double BJetSFAbsErr ( int );
+    double ptmedian, etamedian;
     // END of btag SF stuff
     
     //other SF

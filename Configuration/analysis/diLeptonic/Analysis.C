@@ -6,6 +6,7 @@
 #include <TStyle.h>
 #include <fstream>
 #include <iostream>
+#include <cstdio>
 #include <TMath.h>
 #include <TSystem.h>
 #include <Math/VectorUtil.h>
@@ -55,6 +56,10 @@ void Analysis::Begin ( TTree * )
 {
     EventCounter = 0;
     bEff = 0;
+    
+    //some defaults for the median, overwritten if btag files exist
+    ptmedian = 75; 
+    etamedian = 0.75;
 
     //By now defined the per-jet SFs vary according to:
     //   BTag_Up   ==> pt>ptmedian vary DOWN, pt<ptmedian vary UP
@@ -62,37 +67,49 @@ void Analysis::Begin ( TTree * )
 
     //load per-jet efficienciies file and Histograms
     TFile *bEfficiencies;
-    if ( btagFile!="" ) {
-        bEfficiencies = TFile::Open( btagFile );
+    if (btagFile!="") {
+        bEfficiencies = TFile::Open(btagFile);
     } else {
         cout<<"WARNING!!! Provide b tag efficiencies before running"<<endl;
         return;
     }
 
-    if ( !bEfficiencies ) {
-        cout<<"File "<< btagFile << " does not exist. Running without btagsf!!!"<<endl;
+    if (!bEfficiencies) {
+        cout << "\n******************************************************\n"
+             << "File " << btagFile << " does not exist. Running without btagsf!!!\n"
+             << "To create the file, run:\n" 
+             << "   ./load_Analysis -f ttbarsignal\n"
+             << "and copy the selectionRoot/BTagEff directory to the cwd:\n"
+             << "   cp -r selectionRoot/BTagEff .\n"
+             << "This error is NOT fatal, using a btag SF = 1 everywhere\n"
+             << "*******************************************************\n\n";
         return;
     }
-    bEff = dynamic_cast<TH2*>(bEfficiencies->Get( "BEffPerJet" ));
+    bEff = dynamic_cast<TH2*>(bEfficiencies->Get("BEffPerJet"));
     if (!bEff) {
         cout<<"Histogram bEff is not in the file "<<bEfficiencies->GetName();
         return;
     }
-    cEff = dynamic_cast<TH2*>(bEfficiencies->Get ( "CEffPerJet" ));
+    cEff = dynamic_cast<TH2*>(bEfficiencies->Get("CEffPerJet"));
     if (!cEff) {
         cout<<"Histogram cEff is not in the file "<<bEfficiencies->GetName();
         return;
     }
-    lEff = dynamic_cast<TH2*>(bEfficiencies->Get ( "LEffPerJet" ));
+    lEff = dynamic_cast<TH2*>(bEfficiencies->Get("LEffPerJet"));
     if (!lEff) {
         cout<<"Histogram lEff is not in the file "<<bEfficiencies->GetName();
         return;
     }
+    
+    TH1* medians = dynamic_cast<TH1*>(bEfficiencies->Get("Medians"));
+    ptmedian = medians->GetBinContent(1);
+    etamedian = medians->GetBinContent(2);
+    printf("Using medians: pT = %.0f, eta = %.2f\n", ptmedian, etamedian);
 
     //load the histograms in memory, to avoid memory leaks
-    bEff->SetDirectory ( 0 );
-    cEff->SetDirectory ( 0 );
-    lEff->SetDirectory ( 0 );
+    bEff->SetDirectory(0);
+    cEff->SetDirectory(0);
+    lEff->SetDirectory(0);
     bEfficiencies->Close();
     bEfficiencies->Delete();
     // END: BTag SF calculation neccessary stuff
@@ -321,9 +338,34 @@ void Analysis::SlaveBegin ( TTree * )
 
     h_HypLLBarpTDPhi = new TH2D ( "HypLLBarpTDPhi", "DiLep: pT(ll) vs DPhi(ll)", 500, 0, 1000, 112, -0.1, 3.25 );
 
+    //btagSF
+    const int PtMax = 17;
+    const int EtaMax = 6;
+    Double_t ptbins[PtMax+1] = {0.,30.,40.,50.,60.,70.,80.,100.,120.,160.,210.,260.,320.,400.,500.,670.,1000.,2000.};
+    Double_t etabins[EtaMax+1] = {0.0,0.5,1.0,1.5,2.0,2.4,3.0};
+    h_bjets = new TH2D("bjets2D", "unTagged Bjets", PtMax, ptbins, EtaMax, etabins);              h_bjets->Sumw2();
+    h_btaggedjets = new TH2D("bjetsTagged2D", "Tagged Bjets", PtMax, ptbins, EtaMax, etabins);    h_btaggedjets->Sumw2();
+    h_cjets = new TH2D("cjets2D", "unTagged Cjets", PtMax, ptbins, EtaMax, etabins);              h_cjets->Sumw2();
+    h_ctaggedjets = new TH2D("cjetsTagged2D", "Tagged Cjets", PtMax, ptbins, EtaMax, etabins);    h_ctaggedjets->Sumw2();
+    h_ljets = new TH2D("ljets2D", "unTagged Ljets", PtMax, ptbins, EtaMax, etabins);              h_ljets->Sumw2();
+    h_ltaggedjets = new TH2D("ljetsTagged2D", "Tagged Ljets", PtMax, ptbins, EtaMax, etabins);    h_ltaggedjets->Sumw2();
+    
     h_BTagSF = new TH1D ( "BTagSF", "BTagging SF per event", 100 , 0.95, 1.05 );
     h_BTagSF->Sumw2();
 }
+
+double Analysis::Median(TH1 * h1) 
+{ 
+   int n = h1->GetXaxis()->GetNbins();  
+   std::vector<double>  x(n);
+   h1->GetXaxis()->GetCenter( &x[0] );
+   TH1D* h1D = dynamic_cast<TH1D*>(h1);
+   if (!h1D) { cerr << "Median needs a TH1D!\n"; exit(7); }
+   const double * y = h1D->GetArray(); 
+   // exclude underflow/overflows from bin content array y
+   return TMath::Median(n, &x[0], &y[1]); 
+}
+
 
 Bool_t Analysis::Process ( Long64_t entry )
 {
@@ -897,6 +939,36 @@ Bool_t Analysis::Process ( Long64_t entry )
     h_GenRecoTTBarpT->Fill(hypttbar.Pt(), genttbar.Pt(), weight );
     h_GenRecoTTBarRapidity->Fill(hypttbar.Rapidity(), genttbar.Rapidity(), weight );
 
+    //finally do the btag SF calculation stuff
+    for (int i=0; i < jet->size(); ++i) {
+        if (jet->at(i).Pt() <= JETPTCUT) break;
+        if (TMath::Abs(jet->at(i).Eta())<2.4) {
+            int type = (*jetType)[i];
+            if(type == 2){//b-quark
+                h_bjets->Fill(jet->at(i).Pt(), TMath::Abs(jet->at(i).Eta()));
+                if((*jetBTagCSV)[i]>BtagWP){
+                    h_btaggedjets->Fill(jet->at(i).Pt(), TMath::Abs(jet->at(i).Eta()));
+                }
+            }
+            else if (type == 1){//c-quark
+                h_cjets->Fill(jet->at(i).Pt(), TMath::Abs(jet->at(i).Eta()));
+                if((*jetBTagCSV)[i]>BtagWP){
+                    h_ctaggedjets->Fill(jet->at(i).Pt(), TMath::Abs(jet->at(i).Eta()));
+                }
+            }
+            else if (type == 0){//l-quark
+                h_ljets->Fill(jet->at(i).Pt(), TMath::Abs(jet->at(i).Eta()));
+                if((*jetBTagCSV)[i]>BtagWP){
+                    h_ltaggedjets->Fill(jet->at(i).Pt(), TMath::Abs(jet->at(i).Eta()));
+                }
+            }
+            else {
+                cout<<"I found a jet in event "<<eventNumber<<" which is not b, c nor ligth"<<endl; 
+                return kFALSE;                
+            }
+        }
+    }
+
     return kTRUE;
 }
 
@@ -1108,6 +1180,12 @@ void Analysis::SlaveTerminate()
     fOutput->Add(h_step8);
     fOutput->Add(h_step9);
 
+    fOutput->Add(h_bjets);
+    fOutput->Add(h_btaggedjets);
+    fOutput->Add(h_cjets);
+    fOutput->Add(h_ctaggedjets);
+    fOutput->Add(h_ljets);
+    fOutput->Add(h_ltaggedjets);
 
     fOutput->Add(h_BTagSF);
 
@@ -1139,6 +1217,7 @@ void Analysis::Terminate()
     TIterator* it = fOutput->MakeIterator();
     while (TObject* obj = it->Next()) {
         obj->Write();
+        //cout << obj->GetName() << "\n";
     }
     weightedEvents->Write();
     TObjString(channel).Write("channelName");
@@ -1148,9 +1227,93 @@ void Analysis::Terminate()
     TObjString(isMC ? "1" : "0").Write("isMC");
     f.Close();
     
+    cout<<"Created: "<<f_savename<<endl;
+    
+    if (isSignal) {
+        cout << "Signal sample, writing out btag efficiencies\n";
+        f_savename = "selectionRoot/BTagEff";
+        gSystem->MakeDirectory(f_savename.c_str());
+        f_savename.append("/");
+        f_savename.append(systematic); 
+        gSystem->MakeDirectory(f_savename.c_str());
+        f_savename.append("/");
+        f_savename.append(channel); 
+        gSystem->MakeDirectory(f_savename.c_str());
+        f_savename.append("/");
+        f_savename.append(outputfilename);
+        
+        h_bjets = dynamic_cast<TH2*>( fOutput->FindObject("bjets2D") );
+        h_btaggedjets = dynamic_cast<TH2*>( fOutput->FindObject("bjetsTagged2D") );
+        h_cjets = dynamic_cast<TH2*>( fOutput->FindObject("cjets2D") );
+        h_ctaggedjets = dynamic_cast<TH2*>( fOutput->FindObject("cjetsTagged2D") );
+        h_ljets = dynamic_cast<TH2*>( fOutput->FindObject("ljets2D") );
+        h_ltaggedjets = dynamic_cast<TH2*>( fOutput->FindObject("ljetsTagged2D") );
+        if (!h_bjets || !h_btaggedjets || !h_cjets || !h_ctaggedjets || !h_ljets || !h_ltaggedjets) {
+            cerr << "At least one of the btag histograms is missing\n";
+            exit(4);
+        }
+        TFile fbtag(f_savename.c_str(),"RECREATE");
+        h_bjets->Write();
+        h_btaggedjets->Write();
+        h_cjets->Write();
+        h_ctaggedjets->Write();
+        h_ljets->Write();
+        h_ltaggedjets->Write();
+        
+        TH1 *btaggedPt = h_btaggedjets->ProjectionX(); TH1 *btaggedEta = h_btaggedjets->ProjectionY();
+        TH1 *ctaggedPt = h_ctaggedjets->ProjectionX(); TH1 *ctaggedEta = h_ctaggedjets->ProjectionY();
+        TH1 *ltaggedPt = h_ltaggedjets->ProjectionX(); TH1 *ltaggedEta = h_ltaggedjets->ProjectionY();
+        
+        TH1 *bUntaggedPt = h_bjets->ProjectionX(); TH1 *bEta = h_bjets->ProjectionY();
+        TH1 *cUntaggedPt = h_cjets->ProjectionX(); TH1 *cEta = h_cjets->ProjectionY();
+        TH1 *lUntaggedPt = h_ljets->ProjectionX(); TH1 *lEta = h_ljets->ProjectionY();
+        
+        //Calculate the medians and save them in a txt file
+        double PtMedian = Median(btaggedPt);
+        double EtaMedian = Median(btaggedEta);
+        printf("Median: pT = %.0f, eta = %.2f\n", PtMedian, EtaMedian);
+        TH1* medianHist = new TH1D("Medians", "medians", 2, -0.5, 1.5);
+        medianHist->GetXaxis()->SetBinLabel(1, "pT");
+        medianHist->GetXaxis()->SetBinLabel(2, "eta");
+        medianHist->SetBinContent(1, PtMedian);
+        medianHist->SetBinContent(2, EtaMedian);
+        medianHist->Write();
+        
+        TH1 *beffPt =(TH1*) btaggedPt->Clone("beffPt");
+        TH1 *ceffPt =(TH1*) ctaggedPt->Clone("ceffPt");
+        TH1 *leffPt =(TH1*) ltaggedPt->Clone("leffPt");
+        
+        TH1 *beffEta =(TH1*) btaggedEta->Clone("beffEta");  
+        TH1 *ceffEta =(TH1*) ctaggedEta->Clone("ceffEta");  
+        TH1 *leffEta =(TH1*) ltaggedEta->Clone("leffEta");  
+        
+        //Calculate Efficiency: N_tageed/N_all
+        //Calculate also the binomial error (option "B" does it)!!
+        beffPt->Divide(btaggedPt, bUntaggedPt, 1, 1, "B"); 
+        ceffPt->Divide(ctaggedPt, cUntaggedPt, 1, 1, "B"); 
+        leffPt->Divide(ltaggedPt, lUntaggedPt, 1, 1, "B");
+        beffEta->Divide(btaggedEta, bEta, 1, 1, "B"); 
+        ceffEta->Divide(ctaggedEta, cEta, 1, 1, "B"); 
+        leffEta->Divide(ltaggedEta, lEta, 1, 1, "B"); 
+        h_btaggedjets->Divide(h_btaggedjets, h_bjets, 1, 1, "B"); 
+        h_ctaggedjets->Divide(h_ctaggedjets, h_cjets, 1, 1, "B"); 
+        h_ltaggedjets->Divide(h_ltaggedjets, h_ljets, 1, 1, "B"); 
+
+        //Save histograms in ROOT file
+        beffPt->Write("BEffPt"); 
+        ceffPt->Write("CEffPt"); 
+        leffPt->Write("LEffPt"); 
+        beffEta->Write("BEffEta"); 
+        ceffEta->Write("CEffEta"); 
+        leffEta->Write("LEffEta"); 
+        h_btaggedjets->Write("BEffPerJet");
+        h_ctaggedjets->Write("CEffPerJet");
+        h_ltaggedjets->Write("LEffPerJet");
+        
+        fbtag.Close();
+    }
     fOutput->SetOwner();
     fOutput->Clear();
-    cout<<"Created: "<<f_savename<<endl;
 }
 
 double Analysis::BJetSF ( double pt, double eta )
@@ -1548,10 +1711,6 @@ double Analysis::calculateBtagSF()
 {
     if (!bEff) return 1; //no btag file given, so return 1
     
-    //pt efficiency median value can be obtained running and reading the output of: root -l -b -q CalcMedian.C
-    const double ptmedian = 65;
-    const double etamedian = 0.75;
-
     double OneMinusEff=1;
     double OneMinusSEff=1;
     double SFPerJet=1, eff=1;

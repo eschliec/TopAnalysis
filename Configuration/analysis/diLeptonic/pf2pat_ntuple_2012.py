@@ -706,12 +706,18 @@ if signal:
 if options.runOnMC:
     process.scaledJetEnergy.JECUncSrcFile        = cms.FileInPath("TopAnalysis/TopUtils/data/Summer12_V2_DATA_AK5PF_UncertaintySources.txt")
     process.scaledJetEnergy.scaleType = "abs"   #abs = 1, jes:up, jes:down
-    # process.scaledJetEnergy.scaleType = "jes:up"
-    # process.scaledJetEnergy.scaleType = "jes:down"
     process.scaledJetEnergy.resolutionEtaRanges  = cms.vdouble(0, 0.5, 0.5, 1.1, 1.1, 1.7, 1.7, 2.3, 2.3, -1)
     process.scaledJetEnergy.resolutionFactors    = cms.vdouble(1.052, 1.057, 1.096, 1.134, 1.288) # JER standard
-    # process.scaledJetEnergy.resolutionFactors = cms.vdouble(1.114, 1.113, 1.159, 1.221, 1.443) #JERUP
-    # process.scaledJetEnergy.resolutionFactors = cms.vdouble(0.991, 1.002, 1.034, 1.049, 1.135) #JERDOWN
+
+    #please change this on the top where the defaults for the VarParsing are given
+    if options.systematicsName == "JESUP":
+        process.scaledJetEnergy.scaleType = "jes:up"
+    if options.systematicsName == "JESDOWN":
+        process.scaledJetEnergy.scaleType = "jes:down"
+    if options.systematicsName == "JERUP":
+        process.scaledJetEnergy.resolutionFactors = cms.vdouble(1.114, 1.113, 1.159, 1.221, 1.443)
+    if options.systematicsName == "JERDOWN":
+        process.scaledJetEnergy.resolutionFactors = cms.vdouble(0.991, 1.002, 1.034, 1.049, 1.135)
     
 
     for pathname in pathnames:

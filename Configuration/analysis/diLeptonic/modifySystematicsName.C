@@ -11,8 +11,10 @@ void modifySystematicsName(const char *filename, const char *newSystematics) {
         cout << "cant open " << filename << endl;
         return;
     }
-    TObjString sys(newSystematics);
-    sys.Write("systematicsName");
+    f->cd("writeNTuple");
+    TObjString *sys = new TObjString(newSystematics);
+    sys->Write("systematicsName");
+    f->Write();
     f->Close();
     delete f;
 }

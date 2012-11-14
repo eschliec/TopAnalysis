@@ -12,8 +12,17 @@
 #include "HHStyle.h"
 #include "basicFunctions.h"
 
+// you can run me like this:
+//    root -b -q 'Histo.C+g("preunfold", "vertmulti")'
+// or root -b -q 'Histo.C+g("unfold", "toppt")'
+// or root -b -q 'Histo.C+g("preunfold")' //all preunfolded
+// or root -b -q 'Histo.C+g' //everything
 
-void Histo() {
+void Histo(TString type = "", TString oneHistoToProcess = "") {
+  bool doPreunfold = 1;
+  bool doUnfold = 1;
+  if (type == "preunfold") doUnfold = 0;
+  if (type == "unfold") doPreunfold = 0;
 
   const double lumi = 12100;
 
@@ -26,7 +35,7 @@ void Histo() {
   ifstream HistStream;
   HistStream.open(histolist.c_str());
 
-  while(!HistStream.eof()){
+  while(!HistStream.eof() && doUnfold){
   	
   	// Read HistoList-File
     TString name, specialComment, YAxis, XAxis;
@@ -36,16 +45,12 @@ void Histo() {
     HistStream>>name>>specialComment>>YAxis>>XAxis>>rebin>>DYScale>>logX>>logY>>ymin>>ymax>>xmin>>xmax>>bins;
     
     // Avoid running over empty lines in 'HistoList'-File
-    if ( name.CompareTo("") == 0 ) continue;
+    if ( name.CompareTo("") == 0) continue;
     
-    // Create Plotter 
-    Plotter h_generalPlot;
-    h_generalPlot.setLumi(lumi);
+    
+    //read in the remaining bins
     Xbins.clear();
-    binCenters.clear();
-    
-     
- 
+    binCenters.clear();    
     for(int i = 0; i < bins+1; i++){
       double temp;
       HistStream>>temp; 
@@ -57,6 +62,13 @@ void Histo() {
       binCenters.push_back(temp);
     }
     
+    cout << "checking " << name << endl;
+    if (! name.Contains(oneHistoToProcess, TString::kIgnoreCase)) continue;
+    
+    // Create Plotter 
+    Plotter h_generalPlot;
+    h_generalPlot.setLumi(lumi);
+     
     /////////////////////////////////////////////////////
     /////////   UNFOLDING OPTIONS     ///////////////////
     /////////////////////////////////////////////////////
@@ -81,11 +93,13 @@ void Histo() {
     h_generalPlot.PlotDiffXSec("combined");
   }
   
+  cout << "Done with the unfolding\n";
+  
   string controlhistolist = "HistoList_control";
   ifstream controlHistStream;
   controlHistStream.open(controlhistolist.c_str());
 
-  while(!controlHistStream.eof()){
+  while(!controlHistStream.eof() && doPreunfold){
   	// Read HistoList-File
     TString name, specialComment, YAxis, XAxis;
     bool logX, logY, DYScale;
@@ -94,10 +108,8 @@ void Histo() {
     controlHistStream>>name>>specialComment>>YAxis>>XAxis>>rebin>>DYScale>>logX>>logY>>ymin>>ymax>>xmin>>xmax>>bins;
 
     // Avoid running over empty lines in 'HistoList'-File
-    if ( name.CompareTo("") == 0 ) continue;
-    // Create Plotter 
-    Plotter h_generalPlot;
-    h_generalPlot.setLumi(lumi);
+    if (name.CompareTo("") == 0) continue;
+    
     Xbins.clear();
     binCenters.clear();
     
@@ -112,6 +124,12 @@ void Histo() {
       binCenters.push_back(temp);
     }
     
+    cout << "checking " << name << endl;
+    if (! name.Contains(oneHistoToProcess, TString::kIgnoreCase)) continue;
+
+    // Create Plotter 
+    Plotter h_generalPlot;
+    h_generalPlot.setLumi(lumi);
     /////////////////////////////////////////////////////
     /////////   UNFOLDING OPTIONS     ///////////////////
     /////////////////////////////////////////////////////

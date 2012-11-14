@@ -33,7 +33,7 @@ class Plotter {
   Plotter();
   Plotter(TString, TString, TString, double, double);
   ~Plotter();
-  void   setOptions(TString, TString, TString, TString, int, bool, bool, bool, double, double, double, double, int, std::vector<double>, std::vector<double>);
+  void   setOptions(TString name_, TString specialComment_, TString YAxis_, TString XAxis_, int rebin_, bool doDYScale_, bool logX_, bool logY_, double ymin_, double ymax_, double rangemin_, double rangemax_, int bins_, std::vector<double> XAxisbins_, std::vector<double> XAxisbinCenters_);
   void   setDataSet(std::vector<TString>, std::vector<double>, std::vector<TString>, std::vector<int>, TString);
   void   setDataSet(TString, TString);
   void   fillHisto();
@@ -123,9 +123,9 @@ class Plotter {
 };
 
 
-void Plotter::setLumi(double lumi)
+void Plotter::setLumi(double newLumi)
 {
-    this->lumi = lumi;
+    this->lumi = newLumi;
 }
 
 
@@ -545,7 +545,7 @@ Plotter::~Plotter()
 {
 }
 
-void Plotter::setOptions(TString name_, TString specialComment_, TString YAxis_, TString XAxis_, int rebin_, bool doDYScale_, bool logX_, bool logY_, double ymin_, double ymax_, double rangemin_, double rangemax_, int bins_, std::vector<double>XAxisbins_, std::vector<double>XAxisbinCenters_)
+void Plotter::setOptions(TString name_, TString specialComment_, TString YAxis_, TString XAxis_, int rebin_, bool doDYScale_, bool logX_, bool logY_, double ymin_, double ymax_, double rangemin_, double rangemax_, int bins_, std::vector<double> XAxisbins_, std::vector<double> XAxisbinCenters_)
 {
   XAxisbins.clear();
   XAxisbinCenters.clear();
@@ -1065,7 +1065,7 @@ void Plotter::write(TString Channel, TString Systematic) // do scaling, stacking
 
   // Create Directory for Output Plots 
   gSystem->MakeDirectory(outpathPlots);
-  
+  gSystem->MakeDirectory(outpathPlots+"/"+subfolderChannel);
   gSystem->MakeDirectory(outpathPlots+"/"+subfolderChannel+"/"+Systematic);  
   c->Print(outpathPlots+subfolderChannel+"/"+Systematic+"/"+name+".eps");  
   //c->Print(outpathPlots+subfolderChannel+"/"+Systematic+"/"+name+".C");  
@@ -1297,6 +1297,7 @@ void Plotter::MakeTable(){
   EventFilestring.append(subfolderChannel.Data());
   EventFilestring.append(subfolderSpecial.Data());
   gSystem->MakeDirectory(outpathPlots);
+  gSystem->MakeDirectory(outpathPlots+"/"+subfolderChannel);
   gSystem->MakeDirectory(outpathPlots+"/"+subfolderChannel+"/"+subfolderSpecial);  
   string EventFilestring5;
   string EventFilestring6;
@@ -2202,11 +2203,12 @@ void Plotter::PlotDiffXSec(TString Channel){
     TH1* mcnlohistnorm=0;
     TGraph *mcatnloBand=0;
     
-    TH1* mcnlohistnormBinned, *mcnlohistupBinned, *mcnlohistdownBinned, *mcnlohistBinned;
-    TH1* powheghistBinned;
+    TH1* mcnlohistnormBinned = 0, *mcnlohistupBinned = 0;
+    TH1 *mcnlohistdownBinned = 0, *mcnlohistBinned = 0;
+    TH1* powheghistBinned = 0;
     
-    TH1F *Kidoth1_Binned(nullptr);
-    TFile *KidoFile(nullptr);
+    TH1F *Kidoth1_Binned = 0;
+    TFile *KidoFile = 0;
     
     if (drawNLOCurves) {
         mcnlohist = GetNloCurve(newname,"MCATNLO");

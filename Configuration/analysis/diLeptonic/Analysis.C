@@ -95,12 +95,6 @@ void Analysis::SlaveBegin ( TTree * )
     h_HypLLBarMass = store(new TH1D ( "HypLLBarMass", "Mass of LLbar System (HYP)", 500, 0, 1000 ));
     h_HypLLBarpT = store(new TH1D ( "HypLLBarpT", "pT of LLbar System (HYP)", 200, 0, 1000 ));
 
-    h_GenTTBarMass = store(new TH1D ( "GenTTBarMass", "Mass of TTbar System(GEN)", 1200, 0, 1200 ));
-    h_GenTTBarRapidity = store(new TH1D ( "GenTTBarRapidity", "Rapidity of TTbar System(GEN)", 100, -5, 5 ));
-    h_GenTTBarpT = store(new TH1D ( "GenTTBarpT", "pT of TTbar System(GEN)", 1200, 0, 1200 ));
-    h_GenLLBarpT = store(new TH1D ( "GenLLBarpT", "pT of LLbar System(GEN)", 200, 0, 1000 ));
-    h_GenLLBarMass = store(new TH1D ( "GenLLBarMass", "Mass of LLbar System(GEN)", 500, 0, 1000 ));
-
     h_VisGenTTBarMass = store(new TH1D ( "VisGenTTBarMass", "Mass of TTbar System(VisGEN)", 1200, 0, 1200 ));
     h_VisGenTTBarRapidity = store(new TH1D ( "VisGenTTBarRapidity", "Rapidity of TTbar System(VisGEN)", 100, -5, 5 ));
     h_VisGenTTBarpT = store(new TH1D ( "VisGenTTBarpT", "pT of TTbar System(VisGEN)", 1200, 0, 1200 ));

@@ -29,12 +29,12 @@
 #30  Fall11.tt_Z2_mcatnlo_Fall11_AOD_cff           emu_ttbarbg_mcatnlo.root	         ttbarbg,systematicsName=MCATNLO
 
 #Madgrpah with spin correlations exclusive samples
-20  Summer12.TTJets_FullLeptMGDecays_8TeV_madgraph_Summer12_DR53X_PU_S10_START53_V7A_v1_cff            emu_ttbarsignalplustau_FullLeptMadgraphWithSpinCorrelation.root	 ttbarsignalplustau
-#20  Summer12.TTJets_FullLeptMGDecays_8TeV_madgraph_Summer12_DR53X_PU_S10_START53_V7A_v1_cff            emu_ttbarbg_FullLeptMadgraphWithSpinCorrelation.root	         ttbarbg
-#20  Summer12.TTJets_SemiLeptMGDecays_8TeV_madgraph_Summer12_DR53X_PU_S10_START53_V7A_v1_cff            emu_ttbarsignalplustau_SemiLeptMadgraphWithSpinCorrelation.root	 ttbarsignalplustau
-20  Summer12.TTJets_SemiLeptMGDecays_8TeV_madgraph_Summer12_DR53X_PU_S10_START53_V7A_v1_cff            emu_ttbarbg_SemiLeptMadgraphWithSpinCorrelation.root	         ttbarbg
-#20  Summer12.TTJets_HadronicMGDecays_8TeV_madgraph_Summer12_DR53X_PU_S10_START53_V7A_v1_cff            emu_ttbarsignalplustau_HadronicMadgraphWithSpinCorrelation.root	 ttbarsignalplustau
-20  Summer12.TTJets_HadronicMGDecays_8TeV_madgraph_Summer12_DR53X_PU_S10_START53_V7A_v1_cff            emu_ttbarbg_HadronicMadgraphWithSpinCorrelation.root	         ttbarbg
+20  Summer12.TTJets_FullLeptMGDecays_8TeV_madgraph_Summer12_DR53X_PU_S10_START53_V7A_v1_cff            emu_ttbarsignalplustau_FullLeptMadgraphWithSpinCorrelation.root	 ttbarsignalplustau,systematicsName=SPINCORR
+#20  Summer12.TTJets_FullLeptMGDecays_8TeV_madgraph_Summer12_DR53X_PU_S10_START53_V7A_v1_cff            emu_ttbarbg_FullLeptMadgraphWithSpinCorrelation.root	         ttbarbg,systematicsName=SPINCORR
+#20  Summer12.TTJets_SemiLeptMGDecays_8TeV_madgraph_Summer12_DR53X_PU_S10_START53_V7A_v1_cff            emu_ttbarsignalplustau_SemiLeptMadgraphWithSpinCorrelation.root	 ttbarsignalplustau,systematicsName=SPINCORR
+20  Summer12.TTJets_SemiLeptMGDecays_8TeV_madgraph_Summer12_DR53X_PU_S10_START53_V7A_v1_cff            emu_ttbarbg_SemiLeptMadgraphWithSpinCorrelation.root	         ttbarbg,systematicsName=SPINCORR
+#20  Summer12.TTJets_HadronicMGDecays_8TeV_madgraph_Summer12_DR53X_PU_S10_START53_V7A_v1_cff            emu_ttbarsignalplustau_HadronicMadgraphWithSpinCorrelation.root	 ttbarsignalplustau,systematicsName=SPINCORR
+20  Summer12.TTJets_HadronicMGDecays_8TeV_madgraph_Summer12_DR53X_PU_S10_START53_V7A_v1_cff            emu_ttbarbg_HadronicMadgraphWithSpinCorrelation.root	         ttbarbg,systematicsName=SPINCORR
 
 
 ###### MUMU channel
@@ -64,12 +64,12 @@
 #30  Fall11.tt_Z2_mcatnlo_Fall11_AOD_cff           mumu_ttbarbg_mcatnlo.root	           ttbarbg,systematicsName=MCATNLO
 
 #Madgrpah with spin correlations exclusive samples
-20  Summer12.TTJets_FullLeptMGDecays_8TeV_madgraph_Summer12_DR53X_PU_S10_START53_V7A_v1_cff            mumu_ttbarsignalplustau_FullLeptMadgraphWithSpinCorrelation.root	 ttbarsignalplustau
-#20  Summer12.TTJets_FullLeptMGDecays_8TeV_madgraph_Summer12_DR53X_PU_S10_START53_V7A_v1_cff            mumu_ttbarbg_FullLeptMadgraphWithSpinCorrelation.root	         ttbarbg
-#20  Summer12.TTJets_SemiLeptMGDecays_8TeV_madgraph_Summer12_DR53X_PU_S10_START53_V7A_v1_cff            mumu_ttbarsignalplustau_SemiLeptMadgraphWithSpinCorrelation.root	 ttbarsignalplustau
-20  Summer12.TTJets_SemiLeptMGDecays_8TeV_madgraph_Summer12_DR53X_PU_S10_START53_V7A_v1_cff            mumu_ttbarbg_SemiLeptMadgraphWithSpinCorrelation.root	         ttbarbg
-#20  Summer12.TTJets_HadronicMGDecays_8TeV_madgraph_Summer12_DR53X_PU_S10_START53_V7A_v1_cff            mumu_ttbarsignalplustau_HadronicMadgraphWithSpinCorrelation.root	 ttbarsignalplustau
-20  Summer12.TTJets_HadronicMGDecays_8TeV_madgraph_Summer12_DR53X_PU_S10_START53_V7A_v1_cff            mumu_ttbarbg_HadronicMadgraphWithSpinCorrelation.root	         ttbarbg
+20  Summer12.TTJets_FullLeptMGDecays_8TeV_madgraph_Summer12_DR53X_PU_S10_START53_V7A_v1_cff            mumu_ttbarsignalplustau_FullLeptMadgraphWithSpinCorrelation.root	 ttbarsignalplustau,systematicsName=SPINCORR
+#20  Summer12.TTJets_FullLeptMGDecays_8TeV_madgraph_Summer12_DR53X_PU_S10_START53_V7A_v1_cff            mumu_ttbarbg_FullLeptMadgraphWithSpinCorrelation.root	         ttbarbg,systematicsName=SPINCORR
+#20  Summer12.TTJets_SemiLeptMGDecays_8TeV_madgraph_Summer12_DR53X_PU_S10_START53_V7A_v1_cff            mumu_ttbarsignalplustau_SemiLeptMadgraphWithSpinCorrelation.root	 ttbarsignalplustau,systematicsName=SPINCORR
+20  Summer12.TTJets_SemiLeptMGDecays_8TeV_madgraph_Summer12_DR53X_PU_S10_START53_V7A_v1_cff            mumu_ttbarbg_SemiLeptMadgraphWithSpinCorrelation.root	         ttbarbg,systematicsName=SPINCORR
+#20  Summer12.TTJets_HadronicMGDecays_8TeV_madgraph_Summer12_DR53X_PU_S10_START53_V7A_v1_cff            mumu_ttbarsignalplustau_HadronicMadgraphWithSpinCorrelation.root	 ttbarsignalplustau,systematicsName=SPINCORR
+20  Summer12.TTJets_HadronicMGDecays_8TeV_madgraph_Summer12_DR53X_PU_S10_START53_V7A_v1_cff            mumu_ttbarbg_HadronicMadgraphWithSpinCorrelation.root	         ttbarbg,systematicsName=SPINCORR
 
 #### EE channel
 20  Summer12.TTJets_MatchingUp_TuneZ2star_8TeV_madgraph_tauola_Summer12_DR53X_PU_S10_START53_V7A_v1_cff     ee_ttbarsignalplustau_matchingup.root    ttbarsignalplustau,systematicsName=MATCHUP
@@ -97,9 +97,9 @@
 #30  Fall11.tt_Z2_mcatnlo_Fall11_AOD_cff            ee_ttbarbg_mcatnlo.root	           ttbarbg,systematicsName=MCATNLO
 
 #Madgrpah with spin correlations exclusive samples
-20  Summer12.TTJets_FullLeptMGDecays_8TeV_madgraph_Summer12_DR53X_PU_S10_START53_V7A_v1_cff            ee_ttbarsignalplustau_FullLeptMadgraphWithSpinCorrelation.root	 ttbarsignalplustau
-#20  Summer12.TTJets_FullLeptMGDecays_8TeV_madgraph_Summer12_DR53X_PU_S10_START53_V7A_v1_cff            ee_ttbarbg_FullLeptMadgraphWithSpinCorrelation.root	         ttbarbg
-#20  Summer12.TTJets_SemiLeptMGDecays_8TeV_madgraph_Summer12_DR53X_PU_S10_START53_V7A_v1_cff            ee_ttbarsignalplustau_SemiLeptMadgraphWithSpinCorrelation.root	 ttbarsignalplustau
-20  Summer12.TTJets_SemiLeptMGDecays_8TeV_madgraph_Summer12_DR53X_PU_S10_START53_V7A_v1_cff            ee_ttbarbg_SemiLeptMadgraphWithSpinCorrelation.root	         ttbarbg
-#20  Summer12.TTJets_HadronicMGDecays_8TeV_madgraph_Summer12_DR53X_PU_S10_START53_V7A_v1_cff            ee_ttbarsignalplustau_HadronicMadgraphWithSpinCorrelation.root	 ttbarsignalplustau
-20  Summer12.TTJets_HadronicMGDecays_8TeV_madgraph_Summer12_DR53X_PU_S10_START53_V7A_v1_cff            ee_ttbarbg_HadronicMadgraphWithSpinCorrelation.root	         ttbarbg
+20  Summer12.TTJets_FullLeptMGDecays_8TeV_madgraph_Summer12_DR53X_PU_S10_START53_V7A_v1_cff            ee_ttbarsignalplustau_FullLeptMadgraphWithSpinCorrelation.root	 ttbarsignalplustau,systematicsName=SPINCORR
+#20  Summer12.TTJets_FullLeptMGDecays_8TeV_madgraph_Summer12_DR53X_PU_S10_START53_V7A_v1_cff            ee_ttbarbg_FullLeptMadgraphWithSpinCorrelation.root	         ttbarbg,systematicsName=SPINCORR
+#20  Summer12.TTJets_SemiLeptMGDecays_8TeV_madgraph_Summer12_DR53X_PU_S10_START53_V7A_v1_cff            ee_ttbarsignalplustau_SemiLeptMadgraphWithSpinCorrelation.root	 ttbarsignalplustau,systematicsName=SPINCORR
+20  Summer12.TTJets_SemiLeptMGDecays_8TeV_madgraph_Summer12_DR53X_PU_S10_START53_V7A_v1_cff            ee_ttbarbg_SemiLeptMadgraphWithSpinCorrelation.root	         ttbarbg,systematicsName=SPINCORR
+#20  Summer12.TTJets_HadronicMGDecays_8TeV_madgraph_Summer12_DR53X_PU_S10_START53_V7A_v1_cff            ee_ttbarsignalplustau_HadronicMadgraphWithSpinCorrelation.root	 ttbarsignalplustau,systematicsName=SPINCORR
+20  Summer12.TTJets_HadronicMGDecays_8TeV_madgraph_Summer12_DR53X_PU_S10_START53_V7A_v1_cff            ee_ttbarbg_HadronicMadgraphWithSpinCorrelation.root	         ttbarbg,systematicsName=SPINCORR

@@ -146,17 +146,22 @@ void Plotter::SetOutpath(TString path)
 
 void Plotter::unfolding()
 {
-
-  TString sys_array[] = {"DY_","BG_","PU_", "Lepton"};//just for testing right now
-  double sys_array_flat_value[] = {0.0,0.0,0,0.05};//perhaps this can be done better, but here a non-zero value will be a flat systematic (be carefult to match with the systematic in sys_array
+  const int NSystematics = 8;
+  TString sys_array[NSystematics] 
+    = {"DY_", "BG_", "PU_", "BTAG_", "TRIG_", "JES", "JER", "Lepton"};
+    
+  //perhaps this can be done better, but here a non-zero value will be a flat systematic (be carefult to match with the systematic in sys_array
+  double sys_array_flat_value[NSystematics] 
+    = {0,0,0,0,0,0,0,1e-7};
   TString channel_array[] = {"ee","mumu","emu","combined"};
 
   for(int chan = 0; chan < 4; chan++){ //loop over channels
 
     CalcDiffXSec(channel_array[chan],"Nominal");    
   
-    if(doSystematics){//############### Syst ################
-      for(int sys = 0; sys < 3; sys++){ //loop over systematics
+    //############### Syst ################
+    if(doSystematics){
+      for(int sys = 0; sys < NSystematics; ++sys){ //loop over systematics
 	cout << endl;
 	cout << "<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>" << endl;
 	cout << "Starting Calculation of Differential Systematics for '" << name << "' in Channel '" << channel_array[chan] << "':" << endl;  

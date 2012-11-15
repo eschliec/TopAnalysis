@@ -322,6 +322,8 @@ class Analysis : public TSelector
     double getLeptonIDSF(const LV& lep1, const LV& lep2);
     double get2DSF(TH2* histo, const double x, const double y);
     
+    template<class T> T* store(T* obj);
+    
     // Variables added from the outside
     TString btagFile;
     TString channel;

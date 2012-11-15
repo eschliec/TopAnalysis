@@ -62,367 +62,374 @@ void Analysis::Begin ( TTree * )
     prepareBtagSF();
 }
 
+template<class T>
+T* Analysis::store(T* obj)
+{
+    fOutput->Add(obj);
+    return obj;
+}
+
 void Analysis::SlaveBegin ( TTree * )
 {
     // The SlaveBegin() function is called after the Begin() function.
     // When running with PROOF SlaveBegin() is called on each slave server.
     // The tree argument is deprecated (on PROOF 0 is passed).
 
-    h_step5 = new TH1D ( "step5", "event count at step 5", 10, 0, 10 );
-    h_step6 = new TH1D ( "step6", "event count at step 6", 10, 0, 10 );
-    h_step7 = new TH1D ( "step7", "event count at step 7", 10, 0, 10 );
-    h_step8 = new TH1D ( "step8", "event count at step 8", 10, 0, 10 );
-    h_step9 = new TH1D ( "step9", "event count at step 9", 10, 0, 10 );
+    h_step5 = store(new TH1D ( "step5", "event count at step 5", 10, 0, 10 ));
+    h_step6 = store(new TH1D ( "step6", "event count at step 6", 10, 0, 10 ));
+    h_step7 = store(new TH1D ( "step7", "event count at step 7", 10, 0, 10 ));
+    h_step8 = store(new TH1D ( "step8", "event count at step 8", 10, 0, 10 ));
+    h_step9 = store(new TH1D ( "step9", "event count at step 9", 10, 0, 10 ));
 
-    //h_jetMultiAll = new TH1D ( "HypjetMultiAll", "Jet Multiplicity (AllJets)", 10, -0.5, 9.5 );
-    h_jetMultiXSec = new TH1D ( "HypjetMultiXSec", "Jet Multiplicity (for cross-section)", 10, -0.5, 9.5 );
-    h_jetMulti = new TH1D ( "HypjetMulti", "Jet Multiplicity", 10, -0.5, 9.5 );
-    h_jetMulti_diLep = new TH1D ( "HypjetMulti_diLep", "Jet Multiplicity (after dilepton)", 10, -0.5, 9.5 );
-    h_jetMultiNoPU = new TH1D ( "HypjetMultiNoPU", "Jet Multiplicity (No Pileup or lumi weight)", 10, -0.5, 9.5 );
-//     h_jetMultiVisTop = new TH1D ( "HypjetMultiVisTop", "Jet Multiplicity for Visible Top (No Pileup or lumi Weight)", 10, -0.5, 9.5 );
-    h_BjetMulti = new TH1D ( "HypBjetMulti", "B-Jet Multiplicity", 10, -0.5, 9.5 );
+    //h_jetMultiAll = store(new TH1D ( "HypjetMultiAll", "Jet Multiplicity (AllJets)", 10, -0.5, 9.5 ));
+    h_jetMultiXSec = store(new TH1D ( "HypjetMultiXSec", "Jet Multiplicity (for cross-section)", 10, -0.5, 9.5 ));
+    h_jetMulti = store(new TH1D ( "HypjetMulti", "Jet Multiplicity", 10, -0.5, 9.5 ));
+    h_jetMulti_diLep = store(new TH1D ( "HypjetMulti_diLep", "Jet Multiplicity (after dilepton)", 10, -0.5, 9.5 ));
+    h_jetMultiNoPU = store(new TH1D ( "HypjetMultiNoPU", "Jet Multiplicity (No Pileup or lumi weight)", 10, -0.5, 9.5 ));
+//     h_jetMultiVisTop = store(new TH1D ( "HypjetMultiVisTop", "Jet Multiplicity for Visible Top (No Pileup or lumi Weight)", 10, -0.5, 9.5 ));
+    h_BjetMulti = store(new TH1D ( "HypBjetMulti", "B-Jet Multiplicity", 10, -0.5, 9.5 ));
 
-    h_HypTTBarRapidity = new TH1D ( "HypTTBarRapidity", "Rapidity of TTbar System (HYP)", 100, -5, 5 );
-    h_HypTTBarpT = new TH1D ( "HypTTBarpT", "pT of TTbar System (HYP)", 500, 0, 500 );
-    h_HypTTBarMass = new TH1D ( "HypTTBarMass", "Mass of TTbar System (HYP)", 2000, 0, 2000 );
-    h_HypLLBarMass = new TH1D ( "HypLLBarMass", "Mass of LLbar System (HYP)", 500, 0, 1000 );
-    h_HypLLBarpT = new TH1D ( "HypLLBarpT", "pT of LLbar System (HYP)", 200, 0, 1000 );
+    h_HypTTBarRapidity = store(new TH1D ( "HypTTBarRapidity", "Rapidity of TTbar System (HYP)", 100, -5, 5 ));
+    h_HypTTBarpT = store(new TH1D ( "HypTTBarpT", "pT of TTbar System (HYP)", 500, 0, 500 ));
+    h_HypTTBarMass = store(new TH1D ( "HypTTBarMass", "Mass of TTbar System (HYP)", 2000, 0, 2000 ));
+    h_HypLLBarMass = store(new TH1D ( "HypLLBarMass", "Mass of LLbar System (HYP)", 500, 0, 1000 ));
+    h_HypLLBarpT = store(new TH1D ( "HypLLBarpT", "pT of LLbar System (HYP)", 200, 0, 1000 ));
 
-    h_GenTTBarMass = new TH1D ( "GenTTBarMass", "Mass of TTbar System(GEN)", 1200, 0, 1200 );
-    h_GenTTBarRapidity = new TH1D ( "GenTTBarRapidity", "Rapidity of TTbar System(GEN)", 100, -5, 5 );
-    h_GenTTBarpT = new TH1D ( "GenTTBarpT", "pT of TTbar System(GEN)", 1200, 0, 1200 );
-    h_GenLLBarpT = new TH1D ( "GenLLBarpT", "pT of LLbar System(GEN)", 200, 0, 1000 );
-    h_GenLLBarMass = new TH1D ( "GenLLBarMass", "Mass of LLbar System(GEN)", 500, 0, 1000 );
+    h_GenTTBarMass = store(new TH1D ( "GenTTBarMass", "Mass of TTbar System(GEN)", 1200, 0, 1200 ));
+    h_GenTTBarRapidity = store(new TH1D ( "GenTTBarRapidity", "Rapidity of TTbar System(GEN)", 100, -5, 5 ));
+    h_GenTTBarpT = store(new TH1D ( "GenTTBarpT", "pT of TTbar System(GEN)", 1200, 0, 1200 ));
+    h_GenLLBarpT = store(new TH1D ( "GenLLBarpT", "pT of LLbar System(GEN)", 200, 0, 1000 ));
+    h_GenLLBarMass = store(new TH1D ( "GenLLBarMass", "Mass of LLbar System(GEN)", 500, 0, 1000 ));
 
-    h_VisGenTTBarMass = new TH1D ( "VisGenTTBarMass", "Mass of TTbar System(VisGEN)", 1200, 0, 1200 );
-    h_VisGenTTBarRapidity = new TH1D ( "VisGenTTBarRapidity", "Rapidity of TTbar System(VisGEN)", 100, -5, 5 );
-    h_VisGenTTBarpT = new TH1D ( "VisGenTTBarpT", "pT of TTbar System(VisGEN)", 1200, 0, 1200 );
-    h_VisGenTopRapidity = new TH1D ( "VisGenTopRapidity", "Rapidity of Top(VisGEN)", 100, -5, 5 );
-    h_VisGenAntiTopRapidity = new TH1D ( "VisGenAntiTopRapidity", "Rapidity of AntiTop(VisGEN)", 100, -5, 5 );
+    h_VisGenTTBarMass = store(new TH1D ( "VisGenTTBarMass", "Mass of TTbar System(VisGEN)", 1200, 0, 1200 ));
+    h_VisGenTTBarRapidity = store(new TH1D ( "VisGenTTBarRapidity", "Rapidity of TTbar System(VisGEN)", 100, -5, 5 ));
+    h_VisGenTTBarpT = store(new TH1D ( "VisGenTTBarpT", "pT of TTbar System(VisGEN)", 1200, 0, 1200 ));
+    h_VisGenTopRapidity = store(new TH1D ( "VisGenTopRapidity", "Rapidity of Top(VisGEN)", 100, -5, 5 ));
+    h_VisGenAntiTopRapidity = store(new TH1D ( "VisGenAntiTopRapidity", "Rapidity of AntiTop(VisGEN)", 100, -5, 5 ));
 
-    h_VisGenLLBarpT = new TH1D ( "VisGenLLBarpT", "pT of LLbar System(VisGEN)", 200, 0, 1000 );
-    h_VisGenLLBarMass = new TH1D ( "VisGenLLBarMass", "Mass of LLbar System(VisGEN)", 500, 0, 1000 );
+    h_VisGenLLBarpT = store(new TH1D ( "VisGenLLBarpT", "pT of LLbar System(VisGEN)", 200, 0, 1000 ));
+    h_VisGenLLBarMass = store(new TH1D ( "VisGenLLBarMass", "Mass of LLbar System(VisGEN)", 500, 0, 1000 ));
 
-    h_RecoTTBarMass = new TH1D ( "RecoTTBarMass","Mass of TTbar System (HYP)",1200,0,1200 );
-    h_RecoTTBarRapidity = new TH1D ( "RecoTTBarRapidity","Rapidity of TTbar System (HYP)",100,-5,5 );
-    h_RecoTTBarpT = new TH1D ( "RecoTTBarpT","pT of TTbar System (HYP)",1200,0,1200 );
-    h_RecoToppT = new TH1D ( "RecoToppT","pT of Top (HYP)",1200,0,1200 );
-    h_RecoAntiToppT = new TH1D ( "RecoAntiToppT","pT of AntiTop (HYP)",1200,0,1200 );
-    h_RecoTopRapidity = new TH1D ( "RecoTopRapidity","Rapidity of Top (HYP)",100,-5,5 );
-    h_RecoAntiTopRapidity = new TH1D ( "RecoAntiTopRapidity","Rapidity of AntiTop (HYP)",100,-5,5 );
+    h_RecoTTBarMass = store(new TH1D ( "RecoTTBarMass","Mass of TTbar System (HYP)",1200,0,1200 ));
+    h_RecoTTBarRapidity = store(new TH1D ( "RecoTTBarRapidity","Rapidity of TTbar System (HYP)",100,-5,5 ));
+    h_RecoTTBarpT = store(new TH1D ( "RecoTTBarpT","pT of TTbar System (HYP)",1200,0,1200 ));
+    h_RecoToppT = store(new TH1D ( "RecoToppT","pT of Top (HYP)",1200,0,1200 ));
+    h_RecoAntiToppT = store(new TH1D ( "RecoAntiToppT","pT of AntiTop (HYP)",1200,0,1200 ));
+    h_RecoTopRapidity = store(new TH1D ( "RecoTopRapidity","Rapidity of Top (HYP)",100,-5,5 ));
+    h_RecoAntiTopRapidity = store(new TH1D ( "RecoAntiTopRapidity","Rapidity of AntiTop (HYP)",100,-5,5 ));
 
-    h_RecoBJetpT = new TH1D ( "RecoBJetpT","pT of BJet (HYP)",80,0,400 );
-    h_RecoAntiBJetpT = new TH1D ( "RecoAntiBJetpT","pT of AntiBJet (HYP)",80,0,400 );
-    h_RecoBJetRapidity = new TH1D ( "RecoBJetRapidity","Rapidity of BJet (HYP)",100,-5,5 );
-    h_RecoAntiBJetRapidity = new TH1D ( "RecoAntiBJetRapidity","Rapidity of AntiBJet (HYP)",100,-5,5 );
-    h_RecoBJetEta = new TH1D ( "RecoBJetEta","#eta of BJet (HYP)",100,-5,5 );
-    h_RecoAntiBJetEta = new TH1D ( "RecoAntiBJetEta","#eta of AntiBJet (HYP)",100,-5,5 );
+    h_RecoBJetpT = store(new TH1D ( "RecoBJetpT","pT of BJet (HYP)",80,0,400 ));
+    h_RecoAntiBJetpT = store(new TH1D ( "RecoAntiBJetpT","pT of AntiBJet (HYP)",80,0,400 ));
+    h_RecoBJetRapidity = store(new TH1D ( "RecoBJetRapidity","Rapidity of BJet (HYP)",100,-5,5 ));
+    h_RecoAntiBJetRapidity = store(new TH1D ( "RecoAntiBJetRapidity","Rapidity of AntiBJet (HYP)",100,-5,5 ));
+    h_RecoBJetEta = store(new TH1D ( "RecoBJetEta","#eta of BJet (HYP)",100,-5,5 ));
+    h_RecoAntiBJetEta = store(new TH1D ( "RecoAntiBJetEta","#eta of AntiBJet (HYP)",100,-5,5 ));
 
-    h_RecoLLBarMass = new TH1D ( "RecoLLBarMass","Mass of LLbar System (HYP)",500,0,1000 );
-    h_RecoLLBarpT = new TH1D ( "RecoLLBarpT","pT of LLbar System (HYP)",200,0,1000 );
-    h_RecoLeptonpT = new TH1D ( "RecoLeptonpT","pT of Lepton (HYP)",240,0,1200 );
-    h_RecoAntiLeptonpT = new TH1D ( "RecoAntiLeptonpT","pT of AntiLepton (HYP)",240,0,1200 );
-    h_RecoLeptonEta = new TH1D ( "RecoLeptonEta","Eta of Lepton (HYP)",100,-5,5 );
-    h_RecoAntiLeptonEta = new TH1D ( "RecoAntiLeptonEta","Eta of AntiLepton (HYP)",100,-5,5 );
+    h_RecoLLBarMass = store(new TH1D ( "RecoLLBarMass","Mass of LLbar System (HYP)",500,0,1000 ));
+    h_RecoLLBarpT = store(new TH1D ( "RecoLLBarpT","pT of LLbar System (HYP)",200,0,1000 ));
+    h_RecoLeptonpT = store(new TH1D ( "RecoLeptonpT","pT of Lepton (HYP)",240,0,1200 ));
+    h_RecoAntiLeptonpT = store(new TH1D ( "RecoAntiLeptonpT","pT of AntiLepton (HYP)",240,0,1200 ));
+    h_RecoLeptonEta = store(new TH1D ( "RecoLeptonEta","Eta of Lepton (HYP)",100,-5,5 ));
+    h_RecoAntiLeptonEta = store(new TH1D ( "RecoAntiLeptonEta","Eta of AntiLepton (HYP)",100,-5,5 ));
 
-    h_VisGenAll = new TH1D ( "VisGenAll", "All Visible Generated particles (IM)", 40, 0, 400 );
-    h_GenAll = new TH1D ( "GenAll", "AllGenerated particles (IM)", 40, 0, 400 );
-    Allh1 = new TH1D ( "Allh1", "DiLepton Mass", 40, 0, 400 );
-    h_diLepMassFull = new TH1D ( "DIMFull", "DiLepton Mass (Full Range)", 100, 0, 300 );
-    h_diLepMassFull_fullSel = new TH1D ( "DIMFull_fullSel", "DiLepton Mass (Full Range)", 100, 0, 300 );
-    Looseh1 = new TH1D ( "Looseh1", "DiLepton Mass", 40, 0, 400 );
-    Zh1 = new TH1D ( "Zh1", "DiLepton Mass in Z Window", 40, 0, 400 );
-    TTh1 = new TH1D ( "TTh1", "DiLepton Mass out of Z Window", 40, 0, 400 );
+    h_VisGenAll = store(new TH1D ( "VisGenAll", "All Visible Generated particles (IM)", 40, 0, 400 ));
+    h_GenAll = store(new TH1D ( "GenAll", "AllGenerated particles (IM)", 40, 0, 400 ));
+    Allh1 = store(new TH1D ( "Allh1", "DiLepton Mass", 40, 0, 400 ));
+    h_diLepMassFull = store(new TH1D ( "DIMFull", "DiLepton Mass (Full Range)", 100, 0, 300 ));
+    h_diLepMassFull_fullSel = store(new TH1D ( "DIMFull_fullSel", "DiLepton Mass (Full Range)", 100, 0, 300 ));
+    Looseh1 = store(new TH1D ( "Looseh1", "DiLepton Mass", 40, 0, 400 ));
+    Zh1 = store(new TH1D ( "Zh1", "DiLepton Mass in Z Window", 40, 0, 400 ));
+    TTh1 = store(new TH1D ( "TTh1", "DiLepton Mass out of Z Window", 40, 0, 400 ));
 
-    h_vertMulti = new TH1D ( "vertMulti", "Primary Vertex Multiplicity", 30, 0, 30 );
-    h_vertMulti_noPU = new TH1D ( "vertMulti_noPU", "Primary Vertex Multiplicity (no Pileup)", 30, 0, 30 );
-    h_MET = new TH1D ( "MET", "Missing Transverse Energy", 80, 0, 400 );
-    h_jetpT = new TH1D ( "jetpT", "jet pT", 80, 0, 400 );
-    h_jetHT = new TH1D ( "jetHT", "jet HT", 80, 0, 1000 );
+    h_vertMulti = store(new TH1D ( "vertMulti", "Primary Vertex Multiplicity", 30, 0, 30 ));
+    h_vertMulti_noPU = store(new TH1D ( "vertMulti_noPU", "Primary Vertex Multiplicity (no Pileup)", 30, 0, 30 ));
+    h_MET = store(new TH1D ( "MET", "Missing Transverse Energy", 80, 0, 400 ));
+    h_jetpT = store(new TH1D ( "jetpT", "jet pT", 80, 0, 400 ));
+    h_jetHT = store(new TH1D ( "jetHT", "jet HT", 80, 0, 1000 ));
 
-    h_MuonpT = new TH1D ( "MuonpT", "Muon pT (emu channel)", 80, 0, 400 );
-    h_MuonEta = new TH1D ( "MuonEta", "Muon Eta (emu channel)", 100, -5, 5 );
-    h_ElectronpT = new TH1D ( "ElectronpT", "Electron pT (emu channel)", 80, 0, 400 );
-    h_ElectronEta = new TH1D ( "ElectronEta", "Electron Eta (emu channel)", 100, -5, 5 );
+    h_MuonpT = store(new TH1D ( "MuonpT", "Muon pT (emu channel)", 80, 0, 400 ));
+    h_MuonEta = store(new TH1D ( "MuonEta", "Muon Eta (emu channel)", 100, -5, 5 ));
+    h_ElectronpT = store(new TH1D ( "ElectronpT", "Electron pT (emu channel)", 80, 0, 400 ));
+    h_ElectronEta = store(new TH1D ( "ElectronEta", "Electron Eta (emu channel)", 100, -5, 5 ));
 
-    h_LeptonpT = new TH1D ( "LeptonpT", "Lepton pT", 80, 0, 400 );
-    h_LeptonEta = new TH1D ( "LeptonEta", "Lepton Eta", 100, -5, 5 );
-    h_LeptonpT_diLep = new TH1D ( "LeptonpT_diLep", "Lepton pT (after dilepton cut)", 80, 0, 400 );
-    h_LeptonEta_diLep = new TH1D ( "LeptonEta_diLep", "Lepton Eta (after dilepton cut)", 100, -5, 5 );
+    h_LeptonpT = store(new TH1D ( "LeptonpT", "Lepton pT", 80, 0, 400 ));
+    h_LeptonEta = store(new TH1D ( "LeptonEta", "Lepton Eta", 100, -5, 5 ));
+    h_LeptonpT_diLep = store(new TH1D ( "LeptonpT_diLep", "Lepton pT (after dilepton cut)", 80, 0, 400 ));
+    h_LeptonEta_diLep = store(new TH1D ( "LeptonEta_diLep", "Lepton Eta (after dilepton cut)", 100, -5, 5 ));
 
-    h_AntiLeptonpT = new TH1D ( "AntiLeptonpT", "AntiLepton pT", 80, 0, 400 );
-    h_AntiLeptonEta = new TH1D ( "AntiLeptonEta", "AntiLepton Eta", 100, -5, 5 );
-    h_AntiLeptonpT_diLep = new TH1D ( "AntiLeptonpT_diLep", "Lepton pT (after dilepton cut)", 80, 0, 400 );
-    h_AntiLeptonEta_diLep = new TH1D ( "AntiLeptonEta_diLep", "Lepton Eta (after dilepton cut)", 100, -5, 5 );
+    h_AntiLeptonpT = store(new TH1D ( "AntiLeptonpT", "AntiLepton pT", 80, 0, 400 ));
+    h_AntiLeptonEta = store(new TH1D ( "AntiLeptonEta", "AntiLepton Eta", 100, -5, 5 ));
+    h_AntiLeptonpT_diLep = store(new TH1D ( "AntiLeptonpT_diLep", "Lepton pT (after dilepton cut)", 80, 0, 400 ));
+    h_AntiLeptonEta_diLep = store(new TH1D ( "AntiLeptonEta_diLep", "Lepton Eta (after dilepton cut)", 100, -5, 5 ));
 
-    h_HypToppT = new TH1D ( "HypToppT", "Top pT", 400, 0, 400 );
-    h_HypTopEta = new TH1D ( "HypTopEta", "Top pT", 100, -5, 5 );
-    h_HypTopMass = new TH1D ( "HypTopMass", "Top Mass", 80, 0, 400 );
-    h_HypTopRapidity = new TH1D ( "HypTopRapidity", "Top Rapidity", 100, -5, 5 );
+    h_HypToppT = store(new TH1D ( "HypToppT", "Top pT", 400, 0, 400 ));
+    h_HypTopEta = store(new TH1D ( "HypTopEta", "Top pT", 100, -5, 5 ));
+    h_HypTopMass = store(new TH1D ( "HypTopMass", "Top Mass", 80, 0, 400 ));
+    h_HypTopRapidity = store(new TH1D ( "HypTopRapidity", "Top Rapidity", 100, -5, 5 ));
 
-    h_HypAntiToppT = new TH1D ( "HypAntiToppT", "AntiTop pT", 400, 0, 400 );
-    h_HypAntiTopEta = new TH1D ( "HypAntiTopEta", "AntiTop pT", 100, -5, 5 );
-    h_HypAntiTopMass = new TH1D ( "HypAntiTopMass", "AntiTop Mass", 80, 0, 400 );
-    h_HypAntiTopRapidity = new TH1D ( "HypAntiTopRapidity", "Top Rapidity", 100, -5, 5 );
+    h_HypAntiToppT = store(new TH1D ( "HypAntiToppT", "AntiTop pT", 400, 0, 400 ));
+    h_HypAntiTopEta = store(new TH1D ( "HypAntiTopEta", "AntiTop pT", 100, -5, 5 ));
+    h_HypAntiTopMass = store(new TH1D ( "HypAntiTopMass", "AntiTop Mass", 80, 0, 400 ));
+    h_HypAntiTopRapidity = store(new TH1D ( "HypAntiTopRapidity", "Top Rapidity", 100, -5, 5 ));
 
-    h_HypLeptonpT = new TH1D ( "HypLeptonpT", "Lepton Hypothesis pT", 80, 0, 400 );
-    h_HypLeptonEta = new TH1D ( "HypLeptonEta", "Lepton Eta", 100, -5, 5 );
+    h_HypLeptonpT = store(new TH1D ( "HypLeptonpT", "Lepton Hypothesis pT", 80, 0, 400 ));
+    h_HypLeptonEta = store(new TH1D ( "HypLeptonEta", "Lepton Eta", 100, -5, 5 ));
 
-    h_HypAntiLeptonpT = new TH1D ( "HypAntiLeptonpT", "AntiLepton Hypothesis pT", 80, 0, 400 );
-    h_HypAntiLeptonEta = new TH1D ( "HypAntiLeptonEta", "AntiLepton Hypothesis Eta", 100, -5, 5 );
+    h_HypAntiLeptonpT = store(new TH1D ( "HypAntiLeptonpT", "AntiLepton Hypothesis pT", 80, 0, 400 ));
+    h_HypAntiLeptonEta = store(new TH1D ( "HypAntiLeptonEta", "AntiLepton Hypothesis Eta", 100, -5, 5 ));
 
-    h_HypBJetpT = new TH1D ( "HypBJetpT", "B Hypothesis pT", 80, 0, 400 );
-    h_HypBJetEta = new TH1D ( "HypBJetEta", "B Hypothesis Eta", 100, -5, 5 );
-    h_HypBJetRapidity = new TH1D ( "HypBJetRapidity", "B Hypothesis Eta", 100, -5, 5 );
+    h_HypBJetpT = store(new TH1D ( "HypBJetpT", "B Hypothesis pT", 80, 0, 400 ));
+    h_HypBJetEta = store(new TH1D ( "HypBJetEta", "B Hypothesis Eta", 100, -5, 5 ));
+    h_HypBJetRapidity = store(new TH1D ( "HypBJetRapidity", "B Hypothesis Eta", 100, -5, 5 ));
 
-    h_HypAntiBJetpT = new TH1D ( "HypAntiBJetpT", "AntiB Hypothesis pT", 80, 0, 400 );
-    h_HypAntiBJetEta = new TH1D ( "HypAntiBJetEta", "AntiB Hypothesis Eta", 100, -5, 5 );
-    h_HypAntiBJetRapidity = new TH1D ( "HypAntiBJetRapidity", "AntiB Hypothesis Eta", 100, -5, 5 );
+    h_HypAntiBJetpT = store(new TH1D ( "HypAntiBJetpT", "AntiB Hypothesis pT", 80, 0, 400 ));
+    h_HypAntiBJetEta = store(new TH1D ( "HypAntiBJetEta", "AntiB Hypothesis Eta", 100, -5, 5 ));
+    h_HypAntiBJetRapidity = store(new TH1D ( "HypAntiBJetRapidity", "AntiB Hypothesis Eta", 100, -5, 5 ));
 
-    h_VisGenToppT = new TH1D ( "VisGenToppT", "Top pT (VisGen)", 400, 0, 400 );
-    h_VisGenTopEta = new TH1D ( "VisGenTopEta", "Top Eta (VisGen)", 100, -5, 5 );
+    h_VisGenToppT = store(new TH1D ( "VisGenToppT", "Top pT (VisGen)", 400, 0, 400 ));
+    h_VisGenTopEta = store(new TH1D ( "VisGenTopEta", "Top Eta (VisGen)", 100, -5, 5 ));
 
-    h_VisGenAntiToppT = new TH1D ( "VisGenAntiToppT", "AntiTop pT (VisGen)", 400, 0, 400 );
-    h_VisGenAntiTopEta = new TH1D ( "VisGenAntiTopEta", "AntiTop pT (VisGen)", 100, -5, 5 );
+    h_VisGenAntiToppT = store(new TH1D ( "VisGenAntiToppT", "AntiTop pT (VisGen)", 400, 0, 400 ));
+    h_VisGenAntiTopEta = store(new TH1D ( "VisGenAntiTopEta", "AntiTop pT (VisGen)", 100, -5, 5 ));
 
-    h_VisGenLeptonpT = new TH1D ( "VisGenLeptonpT", "Lepton VisGenothesis pT", 80, 0, 400 );
-    h_VisGenLeptonEta = new TH1D ( "VisGenLeptonEta", "Lepton Eta", 100, -5, 5 );
+    h_VisGenLeptonpT = store(new TH1D ( "VisGenLeptonpT", "Lepton VisGenothesis pT", 80, 0, 400 ));
+    h_VisGenLeptonEta = store(new TH1D ( "VisGenLeptonEta", "Lepton Eta", 100, -5, 5 ));
 
-    h_VisGenAntiLeptonpT = new TH1D ( "VisGenAntiLeptonpT", "AntiLepton VisGenothesis pT", 80, 0, 400 );
-    h_VisGenAntiLeptonEta = new TH1D ( "VisGenAntiLeptonEta", "AntiLepton VisGenothesis Eta", 100, -5, 5 );
+    h_VisGenAntiLeptonpT = store(new TH1D ( "VisGenAntiLeptonpT", "AntiLepton VisGenothesis pT", 80, 0, 400 ));
+    h_VisGenAntiLeptonEta = store(new TH1D ( "VisGenAntiLeptonEta", "AntiLepton VisGenothesis Eta", 100, -5, 5 ));
 
-    h_VisGenBJetpT = new TH1D ( "VisGenBJetpT", "B VisGenothesis pT", 80, 0, 400 );
-    h_VisGenBJetEta = new TH1D ( "VisGenBJetEta", "B VisGenothesis Eta", 100, -5, 5 );
-    h_VisGenBJetRapidity = new TH1D ( "VisGenBJetRapidity", "B VisGenothesis Rapidity", 100, -5, 5 );
+    h_VisGenBJetpT = store(new TH1D ( "VisGenBJetpT", "B VisGenothesis pT", 80, 0, 400 ));
+    h_VisGenBJetEta = store(new TH1D ( "VisGenBJetEta", "B VisGenothesis Eta", 100, -5, 5 ));
+    h_VisGenBJetRapidity = store(new TH1D ( "VisGenBJetRapidity", "B VisGenothesis Rapidity", 100, -5, 5 ));
 
-    h_VisGenAntiBJetpT = new TH1D ( "VisGenAntiBJetpT", "AntiB VisGenothesis pT", 80, 0, 400 );
-    h_VisGenAntiBJetEta = new TH1D ( "VisGenAntiBJetEta", "AntiB VisGenothesis Eta", 100, -5, 5 );
-    h_VisGenAntiBJetRapidity = new TH1D ( "VisGenAntiBJetRapidity", "AntiB VisGenothesis Rapidity", 100, -5, 5 );
+    h_VisGenAntiBJetpT = store(new TH1D ( "VisGenAntiBJetpT", "AntiB VisGenothesis pT", 80, 0, 400 ));
+    h_VisGenAntiBJetEta = store(new TH1D ( "VisGenAntiBJetEta", "AntiB VisGenothesis Eta", 100, -5, 5 ));
+    h_VisGenAntiBJetRapidity = store(new TH1D ( "VisGenAntiBJetRapidity", "AntiB VisGenothesis Rapidity", 100, -5, 5 ));
 
-    /*  h_VisGenBQuarkpT = new TH1D("VisGenBQuarkpT", "B Quark VisGenothesis pT", 80, 0, 400);
-    h_VisGenBQuarkEta = new TH1D("VisGenBQuarkEta", "B Quark VisGenothesis Eta", 100, -5, 5);
-    h_VisGenBQuarkRapidity = new TH1D("VisGenBQuarkRapidity", "B Quark VisGenothesis Rapidity", 100, -5, 5);
+    /*  h_VisGenBQuarkpT = store(new TH1D("VisGenBQuarkpT", "B Quark VisGenothesis pT", 80, 0, 400));
+    h_VisGenBQuarkEta = store(new TH1D("VisGenBQuarkEta", "B Quark VisGenothesis Eta", 100, -5, 5));
+    h_VisGenBQuarkRapidity = store(new TH1D("VisGenBQuarkRapidity", "B Quark VisGenothesis Rapidity", 100, -5, 5));
 
-    h_VisGenAntiBQuarkpT = new TH1D("VisGenAntiBQuarkpT", "AntiB Quark VisGenothesis pT", 80, 0, 400);
-    h_VisGenAntiBQuarkEta = new TH1D("VisGenAntiBQuarkEta", "AntiB Quark VisGenothesis Eta", 100, -5, 5);
-    h_VisGenAntiBQuarkRapidity = new TH1D("VisGenAntiBQuarkRapidity", "AntiB Quark VisGenothesis Rapidity", 100, -5, 5);
+    h_VisGenAntiBQuarkpT = store(new TH1D("VisGenAntiBQuarkpT", "AntiB Quark VisGenothesis pT", 80, 0, 400));
+    h_VisGenAntiBQuarkEta = store(new TH1D("VisGenAntiBQuarkEta", "AntiB Quark VisGenothesis Eta", 100, -5, 5));
+    h_VisGenAntiBQuarkRapidity = store(new TH1D("VisGenAntiBQuarkRapidity", "AntiB Quark VisGenothesis Rapidity", 100, -5, 5));
     */
-    /*h_GenToppT = new TH1D("GenToppT", "Top pT (Gen)", 80, 0, 400);
-    h_GenTopEta = new TH1D("GenTopEta", "Top Eta (Gen)", 100, -5, 5);
-    h_GenTopRapidity = new TH1D("GenTopRapidity", "Top Rapidity (Gen)", 100, -5, 5);
+    /*h_GenToppT = store(new TH1D("GenToppT", "Top pT (Gen)", 80, 0, 400));
+    h_GenTopEta = store(new TH1D("GenTopEta", "Top Eta (Gen)", 100, -5, 5));
+    h_GenTopRapidity = store(new TH1D("GenTopRapidity", "Top Rapidity (Gen)", 100, -5, 5));
 
-    h_GenAntiToppT = new TH1D("GenAntiToppT", "AntiTop pT (Gen)", 80, 0, 400);
-    h_GenAntiTopEta = new TH1D("GenAntiTopEta", "AntiTop Eta (Gen)", 100, -5, 5);
-    h_GenAntiTopRapidity = new TH1D("GenAntiTopRapidity", "AntiTop Rapidity (Gen)", 100, -5, 5);
+    h_GenAntiToppT = store(new TH1D("GenAntiToppT", "AntiTop pT (Gen)", 80, 0, 400));
+    h_GenAntiTopEta = store(new TH1D("GenAntiTopEta", "AntiTop Eta (Gen)", 100, -5, 5));
+    h_GenAntiTopRapidity = store(new TH1D("GenAntiTopRapidity", "AntiTop Rapidity (Gen)", 100, -5, 5));
 
-    h_GenLeptonpT = new TH1D("GenLeptonpT", "Lepton Genothesis pT", 80, 0, 400);
-    h_GenLeptonEta = new TH1D("GenLeptonEta", "Lepton Eta", 100, -5, 5);
+    h_GenLeptonpT = store(new TH1D("GenLeptonpT", "Lepton Genothesis pT", 80, 0, 400));
+    h_GenLeptonEta = store(new TH1D("GenLeptonEta", "Lepton Eta", 100, -5, 5));
 
-    h_GenAntiLeptonpT = new TH1D("GenAntiLeptonpT", "AntiLepton Genothesis pT", 80, 0, 400);
-    h_GenAntiLeptonEta = new TH1D("GenAntiLeptonEta", "AntiLepton Genothesis Eta", 100, -5, 5);
+    h_GenAntiLeptonpT = store(new TH1D("GenAntiLeptonpT", "AntiLepton Genothesis pT", 80, 0, 400));
+    h_GenAntiLeptonEta = store(new TH1D("GenAntiLeptonEta", "AntiLepton Genothesis Eta", 100, -5, 5));
 
-    h_GenBQuarkpT = new TH1D("GenBQuarkpT", "B Quark Genothesis pT", 80, 0, 400);
-    h_GenBQuarkEta = new TH1D("GenBQuarkEta", "B Quark Genothesis Eta", 100, -5, 5);
-    h_GenBQuarkRapidity = new TH1D("GenBQuarkRapidity", "B Quark Genothesis Rapidity", 100, -5, 5);
+    h_GenBQuarkpT = store(new TH1D("GenBQuarkpT", "B Quark Genothesis pT", 80, 0, 400));
+    h_GenBQuarkEta = store(new TH1D("GenBQuarkEta", "B Quark Genothesis Eta", 100, -5, 5));
+    h_GenBQuarkRapidity = store(new TH1D("GenBQuarkRapidity", "B Quark Genothesis Rapidity", 100, -5, 5));
 
-    h_GenAntiBQuarkpT = new TH1D("GenAntiBQuarkpT", "AntiB Quark Genothesis pT", 80, 0, 400);
-    h_GenAntiBQuarkEta = new TH1D("GenAntiBQuarkEta", "AntiB Quark Genothesis Eta", 100, -5, 5);
-    h_GenAntiBQuarkRapidity = new TH1D("GenAntiBQuarkRapidity", "AntiB Quark Genothesis Rapidity", 100, -5, 5);
+    h_GenAntiBQuarkpT = store(new TH1D("GenAntiBQuarkpT", "AntiB Quark Genothesis pT", 80, 0, 400));
+    h_GenAntiBQuarkEta = store(new TH1D("GenAntiBQuarkEta", "AntiB Quark Genothesis Eta", 100, -5, 5));
+    h_GenAntiBQuarkRapidity = store(new TH1D("GenAntiBQuarkRapidity", "AntiB Quark Genothesis Rapidity", 100, -5, 5));
 
-    h_GenBJetpT = new TH1D("GenBJetpT", "B Genothesis pT", 80, 0, 400);
-    h_GenBJetEta = new TH1D("GenBJetEta", "B Genothesis Eta", 100, -5, 5);
-    h_GenBJetRapidity = new TH1D("GenBJetRapidity", "B Genothesis Rapidity", 100, -5, 5);
+    h_GenBJetpT = store(new TH1D("GenBJetpT", "B Genothesis pT", 80, 0, 400));
+    h_GenBJetEta = store(new TH1D("GenBJetEta", "B Genothesis Eta", 100, -5, 5));
+    h_GenBJetRapidity = store(new TH1D("GenBJetRapidity", "B Genothesis Rapidity", 100, -5, 5));
 
-    h_GenAntiBJetpT = new TH1D("GenAntiBJetpT", "AntiB Genothesis pT", 80, 0, 400);
-    h_GenAntiBJetEta = new TH1D("GenAntiBJetEta", "AntiB Genothesis Eta", 100, -5, 5);
-    h_GenAntiBJetRapidity = new TH1D("GenAntiBJetRapidity", "Anti B Genothesis Rapidity", 100, -5, 5);
+    h_GenAntiBJetpT = store(new TH1D("GenAntiBJetpT", "AntiB Genothesis pT", 80, 0, 400));
+    h_GenAntiBJetEta = store(new TH1D("GenAntiBJetEta", "AntiB Genothesis Eta", 100, -5, 5));
+    h_GenAntiBJetRapidity = store(new TH1D("GenAntiBJetRapidity", "Anti B Genothesis Rapidity", 100, -5, 5));
     */
-    h_GenRecoBJetpT = new TH2D ( "GenRecoBJetpT", "Gen/Reco Matching", 80, 0, 400, 80, 0, 400 );
-    h_GenRecoBJetEta = new TH2D ( "GenRecoBJetEta", "Gen/Reco Matching", 100, -5, 5, 100, -5, 5 );
-    h_GenRecoBJetRapidity = new TH2D ( "GenRecoBJetRapidity", "Gen/Reco Matching", 100, -5, 5, 100, -5, 5 );
+    h_GenRecoBJetpT = store(new TH2D ( "GenRecoBJetpT", "Gen/Reco Matching", 80, 0, 400, 80, 0, 400 ));
+    h_GenRecoBJetEta = store(new TH2D ( "GenRecoBJetEta", "Gen/Reco Matching", 100, -5, 5, 100, -5, 5 ));
+    h_GenRecoBJetRapidity = store(new TH2D ( "GenRecoBJetRapidity", "Gen/Reco Matching", 100, -5, 5, 100, -5, 5 ));
 
-    h_GenRecoAntiBJetpT = new TH2D ( "GenRecoAntiBJetpT", "Gen/Reco Matching", 80, 0, 400, 80, 0, 400 );
-    h_GenRecoAntiBJetEta = new TH2D ( "GenRecoAntiBJetEta", "Gen/Reco Matching", 100, -5, 5, 100, -5, 5 );
-    h_GenRecoAntiBJetRapidity = new TH2D ( "GenRecoAntiBJetRapidity", "Gen/Reco Matching", 100, -5, 5, 100, -5, 5 );
+    h_GenRecoAntiBJetpT = store(new TH2D ( "GenRecoAntiBJetpT", "Gen/Reco Matching", 80, 0, 400, 80, 0, 400 ));
+    h_GenRecoAntiBJetEta = store(new TH2D ( "GenRecoAntiBJetEta", "Gen/Reco Matching", 100, -5, 5, 100, -5, 5 ));
+    h_GenRecoAntiBJetRapidity = store(new TH2D ( "GenRecoAntiBJetRapidity", "Gen/Reco Matching", 100, -5, 5, 100, -5, 5 ));
 
-    h_GenRecoLeptonEta = new TH2D ( "GenRecoLeptonEta", "Gen/Reco Matching", 100, -5, 5, 100, -5, 5 );
-    h_GenRecoAntiLeptonEta = new TH2D ( "GenRecoAntiLeptonEta", "Gen/Reco Matching", 100, -5, 5, 100, -5, 5 );
-    h_GenRecoLeptonpT = new TH2D ( "GenRecoLeptonpT", "Gen/Reco Matching", 80, 0, 400, 80, 0, 400 );
-    h_GenRecoAntiLeptonpT = new TH2D ( "GenRecoAntiLeptonpT", "Gen/Reco Matching", 80, 0, 400, 80, 0, 400 );
+    h_GenRecoLeptonEta = store(new TH2D ( "GenRecoLeptonEta", "Gen/Reco Matching", 100, -5, 5, 100, -5, 5 ));
+    h_GenRecoAntiLeptonEta = store(new TH2D ( "GenRecoAntiLeptonEta", "Gen/Reco Matching", 100, -5, 5, 100, -5, 5 ));
+    h_GenRecoLeptonpT = store(new TH2D ( "GenRecoLeptonpT", "Gen/Reco Matching", 80, 0, 400, 80, 0, 400 ));
+    h_GenRecoAntiLeptonpT = store(new TH2D ( "GenRecoAntiLeptonpT", "Gen/Reco Matching", 80, 0, 400, 80, 0, 400 ));
 
-    h_GenRecoTopRapidity = new TH2D ( "GenRecoTopRapidity", "Gen/Reco Matching", 100, -5, 5, 100, -5, 5 );
-    h_GenRecoAntiTopRapidity = new TH2D ( "GenRecoAntiTopRapidity", "Gen/Reco Matching", 100, -5, 5, 100, -5, 5 );
-    h_GenRecoToppT = new TH2D ( "GenRecoToppT", "Gen/Reco Matching", 400, 0, 400, 400, 0, 400 );
-    h_GenRecoAntiToppT = new TH2D ( "GenRecoAntiToppT", "Gen/Reco Matching", 400, 0, 400, 400, 0, 400 );
+    h_GenRecoTopRapidity = store(new TH2D ( "GenRecoTopRapidity", "Gen/Reco Matching", 100, -5, 5, 100, -5, 5 ));
+    h_GenRecoAntiTopRapidity = store(new TH2D ( "GenRecoAntiTopRapidity", "Gen/Reco Matching", 100, -5, 5, 100, -5, 5 ));
+    h_GenRecoToppT = store(new TH2D ( "GenRecoToppT", "Gen/Reco Matching", 400, 0, 400, 400, 0, 400 ));
+    h_GenRecoAntiToppT = store(new TH2D ( "GenRecoAntiToppT", "Gen/Reco Matching", 400, 0, 400, 400, 0, 400 ));
 
-    h_GenRecoTTBarRapidity = new TH2D ( "GenRecoTTBarRapidity", "Rapidity of TTbar System (HYP)", 100, -5, 5, 100, -5, 5 );
-    h_GenRecoTTBarpT = new TH2D ( "GenRecoTTBarpT", "pT of TTbar System (HYP)", 500, 0, 500, 500, 0, 500 );
-    h_GenRecoTTBarMass = new TH2D ( "GenRecoTTBarMass", "Mass of TTbar System (HYP)", 2000, 0, 2000, 2000, 0, 2000 );
-    h_GenRecoLLBarMass = new TH2D ( "GenRecoLLBarMass", "Mass of LLbar System (HYP)", 500, 0, 1000, 500, 0, 1000 );
-    h_GenRecoLLBarpT = new TH2D ( "GenRecoLLBarpT", "pT of LLbar System (HYP)", 200, 0, 1000, 200, 0, 1000 );
+    h_GenRecoTTBarRapidity = store(new TH2D ( "GenRecoTTBarRapidity", "Rapidity of TTbar System (HYP)", 100, -5, 5, 100, -5, 5 ));
+    h_GenRecoTTBarpT = store(new TH2D ( "GenRecoTTBarpT", "pT of TTbar System (HYP)", 500, 0, 500, 500, 0, 500 ));
+    h_GenRecoTTBarMass = store(new TH2D ( "GenRecoTTBarMass", "Mass of TTbar System (HYP)", 2000, 0, 2000, 2000, 0, 2000 ));
+    h_GenRecoLLBarMass = store(new TH2D ( "GenRecoLLBarMass", "Mass of LLbar System (HYP)", 500, 0, 1000, 500, 0, 1000 ));
+    h_GenRecoLLBarpT = store(new TH2D ( "GenRecoLLBarpT", "pT of LLbar System (HYP)", 200, 0, 1000, 200, 0, 1000 ));
 
-    h_NJetMatching = new TH1D ( "NJetMatching", "NJet Gen/Reco Matching", 5, 0, 5 );
+    h_NJetMatching = store(new TH1D ( "NJetMatching", "NJet Gen/Reco Matching", 5, 0, 5 ));
 
-    h_GenRecoLLBarDPhi = new TH2D ( "GenRecoLLBarDPhi", "Gen/Reco Matching", 100, 0., 3.2, 100, 0., 3.2 );
-    h_GenRecoLeptonantiBjetMass = new TH2D ( "GenRecoLeptonBjetMass", "Gen/Reco Matching", 500, 0, 1000, 500, 0, 1000 );
-    h_GenRecoAntiLeptonBjetMass = new TH2D ( "GenRecoAntiLeptonBjetMass", "Gen/Reco Matching", 500, 0, 1000, 500, 0, 1000 );
-    h_GenRecoJetMult = new TH2D ( "GenRecoJetMult", "Gen/REco Matching", 26, -0.5, 25.5, 26, -0.5, 25.5 );
+    h_GenRecoLLBarDPhi = store(new TH2D ( "GenRecoLLBarDPhi", "Gen/Reco Matching", 100, 0., 3.2, 100, 0., 3.2 ));
+    h_GenRecoLeptonantiBjetMass = store(new TH2D ( "GenRecoLeptonBjetMass", "Gen/Reco Matching", 500, 0, 1000, 500, 0, 1000 ));
+    h_GenRecoAntiLeptonBjetMass = store(new TH2D ( "GenRecoAntiLeptonBjetMass", "Gen/Reco Matching", 500, 0, 1000, 500, 0, 1000 ));
+    h_GenRecoJetMult = store(new TH2D ( "GenRecoJetMult", "Gen/REco Matching", 26, -0.5, 25.5, 26, -0.5, 25.5 ));
 
-    h_HypLLBarDPhi = new TH1D ( "HypLLBarDPhi", "#Delta#phi(Lep, AntiLep) (HYP)",110, 0., 3.2 );
-    h_HypLeptonantiBjetMass = new TH1D ( "HypLeptonBjetMass", "Mass(Lep, AntiBJet) (HYP)", 500, 0, 1000 );
-    h_HypAntiLeptonBjetMass = new TH1D ( "HypAntiLeptonBjetMass", "Mass(AntiLep, BJet) (HYP)", 500, 0, 1000 );
-    h_HypJetMult = new TH1D ( "HypJetMult", "Jet Multiplicity (HYP)", 26, -0.5, 25.5 );
+    h_HypLLBarDPhi = store(new TH1D ( "HypLLBarDPhi", "#Delta#phi(Lep, AntiLep) (HYP)",110, 0., 3.2 ));
+    h_HypLeptonantiBjetMass = store(new TH1D ( "HypLeptonBjetMass", "Mass(Lep, AntiBJet) (HYP)", 500, 0, 1000 ));
+    h_HypAntiLeptonBjetMass = store(new TH1D ( "HypAntiLeptonBjetMass", "Mass(AntiLep, BJet) (HYP)", 500, 0, 1000 ));
+    h_HypJetMult = store(new TH1D ( "HypJetMult", "Jet Multiplicity (HYP)", 26, -0.5, 25.5 ));
 
-    h_VisGenLLBarDPhi = new TH1D ( "VisGenLLBarDPhi", "#Delta #Phi (Lep, AntiLep) (VisGEN)", 100, 0., 3.2 );
-    h_VisGenLeptonantiBjetMass = new TH1D ( "VisGenLeptonBjetMass", "M(Lep, AntiBJet) (VisGEN)", 500, 0, 1000 );
-    h_VisGenAntiLeptonBjetMass = new TH1D ( "VisGenAntiLeptonBjetMass", "M(AntiLep, BJet) (VisGEN)", 500, 0, 1000 );
-    h_VisGenJetMult = new TH1D ( "VisGenJetMult", "Jet Multiplicty (VisGEN)", 26, -0.5, 25.5 );
+    h_VisGenLLBarDPhi = store(new TH1D ( "VisGenLLBarDPhi", "#Delta #Phi (Lep, AntiLep) (VisGEN)", 100, 0., 3.2 ));
+    h_VisGenLeptonantiBjetMass = store(new TH1D ( "VisGenLeptonBjetMass", "M(Lep, AntiBJet) (VisGEN)", 500, 0, 1000 ));
+    h_VisGenAntiLeptonBjetMass = store(new TH1D ( "VisGenAntiLeptonBjetMass", "M(AntiLep, BJet) (VisGEN)", 500, 0, 1000 ));
+    h_VisGenJetMult = store(new TH1D ( "VisGenJetMult", "Jet Multiplicty (VisGEN)", 26, -0.5, 25.5 ));
 
-    h_RecoLLBarDPhi = new TH1D ( "RecoLLBarDPhi", "#Delta #Phi (Lep, AntiLep) (Reco)", 100, 0., 3.2 );
-    h_RecoLeptonantiBjetMass = new TH1D ( "RecoLeptonBjetMass", "M(Lep, AntiBJet) (Reco)", 500, 0, 1000 );
-    h_RecoAntiLeptonBjetMass = new TH1D ( "RecoAntiLeptonBjetMass", "M(AntiLep, BJet) (Reco)", 500, 0, 1000 );
-    h_RecoJetMult = new TH1D ( "RecoJetMult", "Jet Multiplicty (Reco)", 26, -0.5, 25.5 );
+    h_RecoLLBarDPhi = store(new TH1D ( "RecoLLBarDPhi", "#Delta #Phi (Lep, AntiLep) (Reco)", 100, 0., 3.2 ));
+    h_RecoLeptonantiBjetMass = store(new TH1D ( "RecoLeptonBjetMass", "M(Lep, AntiBJet) (Reco)", 500, 0, 1000 ));
+    h_RecoAntiLeptonBjetMass = store(new TH1D ( "RecoAntiLeptonBjetMass", "M(AntiLep, BJet) (Reco)", 500, 0, 1000 ));
+    h_RecoJetMult = store(new TH1D ( "RecoJetMult", "Jet Multiplicty (Reco)", 26, -0.5, 25.5 ));
 
-    h_HypToppTLead = new TH1D ( "HypToppTLead","Leading pT Top pT",400,0,400 );
-    h_RecoToppTLead = new TH1D ( "RecoToppTLead","Leading pT Top pT",400,0,400 );
-    h_VisGenToppTLead = new TH1D ( "VisGenToppTLead","Leading pT Top pT",400,0,400 );
-    h_GenRecoToppTLead = new TH2D ( "GenRecoToppTLead", "Gen/Reco Matching", 400,0,400,400,0,400 );
+    h_HypToppTLead = store(new TH1D ( "HypToppTLead","Leading pT Top pT",400,0,400 ));
+    h_RecoToppTLead = store(new TH1D ( "RecoToppTLead","Leading pT Top pT",400,0,400 ));
+    h_VisGenToppTLead = store(new TH1D ( "VisGenToppTLead","Leading pT Top pT",400,0,400 ));
+    h_GenRecoToppTLead = store(new TH2D ( "GenRecoToppTLead", "Gen/Reco Matching", 400,0,400,400,0,400 ));
 
-    h_HypToppTNLead = new TH1D ( "HypToppTNLead","NLeading pT Top pT",400,0,400 );
-    h_RecoToppTNLead = new TH1D ( "RecoToppTNLead","NLeading pT Top pT",400,0,400 );
-    h_VisGenToppTNLead = new TH1D ( "VisGenToppTNLead","NLeading pT Top pT",400,0,400 );
-    h_GenRecoToppTNLead = new TH2D ( "GenRecoToppTNLead", "Gen/Reco Matching", 400,0,400,400,0,400 );
+    h_HypToppTNLead = store(new TH1D ( "HypToppTNLead","NLeading pT Top pT",400,0,400 ));
+    h_RecoToppTNLead = store(new TH1D ( "RecoToppTNLead","NLeading pT Top pT",400,0,400 ));
+    h_VisGenToppTNLead = store(new TH1D ( "VisGenToppTNLead","NLeading pT Top pT",400,0,400 ));
+    h_GenRecoToppTNLead = store(new TH2D ( "GenRecoToppTNLead", "Gen/Reco Matching", 400,0,400,400,0,400 ));
 
-    h_HypTopRapidityLead = new TH1D ( "HypTopRapidityLead","Leading pT Top Rapidity",100,-5,5 );
-    h_RecoTopRapidityLead = new TH1D ( "RecoTopRapidityLead","Leading pT Top Rapidity",100,-5,5 );
-    h_VisGenTopRapidityLead = new TH1D ( "VisGenTopRapidityLead","Leading pT Top Rapidity",100,-5,5 );
-    h_GenRecoTopRapidityLead = new TH2D ( "GenRecoTopRapidityLead", "Gen/Reco Matching", 100,-5,5,100,-5,5 );
+    h_HypTopRapidityLead = store(new TH1D ( "HypTopRapidityLead","Leading pT Top Rapidity",100,-5,5 ));
+    h_RecoTopRapidityLead = store(new TH1D ( "RecoTopRapidityLead","Leading pT Top Rapidity",100,-5,5 ));
+    h_VisGenTopRapidityLead = store(new TH1D ( "VisGenTopRapidityLead","Leading pT Top Rapidity",100,-5,5 ));
+    h_GenRecoTopRapidityLead = store(new TH2D ( "GenRecoTopRapidityLead", "Gen/Reco Matching", 100,-5,5,100,-5,5 ));
 
-    h_HypTopRapidityNLead = new TH1D ( "HypTopRapidityNLead","NLeading pT Top Rapidity",100,-5,5 );
-    h_RecoTopRapidityNLead = new TH1D ( "RecoTopRapidityNLead","NLeading pT Top Rapidity",100,-5,5 );
-    h_VisGenTopRapidityNLead = new TH1D ( "VisGenTopRapidityNLead","NLeading pT Top Rapidity",100,-5,5 );
-    h_GenRecoTopRapidityNLead = new TH2D ( "GenRecoTopRapidityNLead", "Gen/Reco Matching", 100,-5,5,100,-5,5 );
+    h_HypTopRapidityNLead = store(new TH1D ( "HypTopRapidityNLead","NLeading pT Top Rapidity",100,-5,5 ));
+    h_RecoTopRapidityNLead = store(new TH1D ( "RecoTopRapidityNLead","NLeading pT Top Rapidity",100,-5,5 ));
+    h_VisGenTopRapidityNLead = store(new TH1D ( "VisGenTopRapidityNLead","NLeading pT Top Rapidity",100,-5,5 ));
+    h_GenRecoTopRapidityNLead = store(new TH2D ( "GenRecoTopRapidityNLead", "Gen/Reco Matching", 100,-5,5,100,-5,5 ));
 
-    h_HypTopMassLead = new TH1D ( "HypTopMassLead","Leading pT Top Mass",80,0,400 );
-    h_RecoTopMassLead = new TH1D ( "RecoTopMassLead","Leading pT Top Mass",80,0,400 );
-    h_VisGenTopMassLead = new TH1D ( "VisGenTopMassLead","Leading pT Top Mass",80,0,400 );
-    h_GenRecoTopMassLead = new TH2D ( "GenRecoTopMassLead", "Gen/Reco Matching", 80,0,400,80,0,400 );
+    h_HypTopMassLead = store(new TH1D ( "HypTopMassLead","Leading pT Top Mass",80,0,400 ));
+    h_RecoTopMassLead = store(new TH1D ( "RecoTopMassLead","Leading pT Top Mass",80,0,400 ));
+    h_VisGenTopMassLead = store(new TH1D ( "VisGenTopMassLead","Leading pT Top Mass",80,0,400 ));
+    h_GenRecoTopMassLead = store(new TH2D ( "GenRecoTopMassLead", "Gen/Reco Matching", 80,0,400,80,0,400 ));
 
-    h_HypTopMassNLead = new TH1D ( "HypTopMassNLead","NLeading pT Top Mass",80,0,400 );
-    h_RecoTopMassNLead = new TH1D ( "RecoTopMassNLead","NLeading pT Top Mass",80,0,400 );
-    h_VisGenTopMassNLead = new TH1D ( "VisGenTopMassNLead","NLeading pT Top Mass",80,0,400 );
-    h_GenRecoTopMassNLead = new TH2D ( "GenRecoTopMassNLead", "Gen/Reco Matching", 80,0,400,80,0,400 );
+    h_HypTopMassNLead = store(new TH1D ( "HypTopMassNLead","NLeading pT Top Mass",80,0,400 ));
+    h_RecoTopMassNLead = store(new TH1D ( "RecoTopMassNLead","NLeading pT Top Mass",80,0,400 ));
+    h_VisGenTopMassNLead = store(new TH1D ( "VisGenTopMassNLead","NLeading pT Top Mass",80,0,400 ));
+    h_GenRecoTopMassNLead = store(new TH2D ( "GenRecoTopMassNLead", "Gen/Reco Matching", 80,0,400,80,0,400 ));
 
 
-    h_HypLeptonpTLead = new TH1D ( "HypLeptonpTLead","Leading pT Lepton pT",400,0,400 );
-    h_RecoLeptonpTLead = new TH1D ( "RecoLeptonpTLead","Leading pT Lepton pT",400,0,400 );
-    h_VisGenLeptonpTLead = new TH1D ( "VisGenLeptonpTLead","Leading pT Lepton pT",400,0,400 );
-    h_GenRecoLeptonpTLead = new TH2D ( "GenRecoLeptonpTLead", "Gen/Reco Matching", 400,0,400,400,0,400 );
+    h_HypLeptonpTLead = store(new TH1D ( "HypLeptonpTLead","Leading pT Lepton pT",400,0,400 ));
+    h_RecoLeptonpTLead = store(new TH1D ( "RecoLeptonpTLead","Leading pT Lepton pT",400,0,400 ));
+    h_VisGenLeptonpTLead = store(new TH1D ( "VisGenLeptonpTLead","Leading pT Lepton pT",400,0,400 ));
+    h_GenRecoLeptonpTLead = store(new TH2D ( "GenRecoLeptonpTLead", "Gen/Reco Matching", 400,0,400,400,0,400 ));
 
-    h_HypLeptonpTNLead = new TH1D ( "HypLeptonpTNLead","NLeading pT Lepton pT",400,0,400 );
-    h_RecoLeptonpTNLead = new TH1D ( "RecoLeptonpTNLead","NLeading pT Lepton pT",400,0,400 );
-    h_VisGenLeptonpTNLead = new TH1D ( "VisGenLeptonpTNLead","NLeading pT Lepton pT",400,0,400 );
-    h_GenRecoLeptonpTNLead = new TH2D ( "GenRecoLeptonpTNLead", "Gen/Reco Matching", 400,0,400,400,0,400 );
+    h_HypLeptonpTNLead = store(new TH1D ( "HypLeptonpTNLead","NLeading pT Lepton pT",400,0,400 ));
+    h_RecoLeptonpTNLead = store(new TH1D ( "RecoLeptonpTNLead","NLeading pT Lepton pT",400,0,400 ));
+    h_VisGenLeptonpTNLead = store(new TH1D ( "VisGenLeptonpTNLead","NLeading pT Lepton pT",400,0,400 ));
+    h_GenRecoLeptonpTNLead = store(new TH2D ( "GenRecoLeptonpTNLead", "Gen/Reco Matching", 400,0,400,400,0,400 ));
 
-    h_HypLeptonEtaLead = new TH1D ( "HypLeptonEtaLead","Leading pT Lepton Eta",100,-5,5 );
-    h_RecoLeptonEtaLead = new TH1D ( "RecoLeptonEtaLead","Leading pT Lepton Eta",100,-5,5 );
-    h_VisGenLeptonEtaLead = new TH1D ( "VisGenLeptonEtaLead","Leading pT Lepton Eta",100,-5,5 );
-    h_GenRecoLeptonEtaLead = new TH2D ( "GenRecoLeptonEtaLead", "Gen/Reco Matching", 100,-5,5,100,-5,5 );
+    h_HypLeptonEtaLead = store(new TH1D ( "HypLeptonEtaLead","Leading pT Lepton Eta",100,-5,5 ));
+    h_RecoLeptonEtaLead = store(new TH1D ( "RecoLeptonEtaLead","Leading pT Lepton Eta",100,-5,5 ));
+    h_VisGenLeptonEtaLead = store(new TH1D ( "VisGenLeptonEtaLead","Leading pT Lepton Eta",100,-5,5 ));
+    h_GenRecoLeptonEtaLead = store(new TH2D ( "GenRecoLeptonEtaLead", "Gen/Reco Matching", 100,-5,5,100,-5,5 ));
 
-    h_HypLeptonEtaNLead = new TH1D ( "HypLeptonEtaNLead","NLeading pT Lepton Eta",100,-5,5 );
-    h_RecoLeptonEtaNLead = new TH1D ( "RecoLeptonEtaNLead","NLeading pT Lepton Eta",100,-5,5 );
-    h_VisGenLeptonEtaNLead = new TH1D ( "VisGenLeptonEtaNLead","NLeading pT Lepton Eta",100,-5,5 );
-    h_GenRecoLeptonEtaNLead = new TH2D ( "GenRecoLeptonEtaNLead", "Gen/Reco Matching", 100,-5,5,100,-5,5 );
+    h_HypLeptonEtaNLead = store(new TH1D ( "HypLeptonEtaNLead","NLeading pT Lepton Eta",100,-5,5 ));
+    h_RecoLeptonEtaNLead = store(new TH1D ( "RecoLeptonEtaNLead","NLeading pT Lepton Eta",100,-5,5 ));
+    h_VisGenLeptonEtaNLead = store(new TH1D ( "VisGenLeptonEtaNLead","NLeading pT Lepton Eta",100,-5,5 ));
+    h_GenRecoLeptonEtaNLead = store(new TH2D ( "GenRecoLeptonEtaNLead", "Gen/Reco Matching", 100,-5,5,100,-5,5 ));
 
-    h_HypBJetpTLead = new TH1D ( "HypBJetpTLead","Leading pT BJet pT",400,0,400 );
-    h_RecoBJetpTLead = new TH1D ( "RecoBJetpTLead","Leading pT BJet pT",400,0,400 );
-    h_VisGenBJetpTLead = new TH1D ( "VisGenBJetpTLead","Leading pT BJet pT",400,0,400 );
-    h_GenRecoBJetpTLead = new TH2D ( "GenRecoBJetpTLead", "Gen/Reco Matching", 400,0,400,400,0,400 );
+    h_HypBJetpTLead = store(new TH1D ( "HypBJetpTLead","Leading pT BJet pT",400,0,400 ));
+    h_RecoBJetpTLead = store(new TH1D ( "RecoBJetpTLead","Leading pT BJet pT",400,0,400 ));
+    h_VisGenBJetpTLead = store(new TH1D ( "VisGenBJetpTLead","Leading pT BJet pT",400,0,400 ));
+    h_GenRecoBJetpTLead = store(new TH2D ( "GenRecoBJetpTLead", "Gen/Reco Matching", 400,0,400,400,0,400 ));
 
-    h_HypBJetpTNLead = new TH1D ( "HypBJetpTNLead","NLeading pT BJet pT",400,0,400 );
-    h_RecoBJetpTNLead = new TH1D ( "RecoBJetpTNLead","NLeading pT BJet pT",400,0,400 );
-    h_VisGenBJetpTNLead = new TH1D ( "VisGenBJetpTNLead","NLeading pT BJet pT",400,0,400 );
-    h_GenRecoBJetpTNLead = new TH2D ( "GenRecoBJetpTNLead", "Gen/Reco Matching", 400,0,400,400,0,400 );
+    h_HypBJetpTNLead = store(new TH1D ( "HypBJetpTNLead","NLeading pT BJet pT",400,0,400 ));
+    h_RecoBJetpTNLead = store(new TH1D ( "RecoBJetpTNLead","NLeading pT BJet pT",400,0,400 ));
+    h_VisGenBJetpTNLead = store(new TH1D ( "VisGenBJetpTNLead","NLeading pT BJet pT",400,0,400 ));
+    h_GenRecoBJetpTNLead = store(new TH2D ( "GenRecoBJetpTNLead", "Gen/Reco Matching", 400,0,400,400,0,400 ));
 
-    h_HypBJetEtaLead = new TH1D ( "HypBJetEtaLead","Leading pT BJet Eta",100,-5,5 );
-    h_RecoBJetEtaLead = new TH1D ( "RecoBJetEtaLead","Leading pT BJet Eta",100,-5,5 );
-    h_VisGenBJetEtaLead = new TH1D ( "VisGenBJetEtaLead","Leading pT BJet Eta",100,-5,5 );
-    h_GenRecoBJetEtaLead = new TH2D ( "GenRecoBJetEtaLead", "Gen/Reco Matching", 100,-5,5,100,-5,5 );
+    h_HypBJetEtaLead = store(new TH1D ( "HypBJetEtaLead","Leading pT BJet Eta",100,-5,5 ));
+    h_RecoBJetEtaLead = store(new TH1D ( "RecoBJetEtaLead","Leading pT BJet Eta",100,-5,5 ));
+    h_VisGenBJetEtaLead = store(new TH1D ( "VisGenBJetEtaLead","Leading pT BJet Eta",100,-5,5 ));
+    h_GenRecoBJetEtaLead = store(new TH2D ( "GenRecoBJetEtaLead", "Gen/Reco Matching", 100,-5,5,100,-5,5 ));
 
-    h_HypBJetEtaNLead = new TH1D ( "HypBJetEtaNLead","NLeading pT BJet Eta",100,-5,5 );
-    h_RecoBJetEtaNLead = new TH1D ( "RecoBJetEtaNLead","NLeading pT BJet Eta",100,-5,5 );
-    h_VisGenBJetEtaNLead = new TH1D ( "VisGenBJetEtaNLead","NLeading pT BJet Eta",100,-5,5 );
-    h_GenRecoBJetEtaNLead = new TH2D ( "GenRecoBJetEtaNLead", "Gen/Reco Matching", 100,-5,5,100,-5,5 );
+    h_HypBJetEtaNLead = store(new TH1D ( "HypBJetEtaNLead","NLeading pT BJet Eta",100,-5,5 ));
+    h_RecoBJetEtaNLead = store(new TH1D ( "RecoBJetEtaNLead","NLeading pT BJet Eta",100,-5,5 ));
+    h_VisGenBJetEtaNLead = store(new TH1D ( "VisGenBJetEtaNLead","NLeading pT BJet Eta",100,-5,5 ));
+    h_GenRecoBJetEtaNLead = store(new TH2D ( "GenRecoBJetEtaNLead", "Gen/Reco Matching", 100,-5,5,100,-5,5 ));
 
     /*
     //New plots from Carmen: Begin
-    h_RecoLeadingJetpT   = new TH1D("RecoLeadingJetpT","pT of all Jets (HYP)",80,0,400);
-    h_RecoLeadingJetEta  = new TH1D("RecoLeadingJetEta","#eta of all Jets (HYP)",100,-5,5);
-    h_RecoNLeadingJetpT  = new TH1D("RecoNLeadingJetpT","pT of all Jets (HYP)",80,0,400);
-    h_RecoNLeadingJetEta = new TH1D("RecoNLeadingJetEta","#eta of all Jets (HYP)",100,-5,5);
+    h_RecoLeadingJetpT   = store(new TH1D("RecoLeadingJetpT","pT of all Jets (HYP)",80,0,400));
+    h_RecoLeadingJetEta  = store(new TH1D("RecoLeadingJetEta","#eta of all Jets (HYP)",100,-5,5));
+    h_RecoNLeadingJetpT  = store(new TH1D("RecoNLeadingJetpT","pT of all Jets (HYP)",80,0,400));
+    h_RecoNLeadingJetEta = store(new TH1D("RecoNLeadingJetEta","#eta of all Jets (HYP)",100,-5,5));
 
-    h_GenRecoLeadingJetpT   = new TH2D("GenRecoLeadingJetpT","pT of all Jets (HYP)",80,0,400,80,0,400);
-    h_GenRecoLeadingJetEta  = new TH2D("GenRecoLeadingJetEta","#eta of all Jets (HYP)",100,-5,5,100,-5,5);
-    h_GenRecoNLeadingJetpT  = new TH2D("GenRecoNLeadingJetpT","pT of all Jets (HYP)",80,0,400,80,0,400);
-    h_GenRecoNLeadingJetEta = new TH2D("GenRecoNLeadingJetEta","#eta of all Jets (HYP)",100,-5,5,100,-5,5);
+    h_GenRecoLeadingJetpT   = store(new TH2D("GenRecoLeadingJetpT","pT of all Jets (HYP)",80,0,400,80,0,400));
+    h_GenRecoLeadingJetEta  = store(new TH2D("GenRecoLeadingJetEta","#eta of all Jets (HYP)",100,-5,5,100,-5,5));
+    h_GenRecoNLeadingJetpT  = store(new TH2D("GenRecoNLeadingJetpT","pT of all Jets (HYP)",80,0,400,80,0,400));
+    h_GenRecoNLeadingJetEta = store(new TH2D("GenRecoNLeadingJetEta","#eta of all Jets (HYP)",100,-5,5,100,-5,5));
 
-    h_VisGenLeadingJetpT   = new TH1D("VisGenLeadingJetpT","pT of leading Jets (VisGEN)",80,0,400);
-    h_VisGenLeadingJetEta  = new TH1D("VisGenLeadingJetEta","#eta of leading Jets (VisGEN)",100,-5,5);
-    h_VisGenNLeadingJetpT  = new TH1D("VisGenNLeadingJetpT","pT of leading Jets (VisGEN)",80,0,400);
-    h_VisGenNLeadingJetEta = new TH1D("VisGenNLeadingJetEta","#eta of leading Jets (VisGEN)",100,-5,5);
+    h_VisGenLeadingJetpT   = store(new TH1D("VisGenLeadingJetpT","pT of leading Jets (VisGEN)",80,0,400));
+    h_VisGenLeadingJetEta  = store(new TH1D("VisGenLeadingJetEta","#eta of leading Jets (VisGEN)",100,-5,5));
+    h_VisGenNLeadingJetpT  = store(new TH1D("VisGenNLeadingJetpT","pT of leading Jets (VisGEN)",80,0,400));
+    h_VisGenNLeadingJetEta = store(new TH1D("VisGenNLeadingJetEta","#eta of leading Jets (VisGEN)",100,-5,5));
 
-    h_HypLeadingJetpT   = new TH1D("HypLeadingJetpT","pT of leading Jets (HYP)",80,0,400);
-    h_HypLeadingJetEta  = new TH1D("HypLeadingJetEta","#eta of leading Jets (HYP)",100,-5,5);
-    h_HypNLeadingJetpT  = new TH1D("HypNLeadingJetpT","pT of leading Jets (HYP)",80,0,400);
-    h_HypNLeadingJetEta = new TH1D("HypNLeadingJetEta","#eta of leading Jets (HYP)",100,-5,5);
+    h_HypLeadingJetpT   = store(new TH1D("HypLeadingJetpT","pT of leading Jets (HYP)",80,0,400));
+    h_HypLeadingJetEta  = store(new TH1D("HypLeadingJetEta","#eta of leading Jets (HYP)",100,-5,5));
+    h_HypNLeadingJetpT  = store(new TH1D("HypNLeadingJetpT","pT of leading Jets (HYP)",80,0,400));
+    h_HypNLeadingJetEta = store(new TH1D("HypNLeadingJetEta","#eta of leading Jets (HYP)",100,-5,5));
 
-    h_RecoExtraJetpT   = new TH1D("RecoExtraJetpT","pT of additional Jet (HYP)",80,0,400);
-    h_RecoExtraJetEta  = new TH1D("RecoExtraJetEta","#eta of additional Jet (HYP)",100,-5,5);
-    h_RecoExtraJetpT2  = new TH1D("RecoExtraJetpT2","pT of additional Jet (HYP)",80,0,400);
-    h_RecoExtraJetEta2 = new TH1D("RecoExtraJetEta2","#eta of additional Jet (HYP)",100,-5,5);
-    h_RecoExtraJetpT3  = new TH1D("RecoExtraJetpT3","pT of additional Jet (HYP)",80,0,400);
-    h_RecoExtraJetEta3 = new TH1D("RecoExtraJetEta3","#eta of additional Jet (HYP)",100,-5,5);
-    h_RecoExtraJetpT4  = new TH1D("RecoExtraJetpT4","pT of additional Jet (HYP)",80,0,400);
-    h_RecoExtraJetEta4 = new TH1D("RecoExtraJetEta4","#eta of additional Jet (HYP)",100,-5,5);
+    h_RecoExtraJetpT   = store(new TH1D("RecoExtraJetpT","pT of additional Jet (HYP)",80,0,400));
+    h_RecoExtraJetEta  = store(new TH1D("RecoExtraJetEta","#eta of additional Jet (HYP)",100,-5,5));
+    h_RecoExtraJetpT2  = store(new TH1D("RecoExtraJetpT2","pT of additional Jet (HYP)",80,0,400));
+    h_RecoExtraJetEta2 = store(new TH1D("RecoExtraJetEta2","#eta of additional Jet (HYP)",100,-5,5));
+    h_RecoExtraJetpT3  = store(new TH1D("RecoExtraJetpT3","pT of additional Jet (HYP)",80,0,400));
+    h_RecoExtraJetEta3 = store(new TH1D("RecoExtraJetEta3","#eta of additional Jet (HYP)",100,-5,5));
+    h_RecoExtraJetpT4  = store(new TH1D("RecoExtraJetpT4","pT of additional Jet (HYP)",80,0,400));
+    h_RecoExtraJetEta4 = store(new TH1D("RecoExtraJetEta4","#eta of additional Jet (HYP)",100,-5,5));
 
-    h_HypExtraJetpT   = new TH1D("HypExtraJetpT","pT of additional Jet",80,0,400);
-    h_HypExtraJetEta  = new TH1D("HypExtraJetEta","#eta of additional Jet",100,-5,5);
-    h_HypExtraJetpT2  = new TH1D("HypExtraJetpT2","pT of additional Jet",80,0,400);
-    h_HypExtraJetEta2 = new TH1D("HypExtraJetEta2","#eta of additional Jet",100,-5,5);
-    h_HypExtraJetpT3  = new TH1D("HypExtraJetpT3","pT of additional Jet",80,0,400);
-    h_HypExtraJetEta3 = new TH1D("HypExtraJetEta3","#eta of additional Jet",100,-5,5);
-    h_HypExtraJetpT4  = new TH1D("HypExtraJetpT4","pT of additional Jet",80,0,400);
-    h_HypExtraJetEta4 = new TH1D("HypExtraJetEta4","#eta of additional Jet",100,-5,5);
+    h_HypExtraJetpT   = store(new TH1D("HypExtraJetpT","pT of additional Jet",80,0,400));
+    h_HypExtraJetEta  = store(new TH1D("HypExtraJetEta","#eta of additional Jet",100,-5,5));
+    h_HypExtraJetpT2  = store(new TH1D("HypExtraJetpT2","pT of additional Jet",80,0,400));
+    h_HypExtraJetEta2 = store(new TH1D("HypExtraJetEta2","#eta of additional Jet",100,-5,5));
+    h_HypExtraJetpT3  = store(new TH1D("HypExtraJetpT3","pT of additional Jet",80,0,400));
+    h_HypExtraJetEta3 = store(new TH1D("HypExtraJetEta3","#eta of additional Jet",100,-5,5));
+    h_HypExtraJetpT4  = store(new TH1D("HypExtraJetpT4","pT of additional Jet",80,0,400));
+    h_HypExtraJetEta4 = store(new TH1D("HypExtraJetEta4","#eta of additional Jet",100,-5,5));
 
-    h_VisGenExtraJetpT   = new TH1D("VisGenExtraJetpT","pT of gen additional Jet",80,0,400);
-    h_VisGenExtraJetEta  = new TH1D("VisGenExtraJetEta","#eta of gen additional Jet",100,-5,5);
-    h_VisGenExtraJetpT2  = new TH1D("VisGenExtraJetpT2","pT of gen additional Jet",80,0,400);
-    h_VisGenExtraJetEta2 = new TH1D("VisGenExtraJetEta2","#eta of gen additional Jet",100,-5,5);
-    h_VisGenExtraJetpT3  = new TH1D("VisGenExtraJetpT3","pT of gen additional Jet",80,0,400);
-    h_VisGenExtraJetEta3 = new TH1D("VisGenExtraJetEta3","#eta of gen additional Jet",100,-5,5);
-    h_VisGenExtraJetpT4  = new TH1D("VisGenExtraJetpT4","pT of gen additional Jet",80,0,400);
-    h_VisGenExtraJetEta4 = new TH1D("VisGenExtraJetEta4","#eta of gen additional Jet",100,-5,5);
+    h_VisGenExtraJetpT   = store(new TH1D("VisGenExtraJetpT","pT of gen additional Jet",80,0,400));
+    h_VisGenExtraJetEta  = store(new TH1D("VisGenExtraJetEta","#eta of gen additional Jet",100,-5,5));
+    h_VisGenExtraJetpT2  = store(new TH1D("VisGenExtraJetpT2","pT of gen additional Jet",80,0,400));
+    h_VisGenExtraJetEta2 = store(new TH1D("VisGenExtraJetEta2","#eta of gen additional Jet",100,-5,5));
+    h_VisGenExtraJetpT3  = store(new TH1D("VisGenExtraJetpT3","pT of gen additional Jet",80,0,400));
+    h_VisGenExtraJetEta3 = store(new TH1D("VisGenExtraJetEta3","#eta of gen additional Jet",100,-5,5));
+    h_VisGenExtraJetpT4  = store(new TH1D("VisGenExtraJetpT4","pT of gen additional Jet",80,0,400));
+    h_VisGenExtraJetEta4 = store(new TH1D("VisGenExtraJetEta4","#eta of gen additional Jet",100,-5,5));
 
-    h_GenRecoExtraJetpT   = new TH2D("GenRecoExtraJetpT","Gen/Reco pT of additional Jet",80,0,400,80,0,400);
-    h_GenRecoExtraJetEta  = new TH2D("GenRecoExtraJetEta","Gen/Reco #eta of additional Jet",100,-5,5,100,-5,5);
-    h_GenRecoExtraJetpT2  = new TH2D("GenRecoExtraJetpT2","Gen/Reco pT of additional Jet",80,0,400,80,0,400);
-    h_GenRecoExtraJetEta2 = new TH2D("GenRecoExtraJetEta2","Gen/Reco #eta of additional Jet",100,-5,5,100,-5,5);
-    h_GenRecoExtraJetpT3  = new TH2D("GenRecoExtraJetpT3","Gen/Reco pT of additional Jet",80,0,400,80,0,400);
-    h_GenRecoExtraJetEta3 = new TH2D("GenRecoExtraJetEta3","Gen/Reco #eta of additional Jet",100,-5,5,100,-5,5);
-    h_GenRecoExtraJetpT4  = new TH2D("GenRecoExtraJetpT4","Gen/Reco pT of additional Jet",80,0,400,80,0,400);
-    h_GenRecoExtraJetEta4 = new TH2D("GenRecoExtraJetEta4","Gen/Reco #eta of additional Jet",100,-5,5,100,-5,5);
+    h_GenRecoExtraJetpT   = store(new TH2D("GenRecoExtraJetpT","Gen/Reco pT of additional Jet",80,0,400,80,0,400));
+    h_GenRecoExtraJetEta  = store(new TH2D("GenRecoExtraJetEta","Gen/Reco #eta of additional Jet",100,-5,5,100,-5,5));
+    h_GenRecoExtraJetpT2  = store(new TH2D("GenRecoExtraJetpT2","Gen/Reco pT of additional Jet",80,0,400,80,0,400));
+    h_GenRecoExtraJetEta2 = store(new TH2D("GenRecoExtraJetEta2","Gen/Reco #eta of additional Jet",100,-5,5,100,-5,5));
+    h_GenRecoExtraJetpT3  = store(new TH2D("GenRecoExtraJetpT3","Gen/Reco pT of additional Jet",80,0,400,80,0,400));
+    h_GenRecoExtraJetEta3 = store(new TH2D("GenRecoExtraJetEta3","Gen/Reco #eta of additional Jet",100,-5,5,100,-5,5));
+    h_GenRecoExtraJetpT4  = store(new TH2D("GenRecoExtraJetpT4","Gen/Reco pT of additional Jet",80,0,400,80,0,400));
+    h_GenRecoExtraJetEta4 = store(new TH2D("GenRecoExtraJetEta4","Gen/Reco #eta of additional Jet",100,-5,5,100,-5,5));
 
-    h_GenRecoJetMultpt40 = new TH2D("GenRecoJetMultpt40", "Gen/Reco Matching",10,-0.5,9.5,10,-0.5,9.5);
-    h_RecoJetMultpt40    = new TH1D("RecoJetMultpt40", "Jet Multiplicity (HYP)",10,-0.5,9.5);
-    h_HypJetMultpt40     = new TH1D("HypJetMultpt40", "Jet Multiplicity (HYP)",10,-0.5,9.5);
-    h_GenJetMultpt40     = new TH1D("GenJetMultpt40", "Jet Multiplicty (GEN)",10,-0.5,9.5);
-    h_VisGenJetMultpt40  = new TH1D("VisGenJetMultpt40", "Jet Multiplicty (VisGEN)",10,-0.5,9.5);
+    h_GenRecoJetMultpt40 = store(new TH2D("GenRecoJetMultpt40", "Gen/Reco Matching",10,-0.5,9.5,10,-0.5,9.5));
+    h_RecoJetMultpt40    = store(new TH1D("RecoJetMultpt40", "Jet Multiplicity (HYP)",10,-0.5,9.5));
+    h_HypJetMultpt40     = store(new TH1D("HypJetMultpt40", "Jet Multiplicity (HYP)",10,-0.5,9.5));
+    h_GenJetMultpt40     = store(new TH1D("GenJetMultpt40", "Jet Multiplicty (GEN)",10,-0.5,9.5));
+    h_VisGenJetMultpt40  = store(new TH1D("VisGenJetMultpt40", "Jet Multiplicty (VisGEN)",10,-0.5,9.5));
 
-    h_GenRecoJetMultpt60 = new TH2D("GenRecoJetMultpt60", "Gen/Reco Matching",10,-0.5,9.5,10,-0.5,9.5);
-    h_RecoJetMultpt60    = new TH1D("RecoJetMultpt60", "Jet Multiplicity (HYP)",10,-0.5,9.5);
-    h_HypJetMultpt60     = new TH1D("HypJetMultpt60", "Jet Multiplicity (HYP)",10,-0.5,9.5);
-    h_GenJetMultpt60     = new TH1D("GenJetMultpt60", "Jet Multiplicty (GEN)",10,-0.5,9.5);
-    h_VisGenJetMultpt60  = new TH1D("VisGenJetMultpt60", "Jet Multiplicty (VisGEN)",10,-0.5,9.5);
+    h_GenRecoJetMultpt60 = store(new TH2D("GenRecoJetMultpt60", "Gen/Reco Matching",10,-0.5,9.5,10,-0.5,9.5));
+    h_RecoJetMultpt60    = store(new TH1D("RecoJetMultpt60", "Jet Multiplicity (HYP)",10,-0.5,9.5));
+    h_HypJetMultpt60     = store(new TH1D("HypJetMultpt60", "Jet Multiplicity (HYP)",10,-0.5,9.5));
+    h_GenJetMultpt60     = store(new TH1D("GenJetMultpt60", "Jet Multiplicty (GEN)",10,-0.5,9.5));
+    h_VisGenJetMultpt60  = store(new TH1D("VisGenJetMultpt60", "Jet Multiplicty (VisGEN)",10,-0.5,9.5));
     //New plots from Carmen: End
 */
 
@@ -431,14 +438,14 @@ void Analysis::SlaveBegin ( TTree * )
     const int EtaMax = 6;
     Double_t ptbins[PtMax+1] = {0.,30.,40.,50.,60.,70.,80.,100.,120.,160.,210.,260.,320.,400.,500.,670.,1000.,2000.};
     Double_t etabins[EtaMax+1] = {0.0,0.5,1.0,1.5,2.0,2.4,3.0};
-    h_bjets = new TH2D("bjets2D", "unTagged Bjets", PtMax, ptbins, EtaMax, etabins);              h_bjets->Sumw2();
-    h_btaggedjets = new TH2D("bjetsTagged2D", "Tagged Bjets", PtMax, ptbins, EtaMax, etabins);    h_btaggedjets->Sumw2();
-    h_cjets = new TH2D("cjets2D", "unTagged Cjets", PtMax, ptbins, EtaMax, etabins);              h_cjets->Sumw2();
-    h_ctaggedjets = new TH2D("cjetsTagged2D", "Tagged Cjets", PtMax, ptbins, EtaMax, etabins);    h_ctaggedjets->Sumw2();
-    h_ljets = new TH2D("ljets2D", "unTagged Ljets", PtMax, ptbins, EtaMax, etabins);              h_ljets->Sumw2();
-    h_ltaggedjets = new TH2D("ljetsTagged2D", "Tagged Ljets", PtMax, ptbins, EtaMax, etabins);    h_ltaggedjets->Sumw2();
+    h_bjets = store(new TH2D("bjets2D", "unTagged Bjets", PtMax, ptbins, EtaMax, etabins));              h_bjets->Sumw2();
+    h_btaggedjets = store(new TH2D("bjetsTagged2D", "Tagged Bjets", PtMax, ptbins, EtaMax, etabins));    h_btaggedjets->Sumw2();
+    h_cjets = store(new TH2D("cjets2D", "unTagged Cjets", PtMax, ptbins, EtaMax, etabins));              h_cjets->Sumw2();
+    h_ctaggedjets = store(new TH2D("cjetsTagged2D", "Tagged Cjets", PtMax, ptbins, EtaMax, etabins));    h_ctaggedjets->Sumw2();
+    h_ljets = store(new TH2D("ljets2D", "unTagged Ljets", PtMax, ptbins, EtaMax, etabins));              h_ljets->Sumw2();
+    h_ltaggedjets = store(new TH2D("ljetsTagged2D", "Tagged Ljets", PtMax, ptbins, EtaMax, etabins));    h_ltaggedjets->Sumw2();
     
-    h_BTagSF = new TH1D ( "BTagSF", "BTagging SF per event", 100 , 0.95, 1.05 );
+    h_BTagSF = store(new TH1D ( "BTagSF", "BTagging SF per event", 100 , 0.95, 1.05 ));
     h_BTagSF->Sumw2();
 }
 
@@ -1352,341 +1359,6 @@ void Analysis::SlaveTerminate()
     // have been processed. When running with PROOF SlaveTerminate() is called
     // on each slave server.
     
-    fOutput->Add(h_GenRecoLeptonEta);
-    fOutput->Add(h_GenRecoAntiLeptonEta);
-    fOutput->Add(h_GenRecoLeptonpT);
-    fOutput->Add(h_GenRecoAntiLeptonpT);
-
-    fOutput->Add(h_GenRecoBJetpT);
-    fOutput->Add(h_GenRecoAntiBJetpT);
-    fOutput->Add(h_GenRecoBJetRapidity);
-    fOutput->Add(h_GenRecoAntiBJetRapidity);
-    fOutput->Add(h_GenRecoBJetEta);
-    fOutput->Add(h_GenRecoAntiBJetEta);
-
-    fOutput->Add(h_GenRecoTopRapidity);
-    fOutput->Add(h_GenRecoAntiTopRapidity);
-    fOutput->Add(h_GenRecoToppT);
-    fOutput->Add(h_GenRecoAntiToppT);
-
-    fOutput->Add(h_GenRecoLLBarpT);
-    fOutput->Add(h_GenRecoLLBarMass);
-    fOutput->Add(h_GenRecoTTBarpT);
-    fOutput->Add(h_GenRecoTTBarMass);
-    fOutput->Add(h_GenRecoTTBarRapidity);
-
-    fOutput->Add(h_GenRecoLLBarDPhi);
-    fOutput->Add(h_GenRecoLeptonantiBjetMass);
-    fOutput->Add(h_GenRecoAntiLeptonBjetMass);
-    fOutput->Add(h_GenRecoJetMult);
-
-    fOutput->Add(h_GenRecoToppTLead);
-    fOutput->Add(h_GenRecoToppTNLead);
-    fOutput->Add(h_GenRecoTopRapidityLead);
-    fOutput->Add(h_GenRecoTopRapidityNLead);
-    fOutput->Add(h_GenRecoTopMassLead);
-    fOutput->Add(h_GenRecoTopMassNLead);
-
-    fOutput->Add(h_GenRecoLeptonpTLead);
-    fOutput->Add(h_GenRecoLeptonpTNLead);
-    fOutput->Add(h_GenRecoLeptonEtaLead);
-    fOutput->Add(h_GenRecoLeptonEtaNLead);
-
-    fOutput->Add(h_GenRecoBJetpTLead);
-    fOutput->Add(h_GenRecoBJetpTNLead);
-    fOutput->Add(h_GenRecoBJetEtaLead);
-    fOutput->Add(h_GenRecoBJetEtaNLead);
-
-    fOutput->Add(h_NJetMatching);
-    fOutput->Add(h_diLepMassFull);
-    fOutput->Add(h_diLepMassFull_fullSel);
-    fOutput->Add(Allh1);
-    fOutput->Add(Looseh1);
-    fOutput->Add(h_GenAll);
-    fOutput->Add(h_VisGenAll);
-    fOutput->Add(h_vertMulti);
-    fOutput->Add(h_vertMulti_noPU);
-    fOutput->Add(h_jetMulti);
-    fOutput->Add(h_jetMulti_diLep);
-    fOutput->Add(h_BjetMulti);
-    fOutput->Add(h_jetMultiXSec);
-    fOutput->Add(h_jetMultiNoPU);
-    fOutput->Add(Zh1);
-    fOutput->Add(TTh1);
-
-    fOutput->Add(h_HypTTBarpT);
-    fOutput->Add(h_HypTTBarRapidity);
-    fOutput->Add(h_HypTTBarMass);
-    fOutput->Add(h_HypLLBarpT);
-    fOutput->Add(h_HypLLBarMass);
-
-    fOutput->Add(h_GenTTBarMass);
-    fOutput->Add(h_GenTTBarRapidity);
-    fOutput->Add(h_GenTTBarpT);
-    fOutput->Add(h_GenLLBarpT);
-    fOutput->Add(h_GenLLBarMass);
-
-    fOutput->Add(h_VisGenTTBarMass);
-    fOutput->Add(h_VisGenTTBarRapidity);
-    fOutput->Add(h_VisGenTTBarpT);
-    fOutput->Add(h_VisGenLLBarpT);
-    fOutput->Add(h_VisGenLLBarMass);
-
-    fOutput->Add(h_RecoTTBarMass);
-    fOutput->Add(h_RecoTTBarRapidity);
-    fOutput->Add(h_RecoTTBarpT);
-    fOutput->Add(h_RecoToppT);
-    fOutput->Add(h_RecoAntiToppT);
-    fOutput->Add(h_RecoTopRapidity);
-    fOutput->Add(h_RecoAntiTopRapidity);
-
-    fOutput->Add(h_RecoLLBarMass);
-    fOutput->Add(h_RecoLLBarpT);
-    fOutput->Add(h_RecoLeptonpT);
-    fOutput->Add(h_RecoAntiLeptonpT);
-    fOutput->Add(h_RecoLeptonEta);
-    fOutput->Add(h_RecoAntiLeptonEta);
-
-    fOutput->Add(h_RecoBJetpT);
-    fOutput->Add(h_RecoAntiBJetpT);
-    fOutput->Add(h_RecoBJetRapidity);
-    fOutput->Add(h_RecoAntiBJetRapidity);
-    fOutput->Add(h_RecoBJetEta);
-    fOutput->Add(h_RecoAntiBJetEta);
-
-    fOutput->Add(h_RecoLLBarDPhi);
-    fOutput->Add(h_RecoLeptonantiBjetMass);
-    fOutput->Add(h_RecoAntiLeptonBjetMass);
-    fOutput->Add(h_RecoJetMult);
-    
-    fOutput->Add(h_RecoToppTLead);
-    fOutput->Add(h_RecoToppTNLead);
-    fOutput->Add(h_RecoTopRapidityLead);
-    fOutput->Add(h_RecoTopRapidityNLead);
-    fOutput->Add(h_RecoTopMassLead);
-    fOutput->Add(h_RecoTopMassNLead);
-
-    fOutput->Add(h_RecoLeptonpTLead);
-    fOutput->Add(h_RecoLeptonpTNLead);
-    fOutput->Add(h_RecoLeptonEtaLead);
-    fOutput->Add(h_RecoLeptonEtaNLead);
-
-    fOutput->Add(h_RecoBJetpTLead);
-    fOutput->Add(h_RecoBJetpTNLead);
-    fOutput->Add(h_RecoBJetEtaLead);
-    fOutput->Add(h_RecoBJetEtaNLead);
-
-    
-    fOutput->Add(h_jetpT);
-    fOutput->Add(h_jetHT);
-    fOutput->Add(h_MET);
-    fOutput->Add(h_LeptonpT);
-    fOutput->Add(h_LeptonpT_diLep);
-    fOutput->Add(h_LeptonEta_diLep);
-    fOutput->Add(h_AntiLeptonpT_diLep);
-    fOutput->Add(h_AntiLeptonEta_diLep);
-    fOutput->Add(h_LeptonEta);
-    fOutput->Add(h_AntiLeptonpT);
-    fOutput->Add(h_AntiLeptonEta);
-    fOutput->Add(h_ElectronpT);
-    fOutput->Add(h_ElectronEta);
-    fOutput->Add(h_MuonpT);
-    fOutput->Add(h_MuonEta);
-
-    fOutput->Add(h_VisGenBJetpT);
-    fOutput->Add(h_VisGenAntiBJetpT);
-    fOutput->Add(h_VisGenBJetRapidity);
-    fOutput->Add(h_VisGenAntiBJetRapidity);
-    fOutput->Add(h_VisGenBJetEta);
-    fOutput->Add(h_VisGenAntiBJetEta);
-
-    /*  fOutput->Add(h_VisGenBQuarkpT);
-    fOutput->Add(h_VisGenAntiBQuarkpT);
-    fOutput->Add(h_VisGenBQuarkRapidity);
-    fOutput->Add(h_VisGenAntiBQuarkRapidity);
-    fOutput->Add(h_VisGenBQuarkEta);
-    fOutput->Add(h_VisGenAntiBQuarkEta);
-    */
-    fOutput->Add(h_VisGenLeptonpT);
-    fOutput->Add(h_VisGenAntiLeptonpT);
-    fOutput->Add(h_VisGenLeptonEta);
-    fOutput->Add(h_VisGenAntiLeptonEta);
-
-    fOutput->Add(h_VisGenToppT);
-    fOutput->Add(h_VisGenAntiToppT);
-    fOutput->Add(h_VisGenTopEta);
-    fOutput->Add(h_VisGenAntiTopEta);
-    fOutput->Add(h_VisGenTopRapidity);
-    fOutput->Add(h_VisGenAntiTopRapidity);
-
-    fOutput->Add(h_VisGenLLBarDPhi);
-    fOutput->Add(h_VisGenLeptonantiBjetMass);
-    fOutput->Add(h_VisGenAntiLeptonBjetMass);
-    fOutput->Add(h_VisGenJetMult);
-
-    fOutput->Add(h_VisGenToppTLead);
-    fOutput->Add(h_VisGenToppTNLead);
-    fOutput->Add(h_VisGenTopRapidityLead);
-    fOutput->Add(h_VisGenTopRapidityNLead);
-    fOutput->Add(h_VisGenTopMassLead);
-    fOutput->Add(h_VisGenTopMassNLead);
-
-    fOutput->Add(h_VisGenLeptonpTLead);
-    fOutput->Add(h_VisGenLeptonpTNLead);
-    fOutput->Add(h_VisGenLeptonEtaLead);
-    fOutput->Add(h_VisGenLeptonEtaNLead);
-
-    fOutput->Add(h_VisGenBJetpTLead);
-    fOutput->Add(h_VisGenBJetpTNLead);
-    fOutput->Add(h_VisGenBJetEtaLead);
-    fOutput->Add(h_VisGenBJetEtaNLead);
-
-    
-    /*  fOutput->Add(h_GenBJetpT);
-    fOutput->Add(h_GenAntiBJetpT);
-    fOutput->Add(h_GenBJetRapidity);
-    fOutput->Add(h_GenAntiBJetRapidity);
-    fOutput->Add(h_GenBJetEta);
-    fOutput->Add(h_GenAntiBJetEta);
-
-    fOutput->Add(h_GenLeptonpT);
-    fOutput->Add(h_GenAntiLeptonpT);
-    fOutput->Add(h_GenLeptonEta);
-    fOutput->Add(h_GenAntiLeptonEta);
-
-    fOutput->Add(h_GenToppT);
-    fOutput->Add(h_GenAntiToppT);
-    fOutput->Add(h_GenTopEta);
-    fOutput->Add(h_GenAntiTopEta);
-    fOutput->Add(h_GenTopRapidity);
-    fOutput->Add(h_GenAntiTopRapidity);
-
-    fOutput->Add(h_GenLLBarDPhi);
-    fOutput->Add(h_GenLeptonantiBjetMass);
-    fOutput->Add(h_GenAntiLeptonBjetMass);
-    fOutput->Add(h_GenJetMult);
-
-    fOutput->Add(h_GenBQuarkpT);
-    fOutput->Add(h_GenAntiBQuarkpT);
-    fOutput->Add(h_GenBQuarkRapidity);
-    fOutput->Add(h_GenAntiBQuarkRapidity);
-    fOutput->Add(h_GenBQuarkEta);
-    fOutput->Add(h_GenAntiBQuarkEta);
-    */
-    fOutput->Add(h_HypBJetpT);
-    fOutput->Add(h_HypAntiBJetpT);
-    fOutput->Add(h_HypBJetRapidity);
-    fOutput->Add(h_HypAntiBJetRapidity);
-    fOutput->Add(h_HypBJetEta);
-    fOutput->Add(h_HypAntiBJetEta);
-
-    fOutput->Add(h_HypLeptonpT);
-    fOutput->Add(h_HypAntiLeptonpT);
-    fOutput->Add(h_HypLeptonEta);
-
-    fOutput->Add(h_HypAntiLeptonEta);
-
-    fOutput->Add(h_HypTopRapidity);
-    fOutput->Add(h_HypAntiTopRapidity);
-
-    fOutput->Add(h_HypTopMass);
-    fOutput->Add(h_HypAntiTopMass);
-    fOutput->Add(h_HypToppT);
-    fOutput->Add(h_HypAntiToppT);
-    fOutput->Add(h_HypTopEta);
-    fOutput->Add(h_HypAntiTopEta);
-
-    fOutput->Add(h_HypLLBarDPhi);
-    fOutput->Add(h_HypLeptonantiBjetMass);
-    fOutput->Add(h_HypAntiLeptonBjetMass);
-    fOutput->Add(h_HypJetMult);
-
-    fOutput->Add(h_HypToppTLead);
-    fOutput->Add(h_HypToppTNLead);
-    fOutput->Add(h_HypTopRapidityLead);
-    fOutput->Add(h_HypTopRapidityNLead);
-    fOutput->Add(h_HypTopMassLead);
-    fOutput->Add(h_HypTopMassNLead);
-
-    fOutput->Add(h_HypLeptonpTLead);
-    fOutput->Add(h_HypLeptonpTNLead);
-    fOutput->Add(h_HypLeptonEtaLead);
-    fOutput->Add(h_HypLeptonEtaNLead);
-
-    fOutput->Add(h_HypBJetpTLead);
-    fOutput->Add(h_HypBJetpTNLead);
-    fOutput->Add(h_HypBJetEtaLead);
-    fOutput->Add(h_HypBJetEtaNLead);
-
-// 
-//     //Being: Carmen
-//     fOutput->Add(h_RecoExtraJetpT);
-//     fOutput->Add(h_RecoExtraJetpT2);
-//     fOutput->Add(h_RecoExtraJetpT3);
-//     fOutput->Add(h_RecoExtraJetpT4);
-//     
-//     fOutput->Add(h_HypExtraJetpT);
-//     fOutput->Add(h_HypExtraJetpT2);
-//     fOutput->Add(h_HypExtraJetpT3);
-//     fOutput->Add(h_HypExtraJetpT4);
-//     
-//     fOutput->Add(h_VisGenExtraJetpT);
-//     fOutput->Add(h_VisGenExtraJetpT2);
-//     fOutput->Add(h_VisGenExtraJetpT3);
-//     fOutput->Add(h_VisGenExtraJetpT4);
-//     
-//     fOutput->Add(h_GenRecoExtraJetpT);
-//     fOutput->Add(h_GenRecoExtraJetpT2);
-//     fOutput->Add(h_GenRecoExtraJetpT3);
-//     fOutput->Add(h_GenRecoExtraJetpT4);
-//     
-//     fOutput->Add(h_RecoExtraJetEta);
-//     fOutput->Add(h_RecoExtraJetEta2);
-//     fOutput->Add(h_RecoExtraJetEta3);
-//     fOutput->Add(h_RecoExtraJetEta4);
-//     
-//     fOutput->Add(h_HypExtraJetEta);
-//     fOutput->Add(h_HypExtraJetEta2);
-//     fOutput->Add(h_HypExtraJetEta3);
-//     fOutput->Add(h_HypExtraJetEta4);
-//     
-//     fOutput->Add(h_VisGenExtraJetEta);
-//     fOutput->Add(h_VisGenExtraJetEta2);
-//     fOutput->Add(h_VisGenExtraJetEta3);
-//     fOutput->Add(h_VisGenExtraJetEta4);
-//     
-//     fOutput->Add(h_GenRecoExtraJetEta);
-//     fOutput->Add(h_GenRecoExtraJetEta2);
-//     fOutput->Add(h_GenRecoExtraJetEta3);
-//     fOutput->Add(h_GenRecoExtraJetEta4);
-//     
-//     fOutput->Add(h_RecoJetMultpt40);
-//     fOutput->Add(h_HypJetMultpt40);
-//     fOutput->Add(h_VisGenJetMultpt40);
-//     fOutput->Add(h_GenRecoJetMultpt40);
-//     
-//     fOutput->Add(h_RecoJetMultpt60);
-//     fOutput->Add(h_HypJetMultpt60);
-//     fOutput->Add(h_VisGenJetMultpt60);
-//     fOutput->Add(h_GenRecoJetMultpt60);
-//     //End: Carmen
-//     
-    
-    fOutput->Add(h_step5);
-    fOutput->Add(h_step6);
-    fOutput->Add(h_step7);
-    fOutput->Add(h_step8);
-    fOutput->Add(h_step9);
-
-    fOutput->Add(h_bjets);
-    fOutput->Add(h_btaggedjets);
-    fOutput->Add(h_cjets);
-    fOutput->Add(h_ctaggedjets);
-    fOutput->Add(h_ljets);
-    fOutput->Add(h_ltaggedjets);
-
-    fOutput->Add(h_BTagSF);
-
 }
 
 void Analysis::Terminate()

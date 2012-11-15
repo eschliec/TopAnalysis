@@ -62,6 +62,12 @@ void load_Analysis(TString validFilenamePattern, TString systematic){
         }
         bool isSignal = o_isSignal->GetString() == "1";
         bool isMC = o_isMC->GetString() == "1";
+        
+        if (!isMC && systematic != "") {
+            cout << "Sample is DATA, so not running again for systematic variation\n";
+            continue;
+        }
+        
         TString btagFile = "BTagEff/Nominal/" + channel->GetString() + "/" 
             + channel->GetString() + "_ttbarsignalplustau.root";
         

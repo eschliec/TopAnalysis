@@ -980,6 +980,14 @@ Bool_t Analysis::Process ( Long64_t entry )
     //Require at least one solution for the kinematic event reconstruction
     if (!hasSolution) return kTRUE;
 
+    weight *= weightKinFit;
+    h_step9->Fill(1, weight);
+    h_jetMultiXSec->Fill(jet->size(), weight);
+    h_jetMultiNoPU->Fill(jet->size(), weight / weightPU );
+    h_diLepMassFull_fullSel->Fill(dilepton.M(), weight);
+    
+    //create helper variables
+    
     //Begin: find 1st (and 2nd) leading pT particles: Top, Lepton, BJetIndex
     LV LeadHypTop, NLeadHypTop;
     LV LeadHypLepton, NLeadHypLepton;
@@ -1012,12 +1020,6 @@ Bool_t Analysis::Process ( Long64_t entry )
         NLeadHypBJet = HypBJet->at(solutionIndex);
     }
     //End: find 1st (and 2nd) leading pT particles: Top, Lepton, BJetIndex
-    
-    weight *= weightKinFit;
-    h_step9->Fill(1, weight);
-    h_jetMultiXSec->Fill(jet->size(), weight);
-    h_jetMultiNoPU->Fill(jet->size(), weight / weightPU );
-    h_diLepMassFull_fullSel->Fill(dilepton.M(), weight);
     
     //create ll and tt system
     LV hypllbar(HypLepton->at(solutionIndex) + HypAntiLepton->at(solutionIndex));

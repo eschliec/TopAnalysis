@@ -11,10 +11,11 @@
 
 void load_Analysis(TString validFilenamePattern, TString systematic){
    
-    int filecounter = 0;
-
     ifstream infile ("selectionList.txt");
-    TString filename;
+    if (!infile.good()) { 
+        cerr << "Error! Please check the selectionList.txt file!\n" << endl; 
+        exit(773); 
+    }
     
     Analysis *selector = new Analysis();
     PUReweighter *pu = new PUReweighter();
@@ -35,9 +36,10 @@ void load_Analysis(TString validFilenamePattern, TString systematic){
     
     pu->setDataTruePUInput(pu_path.c_str());
     selector->SetPUReweighter(pu);
-    
 
+    int filecounter = 0;
     while(!infile.eof()){
+        TString filename;
         infile >> filename;
         if (filename == "" || filename[0] == '#') continue; //empty line? --> skip
         if (!filename.Contains(validFilenamePattern)) continue;

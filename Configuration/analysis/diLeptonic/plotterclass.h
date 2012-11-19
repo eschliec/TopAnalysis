@@ -707,7 +707,7 @@ void Plotter::setDataSet(TString mode, TString Systematic)
         else if(filename.Contains("ww") ||filename.Contains("wz")||filename.Contains("zz")){legends.push_back("Diboson"); colors.push_back(10);}
         else if(filename.Contains("dytautau")){legends.push_back("Z / #gamma* #rightarrow #tau#tau"); colors.push_back(kAzure+8);}
         else if(filename.Contains("dymumu")||filename.Contains("dyee")){legends.push_back("Z / #gamma* #rightarrow ee/#mu#mu"); colors.push_back(kAzure-2);}
-        else if(filename.Contains("wtolIn Inpunu")){legends.push_back("W+Jets"); colors.push_back(kGreen-3);}
+        else if(filename.Contains("wtolnu")){legends.push_back("W+Jets"); colors.push_back(kGreen-3);}
         else if(filename.Contains("qcd")){legends.push_back("QCD Multijet"); colors.push_back(kYellow);}
     }
 }
@@ -2687,7 +2687,7 @@ void Plotter::PlotDiffXSec(TString Channel){
     c1->Print(outpathPlots+subfolderChannel+subfolderSpecial+"/preunfolded_"+name+".eps");
     //c1->Print(outpathPlots+subfolderChannel+subfolderSpecial+"/preunfolded_"+name+".C");
     c1->Clear();
-    delete c1; 	
+    delete c1;
 
 
 

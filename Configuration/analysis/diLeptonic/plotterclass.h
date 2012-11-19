@@ -83,7 +83,7 @@ class Plotter {
   TLegend* ControlLegend(int HistsSize, TH1D* drawhists[], std::vector<TString> Legends, TLegend *leg);
   void DrawLabel(TString text, const double x1, const double y1, const double x2, const double y2, int centering, double textSize);
   
-  set<TString> ListOfSystematics(set<TString>);
+  void ListOfSystematics(set<TString>);
   set<TString> ListOfSyst;
   
  private:
@@ -185,7 +185,7 @@ void Plotter::unfolding()
 	cout << "<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>" << endl;
 	cout << "Finished Calculation of Differential Systematics for '" << name << "' in Channel '" << channel << "':" << endl;  
 	cout << "<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>" << endl;
-	cout << endl; 
+	cout << endl;
       }//systematic loop
     }
   }//channel loop
@@ -713,7 +713,7 @@ void Plotter::setDataSet(TString mode, TString Systematic)
 }
 
 
-set<TString> Plotter::ListOfSystematics(set<TString> listofsystematics){
+void Plotter::ListOfSystematics(set<TString> listofsystematics){
     
     //List of systematics valid for running. Please check (or add any new systematic) the function 'ListOfSystematics' in Histo.C
     
@@ -1848,7 +1848,7 @@ void Plotter::CalcDiffXSec(TString Channel, TString Systematic){
 
 void Plotter::PlotDiffXSec(TString Channel){
 
-  subfolderChannel = Channel; 
+  subfolderChannel = Channel;
   subfolderChannel.Prepend("/");
   
 

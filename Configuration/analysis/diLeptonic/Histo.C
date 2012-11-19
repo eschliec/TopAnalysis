@@ -24,11 +24,11 @@
 
 
 
-set<TString> ListOfSystematics(){
+set<TString> SetOfValidSystematics(){
     
     //Dummy function to create a 'set' containing the list of all systematics
     //Include also '' to be able to run in all the systematics
-    TString syst_array[]={"Nominal", "JERUP", "JERDOWN", "JESUP", "JESDOWN", "PU_UP", "PU_DOWN", "TRIG_UP", "TRIG_DOWN", "BTAG_UP", "BTAG_DOWN", "BTAG_PT_UP", "BTAG_PT_DOWN",
+    static TString syst_array[]={"Nominal", "JERUP", "JERDOWN", "JESUP", "JESDOWN", "PU_UP", "PU_DOWN", "TRIG_UP", "TRIG_DOWN", "BTAG_UP", "BTAG_DOWN", "BTAG_PT_UP", "BTAG_PT_DOWN",
                           "BTAG_ETA_UP", "BTAG_ETA_DOWN", "MASSUP", "MASSDOWN", "MATCHUP", "MASSDOWN", "SCALEUP", "SCALEDOWN", "POWHEG", "MCATNLO", "SPINCORR", ""};
 
     set<TString> SetOfSystematics (syst_array, syst_array+25);
@@ -39,10 +39,10 @@ set<TString> ListOfSystematics(){
 
 void Histo(TString type = "", TString oneHistoToProcess = "", TString systematic="", TString channel="") {
 
-    //Take the list of systematica variations from 'ListOfSystematics()' and check if the systematic you want to run exists. If doesn't return
-    set<TString> ListOfSysts = ListOfSystematics();
+    //Take the list of systematica variations from 'SetOfValidSystematics()' and check if the systematic you want to run exists. If doesn't return
+    set<TString> ListOfSysts = SetOfValidSystematics();
     if (ListOfSysts.find(systematic) == ListOfSysts.end()){
-        cout<<"\n\nWARNING(in Histo.C)!! The '"<<systematic<<"' systematic is not supported please use one of the availables:"<<endl;
+        cout<<"\n\nWARNING (in Histo.C)!! The '"<<systematic<<"' systematic is not supported please use one of the availables:"<<endl;
         for (set<TString>::iterator iter= ListOfSysts.begin(); iter!= ListOfSysts.end(); iter++){cout<<*iter<<endl;};
         return;
     };

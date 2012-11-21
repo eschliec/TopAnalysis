@@ -81,18 +81,24 @@ if(not globals().has_key('runningOnData')):
 if(not globals().has_key('jsonFile')):
     jsonFile =  ''
 
+## choose whether synchronisation exercise should be done
+if(not globals().has_key('cutflowSynch')): 
+    cutflowSynch  = False # True
+    if(options.sample=="synch"):
+        cutflowSynch  = True
+
 ## enable/ disable PU event reweighting
 if(not globals().has_key('PUreweigthing')):
     PUreweigthing = True # False
     # take care of data
-    if (not runningOnData == "MC"):
+    if (cutflowSynch or not runningOnData == "MC"):
         PUreweigthing = False
 
 ## enable/ disable btag SF event reweighting
 if(not globals().has_key('BtagReweigthing')):
     BtagReweigthing = True # False
     # take care of data
-    if (not runningOnData == "MC"):
+    if (cutflowSynch or not runningOnData == "MC"):
         BtagReweigthing = False
 
 ## choose b tag algo
@@ -107,7 +113,7 @@ if(not globals().has_key('bTagDiscrCut')):
 if(not globals().has_key('effSFReweigthing')):
     effSFReweigthing = True # False
     # take care of data
-    if (not runningOnData == "MC"):
+    if (cutflowSynch or not runningOnData == "MC"):
         effSFReweigthing = False
 
 # choose jet correction level shown in plots
@@ -122,8 +128,10 @@ if(not globals().has_key('corrLevel')):
 ## cvs co TopQuarkAnalysis/TopKinFitter
 
 if(not globals().has_key('applyKinFit')):
-   applyKinFit = True#  False
-    
+    applyKinFit = True # False
+    if(cutflowSynch):
+        applyKinFit = False
+
 ## choose whether you want a pat tuple as output
 if(not globals().has_key('writeOutput')): 
     writeOutput  = False # True
@@ -143,17 +151,15 @@ if(not globals().has_key('implement0TagPath')):
 ## eventfilter is to select a special ttbar decay channel from ttbarSample by genmatching (ttbar MC only, other MC: choose 'all')
 if(not globals().has_key('eventFilter')):
     eventFilter  = 'signal only' # 'background only' # 'all' # 'signal only' # 'semileptonic electron only' # 'dileptonic electron only' # 'dileptonic muon only' # 'fullhadronic' # 'dileptonic muon + electron only' # 'via single tau only' # 'dileptonic via tau only'
-
+if (cutflowSynch):
+    eventFilter  = 'all'
+    
 ## choose if you want to include tau (->e/mu) events
 if(not globals().has_key('tau')):
     tau = False # True
 # use these tau events only in SG/SB configuration not for single decay modes or all
 if(not eventFilter=='signal only' and not eventFilter=='background only'):
     tau= False
-
-## choose whether synchronisation exercise should be done
-if(not globals().has_key('cutflowSynch')): 
-    cutflowSynch  = False # True
 
 # choose if you want to have only the gen paths
 # and use the full statistics sample
@@ -244,21 +250,22 @@ if(not options.sample=="none"):
 	if(sysDistort!=""):
 	    additionalEventWeights=False
 	    outputFileName+="SysDistort"+sysDistort
-            
-# FIXME: other generators not available yet   
-##     elif(options.sample=="powheg"):
-##         usedSample="TopAnalysis/Configuration/Fall11/tt_Z2_powheg_Fall11_AOD_cff" 
-##         if(eventFilter=='signal only'):
-##             outputFileName+="SigPowheg"
-##         elif(eventFilter=='background only'):
-##             outputFileName+="BkgPowheg"
-##     elif(options.sample=="mcatnlo"):
-##         usedSample="TopAnalysis/Configuration/Fall11/tt_Z2_mcatnlo_Fall11_AOD_cff"
-##         PythiaSample="True"
-##         if(eventFilter=='signal only'):
-##             outputFileName+="SigMcatnlo"
-##         elif(eventFilter=='background only'):
-##             outputFileName+="BkgMcatnlo"
+    elif(options.sample=="synch"):
+        usedSample="TopAnalysis/Configuration/Summer12/TTJets_MassiveBinDECAY_TuneZ2star_8TeV_madgraph_tauola_Summer12_DR53X_PU_S10_START53_V7A_synch2_cff" 
+        outputFileName+="Synch"
+    elif(options.sample=="powheg"):
+        usedSample="TopAnalysis/Configuration/Summer12/TT_CT10_TuneZ2star_8TeV_powheg_tauola_Summer12_DR53X_PU_S10_START53_V7A_v2_cff" 
+        if(eventFilter=='signal only'):
+            outputFileName+="SigPowheg"
+        elif(eventFilter=='background only'):
+            outputFileName+="BkgPowheg"
+    elif(options.sample=="mcatnlo"):
+        usedSample="TopAnalysis/Configuration/Summer12/TT_8TeV_mcatnlo_Summer12_DR53X_PU_S10_START53_V7A_v1_cff"
+        PythiaSample="True"
+        if(eventFilter=='signal only'):
+            outputFileName+="SigMcatnlo"
+        elif(eventFilter=='background only'):
+            outputFileName+="BkgMcatnlo"
     elif(options.sample=="ttbarMatchingDown"):        
         usedSample="TopAnalysis/Configuration/Summer12/TTJets_MatchingDown_TuneZ2star_8TeV_madgraph_tauola_Summer12_DR53X_PU_S10_START53_V7A_v1_cff"
 	additionalEventWeights=False
@@ -304,26 +311,26 @@ if(not options.sample=="none"):
     elif(options.sample=="wjets"):        
         usedSample="TopAnalysis/Configuration/Summer12/WJetsToLNu_TuneZ2Star_8TeV_madgraph_tarball_Summer12_DR53X_PU_S10_START53_V7A_v2_cff"
 	outputFileName+="Wjets"
-# FIXME: W+jets systematics not available yet 
+# FIXME: some W+jets systematics not available yet 
 ##     elif(options.sample=="wjetsMatchingUp"):        
 ##         usedSample="TopAnalysis/Configuration/Fall11/wlnujets_matching_up_MadgraphZ2_Fall11_AOD_cff"
 ## 	additionalEventWeights=False
 ## 	outputFileName+="WjetsMatchUp"
-##     elif(options.sample=="wjetsMatchingDown"):        
-##         usedSample="TopAnalysis/Configuration/Fall11/wlnujets_matching_down_MadgraphZ2_Fall11_AOD_cff"
-## 	additionalEventWeights=False
-## 	outputFileName+="WjetsMatchDown"
-##     elif(options.sample=="wjetsScaleUp"):        
-##         usedSample="TopAnalysis/Configuration/Fall11/wlnujets_scale_up_MadgraphZ2_Fall11_AOD_cff"
-## 	additionalEventWeights=False
-## 	outputFileName+="WjetsScaleUp"
-##     elif(options.sample=="wjetsScaleDown"):
-##         usedSample="TopAnalysis/Configuration/Fall11/wlnujets_scale_down_MadgraphZ2_Fall11_AOD_cff"
-## 	additionalEventWeights=False        
-## 	outputFileName+="WjetsScaleDown"
+    elif(options.sample=="wjetsMatchingDown"):        
+        usedSample="TopAnalysis/Configuration/Summer12/WJetsToLNu_matchingdown_8TeV_madgraph_tauola_Summer12_DR53X_PU_S10_START53_V7A_v1_cff"
+ 	additionalEventWeights=False
+ 	outputFileName+="WjetsMatchDown"
+    elif(options.sample=="wjetsScaleUp"):        
+        usedSample="TopAnalysis/Configuration/Summer12/WJetsToLNu_scaleup_8TeV_madgraph_tauola_Summer12_DR53X_PU_S10_START53_V7A_v2"
+ 	additionalEventWeights=False
+ 	outputFileName+="WjetsScaleUp"
+    elif(options.sample=="wjetsScaleDown"):
+        usedSample="TopAnalysis/Configuration/Summer12/WJetsToLNu_scaledown_8TeV_madgraph_tauola_Summer12_DR53X_PU_S10_START53_V7A_v1_cff"
+ 	additionalEventWeights=False        
+ 	outputFileName+="WjetsScaleDown"
     elif(options.sample=="zjets"):        
-         usedSample="TopAnalysis/Configuration/Summer12/DYJetsToLL_M_50_TuneZ2Star_8TeV_madgraph_tarball_Summer12_DR53X_PU_S10_START53_V7A_v1_cff"
-         outputFileName+="Zjets"
+        usedSample="TopAnalysis/Configuration/Summer12/DYJetsToLL_M_50_TuneZ2Star_8TeV_madgraph_tarball_Summer12_DR53X_PU_S10_START53_V7A_v1_cff"
+        outputFileName+="Zjets"
 # FIXME: Z+jets systematics not available yet 
 ##     elif(options.sample=="zjetsMatchingUp"):        
 ##         usedSample="TopAnalysis/Configuration/zlljets_matching_up_MadgraphZ2_Summer11_AOD_cff"
@@ -341,34 +348,32 @@ if(not options.sample=="none"):
 ##         usedSample="TopAnalysis/Configuration/zlljets_scale_down_MadgraphZ2_Summer11_AOD_cff"
 ## 	additionalEventWeights=False      
 ## 	outputFileName+="ZjetsScaleDown"
-##     elif(options.sample=="singleTopS"):        
-##         usedSample="TopAnalysis/Configuration/Fall11/singleTop_schannel_PythiaPowhegZ2_Fall11_AOD_cff"
-
-# FIXME: single to s channel not available yet 
-## 	outputFileName+="SingleTopS"
-##     elif(options.sample=="singleTopSScaleDown"):        
-##         usedSample="TopAnalysis/Configuration/Fall11/singleTop_schannel_scale_down_PythiaPowhegZ2_Fall11_AOD_cff"
-## 	additionalEventWeights=False   
-## 	outputFileName+="SingleTopSScaleDown"
-##     elif(options.sample=="singleTopSScaleUp"):        
-##         usedSample="TopAnalysis/Configuration/Fall11/singleTop_schannel_scale_up_PythiaPowhegZ2_Fall11_AOD_cff"
-## 	additionalEventWeights=False
-## 	outputFileName+="SingleTopSScaleUp"
-##     elif(options.sample=="singleAntiTopS"):        
-##         usedSample="TopAnalysis/Configuration/Fall11/singleAntiTop_schannel_PythiaPowhegZ2_Fall11_AOD_cff"
-## 	outputFileName+="SingleAntiTopS"
-##     elif(options.sample=="singleAntiTopSScaleDown"):        
-##         usedSample="TopAnalysis/Configuration/Fall11/singleAntiTop_schannel_scale_down_PythiaPowhegZ2_Fall11_AOD_cff"
-## 	additionalEventWeights=False
-## 	outputFileName+="SingleAntiTopSScaleDown"
-##     elif(options.sample=="singleAntiTopSScaleUp"):        
-##         usedSample="TopAnalysis/Configuration/Fall11/singleAntiTop_schannel_scale_up_PythiaPowhegZ2_Fall11_AOD_cff"
-## 	additionalEventWeights=False
-## 	outputFileName+="SingleAntiTopSScaleUp"
-# FIXME: single to t channel not available yet 
-##     elif(options.sample=="singleTopT"):        
-##         usedSample="TopAnalysis/Configuration/Fall11/singleTop_tchannel_PythiaPowhegZ2_Fall11_AOD_cff"
-## 	outputFileName+="SingleTopT"
+# FIXME: single top scale systematics not available yet 
+    elif(options.sample=="singleTopS"):        
+        usedSample="TopAnalysis/Configuration/Summer12/T_s_channel_TuneZ2star_8TeV_powheg_tauola_Summer12_DR53X_PU_S10_START53_V7A_v1_cff"
+	outputFileName+="SingleTopS"
+##  elif(options.sample=="singleTopSScaleDown"):        
+##      usedSample="TopAnalysis/Configuration/Fall11/"
+##      additionalEventWeights=False   
+##      outputFileName+="SingleTopSScaleDown"
+##  elif(options.sample=="singleTopSScaleUp"):        
+##      usedSample="TopAnalysis/Configuration/Fall11/"
+##      additionalEventWeights=False
+##      outputFileName+="SingleTopSScaleUp"
+    elif(options.sample=="singleAntiTopS"):        
+        usedSample="TopAnalysis/Configuration/Summer12/Tbar_s_channel_TuneZ2star_8TeV_powheg_tauola_Summer12_DR53X_PU_S10_START53_V7A_v1_cff"
+  	outputFileName+="SingleAntiTopS"
+##  elif(options.sample=="singleAntiTopSScaleDown"):        
+##      usedSample="TopAnalysis/Configuration/Fall11/"
+##      additionalEventWeights=False
+##      outputFileName+="SingleAntiTopSScaleDown"
+##  elif(options.sample=="singleAntiTopSScaleUp"):        
+##      usedSample="TopAnalysis/Configuration/Fall11/"
+##      additionalEventWeights=False
+##	outputFileName+="SingleAntiTopSScaleUp"
+    elif(options.sample=="singleTopT"):        
+        usedSample="TopAnalysis/Configuration/Summer12/T_t_channel_TuneZ2star_8TeV_powheg_tauola_Summer12_DR53X_PU_S10_START53_V7A_v1_cff"
+ 	outputFileName+="SingleTopT"
 ##     elif(options.sample=="singleTopTScaleDown"):        
 ##         usedSample="TopAnalysis/Configuration/Fall11/singleTop_tchannel_scale_down_PythiaPowhegZ2_Fall11_AOD_cff"
 ## 	additionalEventWeights=False
@@ -377,9 +382,9 @@ if(not options.sample=="none"):
 ##         usedSample="TopAnalysis/Configuration/Fall11/singleTop_tchannel_scale_up_PythiaPowhegZ2_Fall11_AOD_cff"
 ## 	additionalEventWeights=False
 ## 	outputFileName+="SingleTopTScaleUp"
-##     elif(options.sample=="singleAntiTopT"):        
-##         usedSample="TopAnalysis/Configuration/Fall11/singleAntiTop_tchannel_PythiaPowhegZ2_Fall11_AOD_cff"
-## 	outputFileName+="SingleAntiTopT"
+    elif(options.sample=="singleAntiTopT"):       
+        usedSample="TopAnalysis/Configuration/Summer12/Tbar_t_channel_TuneZ2star_8TeV_powheg_tauola_Summer12_DR53X_PU_S10_START53_V7A_v1_cff"
+        outputFileName+="SingleAntiTopT"
 ##     elif(options.sample=="singleAntiTopTScaleDown"):        
 ##         usedSample="TopAnalysis/Configuration/Fall11/singleAntiTop_tchannel_scale_down_PythiaPowhegZ2_Fall11_AOD_cff"
 ## 	additionalEventWeights=False
@@ -444,15 +449,14 @@ if(not options.sample=="none"):
         usedSample="TopAnalysis/Configuration/Summer12/QCD_Pt_20_30_BCtoE_TuneZ2star_8TeV_pythia6_Summer12_DR53X_PU_S10_START53_V7A_v1_cff"
         PythiaSample="True"
         outputFileName+="QCDBCE1"
-    # FIXME: two qcd BC to E files missing
-##     elif(options.sample=="qcdBCE2" and decayChannel=='electron'):
-##         usedSample="TopAnalysis/Configuration/Summer12/"
-##         PythiaSample="True"
-##         outputFileName+="QCDBCE2"
-##     elif(options.sample=="qcdBCE3" and decayChannel=='electron'):
-##         usedSample="TopAnalysis/Configuration/Summer12/"
-##         PythiaSample="True"
-##         outputFileName+="QCDBCE3"
+    elif(options.sample=="qcdBCE2" and decayChannel=='electron'):
+        usedSample="TopAnalysis/Configuration/Summer12/QCD_Pt_30_80_BCtoE_TuneZ2star_8TeV_pythia6_Summer12_DR53X_PU_S10_START53_V7A_v1_cff"
+        PythiaSample="True"
+        outputFileName+="QCDBCE2"
+    elif(options.sample=="qcdBCE3" and decayChannel=='electron'):
+        usedSample="TopAnalysis/Configuration/Summer12/QCD_Pt_80_170_BCtoE_TuneZ2star_8TeV_pythia6_Summer12_DR53X_PU_S10_START53_V7A_v1_cff.py"
+        PythiaSample="True"
+        outputFileName+="QCDBCE3"
     elif(options.sample=="WW"):        
         usedSample="TopAnalysis/Configuration/Summer12/WW_TuneZ2star_8TeV_pythia6_tauola_Summer12_DR53X_PU_S10_START53_V7A_v1_cff"
         PythiaSample="True"
@@ -649,6 +653,16 @@ process.load("TopAnalysis.TopAnalyzer.MuonJetKinematics_cfi")
 process.load("TopAnalysis.TopAnalyzer.MuonVertexKinematics_cfi")
 ## mixed object analyzer
 process.load("TopAnalysis.TopAnalyzer.MixedObjectsAnalyzer_cfi")
+## event listing
+process.load("TopAnalysis.TopUtils.EventListing_cfi")
+## multi event filter
+from RecoMET.METFilters.multiEventFilter_cfi import multiEventFilter
+
+## investigate specific events
+#process.multiEventFilterElec = process.multiEventFilter.clone(file = 'TopAnalysis/Configuration/analysis/semiLeptonic/diffXSection/EventsEleSync.txt')
+#process.multiEventFilterMuon = process.multiEventFilter.clone(file = 'TopAnalysis/Configuration/analysis/semiLeptonic/diffXSection/EventsMuonSync.txt')
+#delattr(process,"multiEventFilter")
+#delattr(process,"vetoIncMuons")
 
 ## ---
 ##    set up vertex filter
@@ -818,6 +832,7 @@ process.hadLvObjectMonitoring = cms.Sequence(process.genAllElectronKinematics *
 ## switch to desired btagging algo
 process.tightBottomPFJets.src = bTagAlgo+"s"
 ## select number of b tags
+process.btagSelection1 = process.bottomJetSelection.clone(src = 'tightBottomPFJets', minNumber = 1, maxNumber = 99999)
 process.btagSelection = process.bottomJetSelection.clone(src = 'tightBottomPFJets', minNumber = 2, maxNumber = 99999)
 process.btagSelectionSSV=process.btagSelection.clone(src = 'simpleSecondaryVertexHighEffBJets')
 
@@ -2011,12 +2026,12 @@ elif(runningOnData=="MC" and not PUreweigthing):
     for module2 in genModules2:
         if(not module2=='makeGenLevelBJets'):
             getattr(process,module2).weight=cms.InputTag("")
-    for module3 in genModules3:
-        if(not module3=='makeGenLevelBJets'):
-            getattr(process,module3).weight=cms.InputTag("")
-    for module4 in genModules4:
-        if(not module4=='makeGenLevelBJets'):
-            getattr(process,module4).weight=cms.InputTag("")
+    #for module3 in genModules3:
+    #    if(not module3=='makeGenLevelBJets'):
+    #        getattr(process,module3).weight=cms.InputTag("")
+    #for module4 in genModules4:
+    #    if(not module4=='makeGenLevelBJets'):
+    #        getattr(process,module4).weight=cms.InputTag("")
 
 # e) PU Modules - special configuration because of different possible PU weights that are handled in the modules themselves
 if(runningOnData=="MC"):
@@ -2191,7 +2206,7 @@ process.testIsoElectronSelection= process.convElecTrkRejection.clone (src = 'tes
 process.testIsoElectronQuality  = process.tightElectronQualityTagged.clone(src = 'testIsoElectrons')
 
 #process.analyzeTopRecoKinematicsBjets.output = cms.int32(2)
-      
+
 ## ---
 ##    run the final sequences
 ## ---
@@ -2230,6 +2245,7 @@ process.p1 = cms.Path(## gen event selection (decay channel) and the trigger sel
                       process.monitorKinematicsBeforeBtagging       *
                       process.PUControlDistributionsBeforeBtagging  *                      
                       ## b-tagging
+                      process.btagSelection1                        *
                       process.btagSelection                         *
                       ## create PU event weights
                       process.bTagSFEventWeight                     *
@@ -2260,43 +2276,46 @@ if(runningOnData=="data"):
     process.p1.remove(process.semiLeptGenCollections)
 
 ## analysis with SSV btagger
-process.p2 = cms.Path(## gen event selection (decay channel) and the trigger selection (hltFilter)
-                      process.filterSequence                        *
-                      ## PV event selection
-                      #process.PVSelection                           *
-                      ## introduce some collections
-                      process.semiLeptonicSelection                 *
-                      ## create PU event weights
-                      process.makeEventWeightsPU                    *
-                      ## create shape distortion event weights
-                      process.eventWeightDileptonModelVariation     *
-                      process.eventWeightPUDistort                  *
-                      process.eventWeightPUupDistort                *
-                      process.eventWeightPUdownDistort              *
-		      ## create effSF eventWeight
-		      process.effSFMuonEventWeight                  *
-		      ## multiply event weights
-		      process.eventWeightNoBtagSFWeight             *
-                      ## monitoring of PU reweighting and PV
-                      process.PUControlDistributionsDefault         *
-                      ## std sel wo b-tagging
-                      process.muonCuts                              *
-                      process.secondMuonVeto                        *
-                      process.electronVeto                          *
-                      process.leadingJetSelectionNjets4             *
-                      ## SSV btag-selection
-                      process.btagSelectionSSV                      *
-                      ## create PU event weights
-                      process.bTagSFEventWeightSSV                  *
-                      ## create combined weight
-                      process.eventWeightFinalSSV                   *
-                      ## monitoring after SSV
-                      process.SSVMonitoring                         
-                      )
+if(not cutflowSynch):
+    process.p2 = cms.Path(## gen event selection (decay channel) and the trigger selection (hltFilter)
+                          process.filterSequence                        *
+                          ## PV event selection
+                          #process.PVSelection                           *
+                          ## introduce some collections
+                          process.semiLeptonicSelection                 *
+                          ## create PU event weights
+                          process.makeEventWeightsPU                    *
+                          ## create shape distortion event weights
+                          process.eventWeightDileptonModelVariation     *
+                          process.eventWeightPUDistort                  *
+                          process.eventWeightPUupDistort                *
+                          process.eventWeightPUdownDistort              *
+                          ## create effSF eventWeight
+                          process.effSFMuonEventWeight                  *
+                          ## multiply event weights
+                          process.eventWeightNoBtagSFWeight             *
+                          ## monitoring of PU reweighting and PV
+                          process.PUControlDistributionsDefault         *
+                          ## std sel wo b-tagging
+                          process.muonCuts                              *
+                          process.secondMuonVeto                        *
+                          process.electronVeto                          *
+                          process.leadingJetSelectionNjets4             *
+                          ## SSV btag-selection
+                          process.btagSelectionSSV                      *
+                          ## create PU event weights
+                          process.bTagSFEventWeightSSV                  *
+                          ## create combined weight
+                          process.eventWeightFinalSSV                   *
+                          ## monitoring after SSV
+                          process.SSVMonitoring                         
+                          )
+else:
+    process.p2 = cms.Path(process.dummy)
 
 ## std analysis with generator objects as input for efficiency determination
 ## no phase space cuts and phase space cuts for hadron level
-if(runningOnData=="MC"):
+if(runningOnData=="MC" and not cutflowSynch):
     print "running on Monte Carlo, gen-plots produced"
     process.p3 = cms.Path(## gen event selection: semileptonic (lepton &
                           ## tau->lepton if tau==True), lepton=muon/electron
@@ -2364,7 +2383,7 @@ else:
     
 ## std analysis with generator objects as input for efficiency determination
 ## phase space cuts for parton level
-if(runningOnData=="MC"):
+if(runningOnData=="MC" and not cutflowSynch):
     process.s4 = cms.Sequence(## introduce some collections
                               process.isolatedGenLeptons                    *
                               process.semiLeptGenCollections                *
@@ -2410,7 +2429,7 @@ if(runningOnData=="MC"):
     ## delete dummy sequence
     if(applyKinFit==False or eventFilter!="signal only"):
         process.p4.remove(process.dummy)
-elif(runningOnData=="data"):
+elif(runningOnData=="data" or cutflowSynch):
     process.p4 = cms.Path(process.dummy)
     print "running on data, no gen-plots"
 else:
@@ -2562,7 +2581,10 @@ allpaths  = process.paths_().keys()
 # switch to PF2PAT
 if(pfToPAT):
     from TopAnalysis.TopUtils.usePatTupleWithParticleFlow_cff import prependPF2PATSequence
-    recoPaths=['p1','p2']#,'p5']
+    if(not cutflowSynch):
+        recoPaths=['p1','p2']#,'p5']
+    else:
+        recoPaths=['p1']
     # define general options
     PFoptions = {
         'runOnMC': True,
@@ -2574,11 +2596,13 @@ if(pfToPAT):
         'cutsMuon': 'pt > 10. & abs(eta) < 2.5',
         'cutsElec': 'et > 15. & abs(eta) < 2.5',
         'cutsJets': 'pt > 10 & abs(eta) < 5.0', 
-        'electronIDs': ['CiC','classical'],
+        'electronIDs': ['CiC','classical','MVA'],
         'pfIsoConeMuon': 0.4,
-        'pfIsoConeElec': 0.4,
+        'pfIsoConeElec': 0.3,
         'pfIsoValMuon': 0.2,
-        'pfIsoValElec': 0.2,
+        'pfIsoValElec': 0.15,
+        'doDeltaBetaCorrMuon' : True,
+        'doDeltaBetaCorrElec' : True,
         'skipIfNoPFMuon': False,
         'skipIfNoPFElec': False,
         'addNoCutPFMuon': False,
@@ -2623,7 +2647,12 @@ if(pfToPAT):
         #massSearchReplaceAnyInputTag(getattr(process,path), 'selectedPatJetsAK5PF', 'selectedPatJets')        
         # run trigger at the beginning to save a lot of time
         getattr(process,path).insert(0,process.hltFilter)
-  
+        # investigate specific events
+        #if(cutflowSynch):
+        #    if(decayChannel=="electron"):
+        #        getattr(process,path).insert(0,~process.multiEventFilterElec)
+        #    elif(decayChannel=="muon"):
+        #        getattr(process,path).insert(0,~process.multiEventFilterMuon)
 ## change decay subset to parton level (ME)
 #process.decaySubset.fillMode = cms.string("kME")
 

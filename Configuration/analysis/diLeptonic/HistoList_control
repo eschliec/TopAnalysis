@@ -1,3 +1,4 @@
+HypjetMultiXSec Standard N_{Events} N_{jets} 1 1 0 0 0 0 0 0 0 0 0
 vertMulti Standard Events N_{vtx} 1 0 0 0 0 0 0 0 0 0
 vertMulti_noPU Standard Events N_{vtx} 1 0 0 0 0 0 0 0 0 0
 DIMFull Standard Events m^{ll} 2 0 0 1 10.0 0 0 0 0 0

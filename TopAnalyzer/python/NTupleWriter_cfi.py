@@ -31,5 +31,7 @@ writeNTuple = cms.EDAnalyzer('NTupleWriter',
                        sampleName = cms.string("please give sampleName"),
                        channelName = cms.string("please give channelName"),
                        systematicsName = cms.string("please give systematicsName"),
+                       includePDFWeights = cms.bool(False),
+                       pdfWeights = cms.InputTag('pdfWeights:cteq66'),
 )
 

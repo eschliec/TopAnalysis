@@ -8,7 +8,7 @@ import os
 # global job options
 
 MAXEVENTS = -1
-REPORTEVERY = 1000
+REPORTEVERY = 1
 WANTSUMMARY = True
 
 ####################################################################
@@ -30,6 +30,7 @@ options.register('systematicsName', 'Nominal', VarParsing.VarParsing.multiplicit
 options.register('json', '', VarParsing.VarParsing.multiplicity.singleton, VarParsing.VarParsing.varType.string, "limit to certain lumis")
 options.register('skipEvents', 0, VarParsing.VarParsing.multiplicity.singleton, VarParsing.VarParsing.varType.int, "skip N events")
 options.register('triggerStudy',False, VarParsing.VarParsing.multiplicity.singleton, VarParsing.VarParsing.varType.bool, "do trigger efficiency study")
+options.register('includePDFWeights', False, VarParsing.VarParsing.multiplicity.singleton, VarParsing.VarParsing.varType.bool, "include the PDF weights *slow!!!*")
 
 # get and parse the command line arguments
 if( hasattr(sys, "argv") ):
@@ -531,6 +532,8 @@ writeNTuple.channelName = options.mode
 writeNTuple.systematicsName = options.systematicsName
 writeNTuple.isMC = options.runOnMC
 writeNTuple.isTtBarSample = signal
+writeNTuple.includePDFWeights = options.includePDFWeights
+writeNTuple.pdfWeights = "pdfWeights:cteq66"
 
 process.writeNTuple = writeNTuple.clone(
     muons=isolatedMuonCollection,
@@ -543,6 +546,27 @@ process.writeNTuple = writeNTuple.clone(
 if options.triggerStudy:
     process.writeNTuple.muons = 'triggerMatchedMuons'
     process.writeNTuple.elecs = 'triggerMatchedElectrons'
+
+if options.includePDFWeights:
+    if not signal:
+        print "PDF variations only supported for the signal"
+        exit(5615)
+    process.pdfWeights = cms.EDProducer("PdfWeightProducer",
+                # Fix POWHEG if buggy (this PDF set will also appear on output,
+                # so only two more PDF sets can be added in PdfSetNames if not "")
+                #FixPOWHEG = cms.untracked.string("cteq66.LHgrid"),
+                GenTag = cms.untracked.InputTag("genParticles"),
+                PdfInfoTag = cms.untracked.InputTag("generator"),
+                PdfSetNames = cms.untracked.vstring(
+                        "cteq66.LHgrid"
+                        #, "MRST2006nnlo.LHgrid"
+                        #, "NNPDF10_100.LHgrid"
+                        #"cteq6mE.LHgrid"
+                        # ,"cteq6m.LHpdf"
+                        #"cteq6m.LHpdf"
+                ))
+else:
+    process.pdfWeights = cms.Sequence()
 
 
 ## std sequence to produce the ttFullLepEvent
@@ -571,6 +595,9 @@ process.kinSolutionTtFullLepEventHypothesis.searchWrongCharge = True
 process.kinSolutionTtFullLepEventHypothesis.tmassbegin = 100.0
 process.kinSolutionTtFullLepEventHypothesis.tmassend   = 300.0
 process.kinSolutionTtFullLepEventHypothesis.neutrino_parameters = (30.641, 57.941, 22.344, 57.533, 22.232)
+#according to our MC 8 TeV values are:
+#nu    mpv 40.567 sigma = 16.876
+#nubar mpv 40.639 sigma = 17.021
 
 process.kinSolutionTtFullLepEventHypothesis.mumuChannel = False
 process.kinSolutionTtFullLepEventHypothesis.emuChannel  = False
@@ -626,8 +653,7 @@ if signal:
     process.ntupleInRecoSeq = cms.Sequence()
 else:
     if options.triggerStudy:
-        process.ntupleInRecoSeq = cms.Sequence(process.triggerMatching
-                                               * process.writeNTuple)
+        process.ntupleInRecoSeq = cms.Sequence(process.triggerMatching * process.writeNTuple)
     else:
         process.ntupleInRecoSeq = cms.Sequence(process.writeNTuple)
 
@@ -689,11 +715,15 @@ prependPF2PATSequence(process, options = { 'switchOffEmbedding': False,
 
 from TopAnalysis.TopAnalyzer.CountEventAnalyzer_cfi import countEvents
 process.EventsBeforeSelection = countEvents.clone()
+process.EventsBeforeSelection.includePDFWeights = options.includePDFWeights
+process.EventsBeforeSelection.pdfWeights = "pdfWeights:cteq66"
+    
 
 pathnames = process.paths_().keys()
 print 'prepending trigger sequence to paths:', pathnames
 for pathname in pathnames:
     getattr(process, pathname).insert(0, cms.Sequence(
+        process.pdfWeights *
         process.EventsBeforeSelection *
         process.topsequence *
         process.zsequence *

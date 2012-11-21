@@ -13,7 +13,7 @@ Implementation:
 //
 // Original Author:  Jan Kieseler,,,DESY
 //         Created:  Thu Aug 11 16:37:05 CEST 2011
-// $Id: NTupleWriter.cc,v 1.30 2012/09/24 09:17:39 wbehrenh Exp $
+// $Id: NTupleWriter.cc,v 1.30.2.1 2012/10/31 15:57:59 wbehrenh Exp $
 //
 //
 
@@ -69,8 +69,6 @@ Implementation:
 // class declaration
 //
 typedef ROOT::Math::LorentzVector<ROOT::Math::PtEtaPhiM4D<double> > LV;
-// const char * LVstr = "ROOT::Math::LorentzVector<ROOT::Math::PtEtaPhiM4D<double> >";
-// const char * VLVstr = "std::vector<ROOT::Math::LorentzVector<ROOT::Math::PtEtaPhiM4D<double> > >";
 
 
 
@@ -115,6 +113,7 @@ private:
     edm::InputTag bIndex_;
     edm::InputTag antiBIndex_;
     edm::InputTag genMET_;
+    edm::InputTag pdfWeightTag_;
 
     edm::InputTag bHadJetIdx_, antibHadJetIdx_;
     edm::InputTag BHadrons_, AntiBHadrons_;
@@ -122,6 +121,7 @@ private:
     edm::InputTag BHadronVsJet_, AntiBHadronVsJet_;
 
     bool includeTrig_, isTtBarSample_;
+    bool includePDFWeights_;
     bool isMC_;
     string sampleName_;
     string channelName_;
@@ -199,7 +199,8 @@ private:
     std::vector<double> VjetBTagCSV;
     std::vector<double> VjetBTagCSVMVA;
 
-
+    std::vector<double> VPdfWeights;
+    
     /////////met///////////
     LV met;
 
@@ -262,6 +263,7 @@ NTupleWriter::NTupleWriter ( const edm::ParameterSet& iConfig ) :
     antiBIndex_(iConfig.getParameter<edm::InputTag>("AntiBJetIndex")),
     
     genMET_(iConfig.getParameter<edm::InputTag>("genMET")),
+    pdfWeightTag_ (iConfig.getParameter<edm::InputTag>("pdfWeights")),
 
     //Input from GenLevelBJetProducer
     bHadJetIdx_(iConfig.getParameter<edm::InputTag> ("BHadJetIndex")),
@@ -275,6 +277,7 @@ NTupleWriter::NTupleWriter ( const edm::ParameterSet& iConfig ) :
 
     includeTrig_ ( iConfig.getParameter<bool> ( "includeTrigger" ) ),
     isTtBarSample_ ( iConfig.getParameter<bool> ( "isTtBarSample" ) ),
+    includePDFWeights_ (iConfig.getParameter<bool>("includePDFWeights")),
     
     //used for header:
     isMC_ (iConfig.getParameter<bool>("isMC")),
@@ -285,6 +288,7 @@ NTupleWriter::NTupleWriter ( const edm::ParameterSet& iConfig ) :
     trigResults_ ( iConfig.getParameter<edm::InputTag> ( "triggerResults" ) ),
     decayMode_ ( iConfig.getParameter<edm::InputTag> ( "decayMode" ) ),
 
+    
     dummy(0, 0, 0, 0)
 {
   
@@ -667,6 +671,13 @@ NTupleWriter::analyze ( const edm::Event& iEvent, const edm::EventSetup& iSetup 
     } else {
         vertMultiTrue = vertices->size();
     }
+    
+    //create the PDF weights
+    if (includePDFWeights_ && !iEvent.isRealData()) {
+        edm::Handle<std::vector<double> > weightHandle;
+        iEvent.getByLabel(pdfWeightTag_, weightHandle);
+        VPdfWeights = *weightHandle;
+    }
 
     Ntuple->Fill();
 }
@@ -762,6 +773,7 @@ NTupleWriter::beginJob()
     Ntuple->Branch ( "jetBTagJetBProbability", &VjetBTagJetBProbability );
     Ntuple->Branch ( "jetBTagCSV", &VjetBTagCSV);
     Ntuple->Branch ( "jetBTagCSVMVA", &VjetBTagCSVMVA);
+    Ntuple->Branch ( "pdfWeights", &VPdfWeights);
     Ntuple->Branch ( "allGenJets", VLVstr, &VallGenJets);
     Ntuple->Branch ( "jetType", &VjetType );
     Ntuple->Branch ( "genJet", VLVstr, &VgenJet);
@@ -909,6 +921,7 @@ void NTupleWriter::clearVariables()
     VjetBTagJetBProbability.clear();
     VjetBTagCSV.clear();
     VjetBTagCSVMVA.clear();
+    VPdfWeights.clear();
     VallGenJets.clear();
     VgenJet.clear();
 

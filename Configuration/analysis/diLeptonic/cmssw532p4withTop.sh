@@ -83,5 +83,6 @@ addpkg TopQuarkAnalysis/TopEventSelection V06-07-14
 
 #checkdeps -a
 
+scram setup lhapdffull
 scram b -j12
 

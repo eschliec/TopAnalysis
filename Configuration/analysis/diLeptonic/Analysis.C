@@ -688,6 +688,26 @@ Bool_t Analysis::Process ( Long64_t entry )
     
         double trueLevelWeight = weightGenerator * weightPU;
         h_GenAll->Fill(GenTop->M(), trueLevelWeight);
+        
+        //Begin: Select & Fill histograms with Leading pT and 2nd Leading pT: Lepton and BJet
+        if(GenLepton->Pt()>GenAntiLepton->Pt()){
+            LeadGenLepton  = *GenLepton;
+            NLeadGenLepton = *GenAntiLepton;
+        }
+        else{
+            LeadGenLepton  = *GenAntiLepton;
+            NLeadGenLepton = *GenLepton;
+        }
+        
+        if(BHadronIndex != -1 && AntiBHadronIndex != -1 && (allGenJets->at(BHadronIndex).Pt() > allGenJets->at(AntiBHadronIndex).Pt())){
+            LeadGenBJet  = (*allGenJets).at(BHadronIndex);
+            NLeadGenBJet = (*allGenJets).at(AntiBHadronIndex);
+        }
+        else if(BHadronIndex != -1 && AntiBHadronIndex != -1){
+            LeadGenBJet  = (*allGenJets).at(AntiBHadronIndex);
+            NLeadGenBJet = (*allGenJets).at(BHadronIndex);
+        }
+        
         if ( GenLepton->pt() > 20 && GenAntiLepton->pt() > 20 
               && abs( GenLepton->eta() ) < 2.4 && abs ( GenAntiLepton->eta() ) < 2.4 ) {
             //if (LVGenBQuark.Pt()>JETPTCUT && LVGenAntiBQuark.Pt()>JETPTCUT && abs(LVGenBQuark.Eta())<2.4 && abs(LVGenAntiBQuark.Eta())<2.4){
@@ -729,7 +749,6 @@ Bool_t Analysis::Process ( Long64_t entry )
                     else{
                         LeadGenLepton  = *GenAntiLepton;
                         NLeadGenLepton = *GenLepton;
-
                     }
                     
                     if(allGenJets->at(BHadronIndex).Pt() > allGenJets->at(AntiBHadronIndex).Pt()){

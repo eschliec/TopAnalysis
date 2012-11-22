@@ -8,7 +8,7 @@ import os
 # global job options
 
 MAXEVENTS = -1
-REPORTEVERY = 1
+REPORTEVERY = 1000
 WANTSUMMARY = True
 
 ####################################################################

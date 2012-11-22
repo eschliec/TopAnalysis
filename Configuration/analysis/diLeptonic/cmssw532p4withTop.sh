@@ -81,8 +81,10 @@ addpkg TopQuarkAnalysis/TopEventSelection V06-07-14
 #"    from Configuration.PyReleaseValidation.autoCond import autoCond" ---> No module named autoCond
 ########
 
-#checkdeps -a
-
+# setup the PDF reweighting, need Ewk/Utils to be recompiled to use "FULL MEMORY option" of LHAPDF
 scram setup lhapdffull
+addpkg ElectroWeakAnalysis/Utilities
+
+#checkdeps -a
 scram b -j12
 

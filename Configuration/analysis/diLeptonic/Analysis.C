@@ -14,10 +14,25 @@
 #include <set>
 #include <cmath>
 #include <TString.h>
+#include <limits>
+
+// #define run_sonnenschein
+#ifdef run_sonnenschein
+#include "haryo/interface/DileptonAnalyticalSolver.h"
+#include "haryo/src/DileptonAnalyticalSolver.cc"
+#endif
 
 using namespace std;
 using ROOT::Math::VectorUtil::DeltaPhi;
 using ROOT::Math::VectorUtil::DeltaR;
+
+void LVtod4(LV lv, double *d) {
+    d[0] = lv.E();
+    d[1] = lv.Px();
+    d[2] = lv.Py();
+    d[3] = lv.Pz();
+}
+
 
 double SampleXSection(TString sample){
     
@@ -60,6 +75,9 @@ void Analysis::Begin ( TTree * )
     prepareTriggerSF();
     prepareLeptonIDSF();
     prepareBtagSF();
+    
+    //lumiWeight = 5100*SampleXSection(samplename)/weightedEvents->GetBinContent(1);
+    lumiWeight = 12100*SampleXSection(samplename)/weightedEvents->GetBinContent(1);
 }
 
 template<class T>
@@ -160,6 +178,8 @@ void Analysis::SlaveBegin ( TTree * )
     h_HypTopEta = store(new TH1D ( "HypTopEta", "Top pT", 100, -5, 5 ));
     h_HypTopMass = store(new TH1D ( "HypTopMass", "Top Mass", 80, 0, 400 ));
     h_HypTopRapidity = store(new TH1D ( "HypTopRapidity", "Top Rapidity", 100, -5, 5 ));
+    
+    h_HypTopptSonnenschein = store(new TH1D ( "HypToppTSonnenschein", "Top pT", 400, 0, 400 ));
 
     h_HypAntiToppT = store(new TH1D ( "HypAntiToppT", "AntiTop pT", 400, 0, 400 ));
     h_HypAntiTopEta = store(new TH1D ( "HypAntiTopEta", "AntiTop pT", 100, -5, 5 ));
@@ -256,12 +276,22 @@ void Analysis::SlaveBegin ( TTree * )
     h_GenRecoToppT = store(new TH2D ( "GenRecoToppT", "Gen/Reco Matching", 400, 0, 400, 400, 0, 400 ));
     h_GenRecoAntiToppT = store(new TH2D ( "GenRecoAntiToppT", "Gen/Reco Matching", 400, 0, 400, 400, 0, 400 ));
 
+    h_GenRecoMet = store(new TH2D("GenRecoMet", "Missing ET in the event", 500, 0, 500, 500, 0, 500));
+    h_VisGenMet = store(new TH1D("VisGenMet", "MET (VisGEN)", 500, 0, 500));
+    h_RecoMet = store(new TH1D("RecoMet", "Reconstructed MET", 500, 0, 500));
+    h_HypMet = store(new TH1D("HypMet","MET ", 500, 0, 500));
+    
+    h_GenRecoHT = store(new TH2D("GenRecoHT", "HT in the event", 400, 0, 400, 400, 0, 400));
+    h_VisGenHT = store(new TH1D("VisGenHT", "HT (VisGEN)", 400, 0, 400));
+    h_RecoHT = store(new TH1D("RecoHT", "Reconstructed HT", 400, 0, 400));
+    h_HypHT = store(new TH1D("HypHT", "HT", 400, 0, 400));
+    
     h_GenRecoTTBarRapidity = store(new TH2D ( "GenRecoTTBarRapidity", "Rapidity of TTbar System (HYP)", 100, -5, 5, 100, -5, 5 ));
     h_GenRecoTTBarpT = store(new TH2D ( "GenRecoTTBarpT", "pT of TTbar System (HYP)", 500, 0, 500, 500, 0, 500 ));
     h_GenRecoTTBarMass = store(new TH2D ( "GenRecoTTBarMass", "Mass of TTbar System (HYP)", 2000, 0, 2000, 2000, 0, 2000 ));
     h_GenRecoLLBarMass = store(new TH2D ( "GenRecoLLBarMass", "Mass of LLbar System (HYP)", 500, 0, 1000, 500, 0, 1000 ));
     h_GenRecoLLBarpT = store(new TH2D ( "GenRecoLLBarpT", "pT of LLbar System (HYP)", 200, 0, 1000, 200, 0, 1000 ));
-
+    
     h_NJetMatching = store(new TH1D ( "NJetMatching", "NJet Gen/Reco Matching", 5, 0, 5 ));
 
     h_GenRecoLLBarDPhi = store(new TH2D ( "GenRecoLLBarDPhi", "Gen/Reco Matching", 100, 0., 3.2, 100, 0., 3.2 ));
@@ -455,6 +485,13 @@ double Analysis::Median(TH1 * h1)
    return TMath::Median(n, &x[0], &y[1]); 
 }
 
+void Analysis::orderLVByPt(LV &leading, LV &Nleading, const LV &lv1, const LV &lv2) {
+    if (lv1.Pt() > lv2.Pt()) {
+        leading = lv1; Nleading = lv2;
+    } else {
+        leading = lv2; Nleading = lv1;
+    }
+}
 
 Bool_t Analysis::Process ( Long64_t entry )
 {
@@ -479,6 +516,11 @@ Bool_t Analysis::Process ( Long64_t entry )
         }
     }
     
+    if (pdf_no) {
+        b_weightPDF->GetEntry(entry);
+        weightGenerator *= weightPDF->at(pdf_no - 1); //vector is 0 based
+    }
+    
     double weightPU = 1;
     if (isMC) { 
         //still have lumi weights for old plotterclass
@@ -492,11 +534,11 @@ Bool_t Analysis::Process ( Long64_t entry )
     int BHadronIndex=-1;
     int AntiBHadronIndex=-1;
 
-    if ( isSignal ) {
-        GetSignalBranches ( entry );
+    if (isSignal) {
+        GetSignalBranches(entry);
 
-        std::vector<int> idx_leadbHadJet;
-        std::vector<int> idx_nleadbHadJet;
+        std::vector<size_t> idx_leadbHadJet;
+        std::vector<size_t> idx_nleadbHadJet;
         //To avoid recopying may code lines, we select HERE the BHadron JET Indices to cut on.
 
         //time to choose which genJet we actually want
@@ -516,10 +558,10 @@ Bool_t Analysis::Process ( Long64_t entry )
         bool NLeadBHadhighpTjet = false;
         bool NLeadBHadhighpTjetfromtop = false;
 
-        int hadron_index = -1;
-        int antihadron_index = -1;
-        int hadrontop_index = -1;
-        int antihadrontop_index = -1;
+        size_t hadron_index = std::numeric_limits<size_t>::max();
+        size_t antihadron_index = std::numeric_limits<size_t>::max();
+        size_t hadrontop_index = std::numeric_limits<size_t>::max();
+        size_t antihadrontop_index = std::numeric_limits<size_t>::max();
         
         //Case 1: highest pT genJet matched to a BHadron
         //need to remove jets from the genJetCollection which are below the JETPTCUT
@@ -663,7 +705,12 @@ Bool_t Analysis::Process ( Long64_t entry )
     bool hasSolution = false;
     int solutionIndex = 0;
     for ( size_t i =0; i < HypTop->size(); ++i ) {
-        if (jet->at((*HypJet0index)[i]).pt() < JETPTCUT || jet->at((*HypJet1index)[i]).pt() < JETPTCUT) continue;
+        if (jet->at((*HypJet0index)[i]).pt() < JETPTCUT 
+            || jet->at((*HypJet1index)[i]).pt() < JETPTCUT)
+            // || abs(HypTop->at(i).M() - 172.5) > 1 ) 
+        {       
+            continue;
+        }
         bool jet0tagged = jetBTagCSV->at( (*HypJet0index)[i] ) > BtagWP;
         bool jet1tagged = jetBTagCSV->at( (*HypJet1index)[i] ) > BtagWP;
         if (jet0tagged && jet1tagged) {   
@@ -683,6 +730,7 @@ Bool_t Analysis::Process ( Long64_t entry )
     LV LeadGenTop, NLeadGenTop;
     LV LeadGenLepton, NLeadGenLepton;
     LV LeadGenBJet, NLeadGenBJet;
+    double genHT = -1;
     
     if ( isSignal ) {
     
@@ -690,22 +738,11 @@ Bool_t Analysis::Process ( Long64_t entry )
         h_GenAll->Fill(GenTop->M(), trueLevelWeight);
         
         //Begin: Select & Fill histograms with Leading pT and 2nd Leading pT: Lepton and BJet
-        if(GenLepton->Pt()>GenAntiLepton->Pt()){
-            LeadGenLepton  = *GenLepton;
-            NLeadGenLepton = *GenAntiLepton;
-        }
-        else{
-            LeadGenLepton  = *GenAntiLepton;
-            NLeadGenLepton = *GenLepton;
-        }
+        orderLVByPt(LeadGenLepton, NLeadGenLepton, *GenLepton, *GenAntiLepton);
         
-        if(BHadronIndex != -1 && AntiBHadronIndex != -1 && (allGenJets->at(BHadronIndex).Pt() > allGenJets->at(AntiBHadronIndex).Pt())){
-            LeadGenBJet  = (*allGenJets).at(BHadronIndex);
-            NLeadGenBJet = (*allGenJets).at(AntiBHadronIndex);
-        }
-        else if(BHadronIndex != -1 && AntiBHadronIndex != -1){
-            LeadGenBJet  = (*allGenJets).at(AntiBHadronIndex);
-            NLeadGenBJet = (*allGenJets).at(BHadronIndex);
+        if (BHadronIndex != -1 && AntiBHadronIndex != -1) {
+            orderLVByPt(LeadGenBJet, NLeadGenBJet, 
+                        allGenJets->at(BHadronIndex), allGenJets->at(AntiBHadronIndex));
         }
         
         if ( GenLepton->pt() > 20 && GenAntiLepton->pt() > 20 
@@ -735,6 +772,9 @@ Bool_t Analysis::Process ( Long64_t entry )
                     h_VisGenAntiBJetRapidity->Fill(allGenJets->at(AntiBHadronIndex).Rapidity(), trueLevelWeight );
                     h_VisGenBJetpT->Fill(allGenJets->at(BHadronIndex).Pt(), trueLevelWeight );
                     h_VisGenAntiBJetpT->Fill(allGenJets->at(AntiBHadronIndex).Pt(), trueLevelWeight );
+                    h_VisGenMet->Fill(GenMet->Pt(), trueLevelWeight);
+                    genHT = getJetHT(*allGenJets, JETPTCUT);
+                    h_VisGenHT->Fill(genHT, trueLevelWeight);
 
                     h_VisGenLLBarDPhi->Fill(abs( DeltaPhi(*GenLepton, *GenAntiLepton)), trueLevelWeight );
                     h_VisGenLeptonantiBjetMass->Fill(( *GenLepton + allGenJets->at(AntiBHadronIndex) ).M(), trueLevelWeight );
@@ -827,14 +867,7 @@ Bool_t Analysis::Process ( Long64_t entry )
         h_VisGenAntiTopEta->Fill(GenAntiTop->Eta(), trueLevelWeight );
         
         //Begin: Fill histograms with Leading pT and 2nd Leading pT: Top
-        if(GenTop->Pt()>GenAntiTop->Pt()){
-            LeadGenTop  = *GenTop;
-            NLeadGenTop = *GenAntiTop;
-        }
-        else{
-            LeadGenTop  = *GenAntiTop;
-            NLeadGenTop = *GenTop;
-        }
+        orderLVByPt(LeadGenTop, NLeadGenTop, *GenTop, *GenAntiTop);
         h_VisGenToppTLead->Fill(LeadGenTop.Pt(), trueLevelWeight);
         h_VisGenToppTNLead->Fill(NLeadGenTop.Pt(), trueLevelWeight);
         h_VisGenTopRapidityLead->Fill(LeadGenTop.Rapidity(), trueLevelWeight);
@@ -904,7 +937,7 @@ Bool_t Analysis::Process ( Long64_t entry )
     // Fill loose dilepton mass histogram before any jet cuts
     bool isZregion = dilepton.M() > 76 && dilepton.M() < 106;
     bool hasJets = jet->size() > 1 && jet->at(1).Pt() > JETPTCUT;
-    bool hasMetOrEmu = channel == "emu" || met->Et() > 30;
+    bool hasMetOrEmu = channel == "emu" || met->Pt() > 30;
     bool hasBtag = BJetIndex.size() > 0;
     double weightKinFit = 1;
     double weightBtagSF = -1; //trick: initialize to -1 to avoid calculation of the btagSF twice
@@ -963,7 +996,7 @@ Bool_t Analysis::Process ( Long64_t entry )
     h_LeptonEta->Fill(leptonMinus.Eta(), weight);
     h_AntiLeptonEta->Fill(leptonPlus.Eta(), weight);
 
-    h_MET->Fill(met->Et(), weight);
+    h_MET->Fill(met->Pt(), weight);
 
     //loop over both leptons
     for (auto i : {LeadLeptonNumber, NLeadLeptonNumber}) {
@@ -994,32 +1027,9 @@ Bool_t Analysis::Process ( Long64_t entry )
     LV LeadHypLepton, NLeadHypLepton;
     LV LeadHypBJet, NLeadHypBJet;
     
-    if(HypTop->at(solutionIndex).Pt() > HypAntiTop->at(solutionIndex).Pt()){
-        LeadHypTop  = HypTop->at(solutionIndex);
-        NLeadHypTop = HypAntiTop->at(solutionIndex);
-    }
-    else{
-        LeadHypTop  = HypAntiTop->at(solutionIndex);
-        NLeadHypTop = HypTop->at(solutionIndex);
-    }
-    
-    if(HypLepton->at(solutionIndex).Pt() > HypAntiLepton->at(solutionIndex).Pt()){
-        LeadHypLepton  = HypLepton->at(solutionIndex);
-        NLeadHypLepton = HypAntiLepton->at(solutionIndex);
-    }
-    else{
-        LeadHypLepton  = HypAntiLepton->at(solutionIndex);
-        NLeadHypLepton = HypLepton->at(solutionIndex);
-    }
-    
-    if(HypBJet->at(solutionIndex).Pt() > HypAntiBJet->at(solutionIndex).Pt()){
-        LeadHypBJet  = HypBJet->at(solutionIndex);
-        NLeadHypBJet = HypAntiBJet->at(solutionIndex);
-    }
-    else{
-        LeadHypBJet  = HypAntiBJet->at(solutionIndex);
-        NLeadHypBJet = HypBJet->at(solutionIndex);
-    }
+    orderLVByPt(LeadHypTop, NLeadHypTop, HypTop->at(solutionIndex), HypAntiTop->at(solutionIndex));
+    orderLVByPt(LeadHypLepton, NLeadHypLepton, HypLepton->at(solutionIndex), HypAntiLepton->at(solutionIndex));
+    orderLVByPt(LeadHypBJet, NLeadHypBJet, HypBJet->at(solutionIndex), HypAntiBJet->at(solutionIndex));
     //End: find 1st (and 2nd) leading pT particles: Top, Lepton, BJetIndex
     
     //create ll and tt system
@@ -1042,6 +1052,9 @@ Bool_t Analysis::Process ( Long64_t entry )
     h_RecoAntiLeptonpT->Fill(HypAntiLepton->at(solutionIndex).Pt(), recoWeight);
     h_RecoLeptonEta->Fill(HypLepton->at(solutionIndex).Eta(), recoWeight);
     h_RecoAntiLeptonEta->Fill(HypAntiLepton->at(solutionIndex).Eta(), recoWeight);
+    
+    h_RecoMet->Fill(met->Pt(), recoWeight);
+    h_RecoHT->Fill(jetHT, recoWeight);
 
     h_RecoBJetpT->Fill(HypBJet->at(solutionIndex).Pt(), recoWeight);
     h_RecoAntiBJetpT->Fill(HypAntiBJet->at(solutionIndex).Pt(), recoWeight);
@@ -1133,6 +1146,9 @@ Bool_t Analysis::Process ( Long64_t entry )
 
     h_HypLLBarMass->Fill(hypllbar.M(), weight);
     h_HypLLBarpT->Fill(hypllbar.Pt(), weight);
+    
+    h_HypMet->Fill(met->Pt(), weight);
+    h_HypHT->Fill(jetHT, weight);
 
     h_HypTopMass->Fill(HypTop->at(solutionIndex).M(), weight);
     h_HypAntiTopMass->Fill(HypAntiTop->at(solutionIndex).M(), weight);
@@ -1182,6 +1198,46 @@ Bool_t Analysis::Process ( Long64_t entry )
         TTh1->Fill(dilepton.M(), weight);
         Allh1->Fill(dilepton.M(), weight);  //this is also filled in the Z region in the code above
     }
+    
+//     printf("HypTop pt=%.1f, eta=%.2f -- HypAntiTop pt=%.1f, eta=%.2f\n", 
+//             HypTop->at(solutionIndex).Pt(), HypTop->at(solutionIndex).Eta(),
+//             HypAntiTop->at(solutionIndex).Pt(), HypAntiTop->at(solutionIndex).Eta());
+
+#ifdef run_sonnenschein
+    auto solver = llsolver::DileptonAnalyticalSolver();
+    
+    double lp[4], lm[4], b[4], bb[4];
+    double ETmiss[2], nu[4], nub[4];
+    std::vector<double> pnux, pnuy, pnuz, pnubx, pnuby, pnubz;
+    std::vector<double> pnuychi2, pnunubzchi2, pnuyzchi2, cd_diff;
+    int cubic_single_root_cmplx;
+    
+    LVtod4(leptonPlus, lp);
+    LVtod4(leptonMinus, lm);
+    LVtod4(HypBJet->at(solutionIndex), b);
+    LVtod4(HypAntiBJet->at(solutionIndex), bb);
+
+    ETmiss[0] = met->Px();
+    ETmiss[1] = met->Py();
+    
+    
+if (HypTop->size()) {    
+    cout << "GenMet/RecoMet" << *GenMet << " / " << *met << endl;
+    printf("true level  x=%.2f, y=%.2f\n", GenNeutrino->Px(), GenNeutrino->Py());    
+    printf("OLAANALYSIS x=%.2f, y=%.2f\n", HypNeutrino->at(solutionIndex).Px(), HypNeutrino->at(solutionIndex).Py());
+
+    solver.solve(ETmiss, b, bb, lp, lm, 80.4, 80.4, 172.5, 172.5, 0, 0,
+                 &pnux, &pnuy, &pnuz, &pnubx, &pnuby, &pnubz, &cd_diff, cubic_single_root_cmplx);
+    for (size_t i=0; i<pnux.size(); ++i) {
+        std::cout << "SONNENSCHEI x=" << pnux[i] << " y=" << pnuy[i]<< std::endl;
+     
+        h_HypTopptSonnenschein->Fill((), weight);
+    }
+    //exit(100);
+    cout<<endl;
+}
+
+#endif
 
     //=== CUT ===
     //Following histograms only filled for the signal sample
@@ -1215,6 +1271,8 @@ Bool_t Analysis::Process ( Long64_t entry )
     h_GenRecoAntiTopRapidity->Fill(HypAntiTop->at(solutionIndex).Rapidity(), GenAntiTop->Rapidity(), weight );
     h_GenRecoToppT->Fill(HypTop->at(solutionIndex).Pt(), GenTop->Pt(), weight );
     h_GenRecoAntiToppT->Fill(HypAntiTop->at(solutionIndex).Pt(), GenAntiTop->Pt(), weight );
+    h_GenRecoMet->Fill(met->Pt(), GenMet->Pt(), weight);
+    h_GenRecoHT->Fill(jetHT, genHT, weight);
 
     h_GenRecoLLBarDPhi->Fill(
         abs( DeltaPhi( HypLepton->at(solutionIndex), HypAntiLepton->at(solutionIndex) ) ), 
@@ -1318,7 +1376,7 @@ Bool_t Analysis::Process ( Long64_t entry )
     h_GenRecoTTBarRapidity->Fill(hypttbar.Rapidity(), genttbar.Rapidity(), weight );
 
     //finally do the btag SF calculation stuff
-    for (int i=0; i < jet->size(); ++i) {
+    for (size_t i = 0; i < jet->size(); ++i) {
         if (jet->at(i).Pt() <= JETPTCUT) break;
         if (TMath::Abs(jet->at(i).Eta())<2.4) {
             int type = (*jetType)[i];
@@ -1570,14 +1628,18 @@ void Analysis::SetSamplename(TString samplename)
     this->samplename = samplename;
     isTtbarPlusTauSample = samplename.BeginsWith("ttbar") && !samplename.Contains("bg");
     correctMadgraphBR = samplename.BeginsWith("ttbar");
-    //lumiWeight = 5100*SampleXSection(samplename)/weightedEvents->GetBinContent(1);
-    lumiWeight = 12100*SampleXSection(samplename)/weightedEvents->GetBinContent(1);
 }
 
 void Analysis::SetMC(bool isMC)
 {
     this->isMC = isMC;
 }
+
+void Analysis::SetPDF(int pdf_no)
+{
+    this->pdf_no = pdf_no;
+}
+
 
 void Analysis::SetOutputfilename(TString outputfilename)
 {
@@ -1659,6 +1721,7 @@ void Analysis::Init ( TTree *tree )
     GenAntiLepton = 0;
     GenTop = 0;
     GenAntiTop = 0;
+    GenMet = 0;
 
     // Set branch addresses and branch pointers
     if ( !tree ) return;
@@ -1681,6 +1744,7 @@ void Analysis::Init ( TTree *tree )
     fChain->SetBranchAddress("lumiBlock", &lumiBlock, &b_lumiBlock );
     fChain->SetBranchAddress("eventNumber", &eventNumber, &b_eventNumber );
     fChain->SetBranchAddress("weightGenerator", &weightGenerator, &b_weightGenerator );
+    if (pdf_no) fChain->SetBranchAddress("pdfWeights", &weightPDF, &b_weightPDF);
     fChain->SetBranchAddress("vertMulti", &vertMulti, &b_vertMulti );
     fChain->SetBranchAddress("vertMultiTrue", &vertMultiTrue, &b_vertMultiTrue );
 
@@ -1714,15 +1778,16 @@ void Analysis::Init ( TTree *tree )
         fChain->SetBranchAddress("GenWPlus.fCoordinates.fX", &GenWPluspX, &b_GenWPluspX);
         fChain->SetBranchAddress("GenWMinus.fCoordinates.fX", &GenWMinuspX, &b_GenWMinuspX);
         */
-        fChain->SetBranchAddress ( "BHadJetIndex", &BHadJetIndex, &b_BHadJetIndex );
-        fChain->SetBranchAddress ( "AntiBHadJetIndex", &AntiBHadJetIndex, &b_AntiBHadJetIndex );
-        fChain->SetBranchAddress ( "BHadrons", &BHadrons, &b_BHadrons );
-        fChain->SetBranchAddress ( "AntiBHadrons", &AntiBHadrons, &b_AntiBHadrons);
-        fChain->SetBranchAddress ( "BHadronFromTop", &BHadronFromTopB, &b_BHadronFromTopB );
-        fChain->SetBranchAddress ( "AntiBHadronFromTopB", &AntiBHadronFromTopB, &b_AntiBHadronFromTopB );
-        fChain->SetBranchAddress ( "BHadronVsJet", &BHadronVsJet, &b_BHadronVsJet );
-        fChain->SetBranchAddress ( "AntiBHadronVsJet", &AntiBHadronVsJet, &b_AntiBHadronVsJet );
+        fChain->SetBranchAddress("BHadJetIndex", &BHadJetIndex, &b_BHadJetIndex );
+        fChain->SetBranchAddress("AntiBHadJetIndex", &AntiBHadJetIndex, &b_AntiBHadJetIndex );
+        fChain->SetBranchAddress("BHadrons", &BHadrons, &b_BHadrons );
+        fChain->SetBranchAddress("AntiBHadrons", &AntiBHadrons, &b_AntiBHadrons);
+        fChain->SetBranchAddress("BHadronFromTop", &BHadronFromTopB, &b_BHadronFromTopB );
+        fChain->SetBranchAddress("AntiBHadronFromTopB", &AntiBHadronFromTopB, &b_AntiBHadronFromTopB );
+        fChain->SetBranchAddress("BHadronVsJet", &BHadronVsJet, &b_BHadronVsJet );
+        fChain->SetBranchAddress("AntiBHadronVsJet", &AntiBHadronVsJet, &b_AntiBHadronVsJet );
 
+        fChain->SetBranchAddress("GenMET", &GenMet, &b_GenMet);
 //         fChain->SetBranchAddress("GenJetHadronB.", &BHadronJet_, &b_BHadronJet_);
 //         fChain->SetBranchAddress("GenJetHadronAntiB", &AntiBHadronJet_, &b_AntiBHadronJet_);
     }    
@@ -1803,6 +1868,7 @@ void Analysis::GetSignalBranches ( Long64_t & entry )
     b_GenNeutrino->GetEntry(entry);   //!
     b_GenAntiNeutrino->GetEntry(entry);   //!
 
+    b_GenMet->GetEntry(entry);
     /*
     b_GenWPluspX->GetEntry(entry);   //!
     b_GenWMinuspX->GetEntry(entry);   //!
@@ -2045,7 +2111,9 @@ void Analysis::prepareBtagSF()
         cout << "\n******************************************************\n"
              << "File " << btagFile << " does not exist. Running without btagsf!!!\n"
              << "To create the file, run:\n" 
-             << "   ./load_Analysis -f ttbarsignal\n"
+             << "   ./load_Analysis -f Nominal/emu_ttbarsignal\n"
+             << "   ./load_Analysis -f Nominal/ee_ttbarsignal\n"
+             << "   ./load_Analysis -f Nominal/mumu_ttbarsignal\n"
              << "and copy the selectionRoot/BTagEff directory to the cwd:\n"
              << "   cp -r selectionRoot/BTagEff .\n"
              << "This error is NOT fatal, using a btag SF = 1 everywhere\n"

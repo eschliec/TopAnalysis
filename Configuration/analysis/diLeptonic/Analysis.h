@@ -49,6 +49,7 @@ class Analysis : public TSelector
     UInt_t          eventNumber;
     UInt_t          triggerBits;
     Double_t        weightGenerator;
+    vector<double>  *weightPDF;
     Int_t           vertMulti;
     Int_t           vertMultiTrue;
 
@@ -62,6 +63,7 @@ class Analysis : public TSelector
     LV              *GenAntiLepton;
     LV              *GenTop;
     LV              *GenAntiTop;
+    LV              *GenMet;
     VLV             *allGenJets;
     vector<int>     *BHadJetIndex;
     vector<int>     *AntiBHadJetIndex;
@@ -108,9 +110,7 @@ class Analysis : public TSelector
     TBranch        *b_eventNumber;   //!
     TBranch        *b_triggerBits;   //!
     TBranch        *b_weightGenerator;   //!
-    TBranch        *b_weightPU;   //!
-    TBranch        *b_weightPU_Up;   //!
-    TBranch        *b_weightPU_Down;   //!
+    TBranch        *b_weightPDF;
     TBranch        *b_vertMulti;   //!
     TBranch        *b_vertMultiTrue;
 
@@ -127,6 +127,7 @@ class Analysis : public TSelector
     TBranch        *b_allGenJets;   //!
     TBranch        *b_BHadJetIndex;   //!
     TBranch        *b_AntiBHadJetIndex;   //!
+    TBranch        *b_GenMet;
 
     TBranch        *b_BHadrons;   //!
     TBranch        *b_AntiBHadrons;   //!
@@ -186,7 +187,8 @@ class Analysis : public TSelector
     TH2 *h_GenRecoLeptonpT,*h_GenRecoAntiLeptonpT,*h_GenRecoLeptonEta,*h_GenRecoAntiLeptonEta, *h_GenRecoLLBarMass, *h_GenRecoLLBarpT;
     TH2 *h_GenRecoBJetpT,*h_GenRecoAntiBJetpT, *h_GenRecoBJetEta,*h_GenRecoAntiBJetEta, *h_GenRecoBJetRapidity, *h_GenRecoAntiBJetRapidity;//, *h_GenRecoBJetE, *h_GenRecoAntiBJetE;;
     TH2 *h_GenRecoToppT,*h_GenRecoAntiToppT,*h_GenRecoTopRapidity,*h_GenRecoAntiTopRapidity, *h_GenRecoTTBarMass, *h_GenRecoTTBarpT, *h_GenRecoTTBarRapidity;
-
+    TH2 *h_GenRecoMet;
+    
     TH1 *h_NJetMatching;
 
     TH1 *Looseh1, *Allh1, *Zh1, *TTh1, *h_GenAll, *h_jetMulti,
@@ -196,16 +198,22 @@ class Analysis : public TSelector
 
     TH1 *h_HypTTBarMass, *h_HypTTBarRapidity, *h_HypTTBarpT;
     TH1 *h_HypLLBarMass, *h_HypLLBarpT;
+    TH1 *h_HypMet;
 
     TH1 *h_VisGenTTBarMass,*h_VisGenTTBarRapidity,*h_VisGenTTBarpT;
     TH1 *h_VisGenTopRapidity,*h_VisGenAntiTopRapidity;
     TH1 *h_VisGenLLBarMass,*h_VisGenLLBarpT;
+    TH1 *h_VisGenMet;
 
     TH1 *h_RecoTTBarMass, *h_RecoTTBarRapidity,*h_RecoTTBarpT;
     TH1 *h_RecoToppT,*h_RecoAntiToppT,*h_RecoTopRapidity,*h_RecoAntiTopRapidity;
     TH1 *h_RecoLLBarMass, *h_RecoLLBarpT;
     TH1 *h_RecoLeptonpT,*h_RecoAntiLeptonpT,*h_RecoLeptonEta,*h_RecoAntiLeptonEta;
     TH1 *h_RecoBJetpT,*h_RecoAntiBJetpT, *h_RecoBJetRapidity,*h_RecoAntiBJetRapidity,*h_RecoBJetEta,*h_RecoAntiBJetEta;
+    TH1 *h_RecoMet;
+    
+    TH2 *h_GenRecoHT;
+    TH1 *h_VisGenHT, *h_HypHT, *h_RecoHT;
 
     TH1 *h_vertMulti, *h_vertMulti_noPU, *h_MET;
 
@@ -219,6 +227,8 @@ class Analysis : public TSelector
 
     TH1 *h_HypAntiToppT, *h_HypAntiTopEta, *h_HypAntiTopMass,*h_HypAntiTopRapidity;
     TH1 *h_HypToppT, *h_HypTopEta,*h_HypTopMass, *h_HypTopRapidity ;
+    
+    TH1* h_HypTopptSonnenschein;
 
     TH1 *h_HypAntiBJetpT, *h_HypAntiBJetEta, *h_HypAntiBJetRapidity;
     TH1 *h_HypBJetpT, *h_HypBJetEta, *h_HypBJetRapidity;
@@ -240,54 +250,43 @@ class Analysis : public TSelector
     TH1 *h_VisGenAntiLeptonpT, *h_VisGenAntiLeptonEta;
     TH1 *h_VisGenLeptonpT, *h_VisGenLeptonEta;
 
-    TH1 *h_GenAntiToppT, *h_GenAntiTopEta, *h_GenAntiTopRapidity;
-    TH1 *h_GenToppT, *h_GenTopEta, *h_GenTopRapidity;
-
-    TH1 *h_GenAntiBJetpT, *h_GenAntiBJetEta, *h_GenAntiBJetRapidity;
-    TH1 *h_GenBJetpT, *h_GenBJetEta, *h_GenBJetRapidity;
-
-    TH1 *h_GenAntiBQuarkpT, *h_GenAntiBQuarkEta, *h_GenAntiBQuarkRapidity;
-    TH1 *h_GenBQuarkpT, *h_GenBQuarkEta, *h_GenBQuarkRapidity;
-
-    TH1 *h_GenAntiLeptonpT, *h_GenAntiLeptonEta;
-    TH1 *h_GenLeptonpT, *h_GenLeptonEta;
-
     TH2 *h_GenRecoLLBarDPhi, *h_GenRecoLeptonantiBjetMass, *h_GenRecoAntiLeptonBjetMass, *h_GenRecoJetMult;
     TH1 *h_VisGenLLBarDPhi,  *h_VisGenLeptonantiBjetMass,  *h_VisGenAntiLeptonBjetMass,  *h_VisGenJetMult;
     TH1 *h_HypLLBarDPhi,     *h_HypLeptonantiBjetMass,     *h_HypAntiLeptonBjetMass,     *h_HypJetMult;
     TH1 *h_RecoLLBarDPhi,    *h_RecoLeptonantiBjetMass,    *h_RecoAntiLeptonBjetMass,    *h_RecoJetMult;
 
-    TH1D *h_HypToppTLead,    *h_HypToppTNLead,    *h_HypTopRapidityLead, *h_HypTopRapidityNLead, *h_HypTopMassLead, *h_HypTopMassNLead;
-    TH1D *h_HypLeptonpTLead, *h_HypLeptonpTNLead, *h_HypLeptonEtaLead,   *h_HypLeptonEtaNLead;
-    TH1D *h_HypBJetpTLead,   *h_HypBJetpTNLead,   *h_HypBJetEtaLead,     *h_HypBJetEtaNLead;
+    TH1 *h_HypToppTLead,    *h_HypToppTNLead,    *h_HypTopRapidityLead, *h_HypTopRapidityNLead, *h_HypTopMassLead, *h_HypTopMassNLead;
+    TH1 *h_HypLeptonpTLead, *h_HypLeptonpTNLead, *h_HypLeptonEtaLead,   *h_HypLeptonEtaNLead;
+    TH1 *h_HypBJetpTLead,   *h_HypBJetpTNLead,   *h_HypBJetEtaLead,     *h_HypBJetEtaNLead;
 
-    TH1D *h_RecoToppTLead,    *h_RecoToppTNLead,    *h_RecoTopRapidityLead, *h_RecoTopRapidityNLead, *h_RecoTopMassLead, *h_RecoTopMassNLead;
-    TH1D *h_RecoLeptonpTLead, *h_RecoLeptonpTNLead, *h_RecoLeptonEtaLead,   *h_RecoLeptonEtaNLead;
-    TH1D *h_RecoBJetpTLead,   *h_RecoBJetpTNLead,   *h_RecoBJetEtaLead,     *h_RecoBJetEtaNLead;
+    TH1 *h_RecoToppTLead,    *h_RecoToppTNLead,    *h_RecoTopRapidityLead, *h_RecoTopRapidityNLead, *h_RecoTopMassLead, *h_RecoTopMassNLead;
+    TH1 *h_RecoLeptonpTLead, *h_RecoLeptonpTNLead, *h_RecoLeptonEtaLead,   *h_RecoLeptonEtaNLead;
+    TH1 *h_RecoBJetpTLead,   *h_RecoBJetpTNLead,   *h_RecoBJetEtaLead,     *h_RecoBJetEtaNLead;
 
-    TH1D *h_VisGenToppTLead,    *h_VisGenToppTNLead,    *h_VisGenTopRapidityLead, *h_VisGenTopRapidityNLead, *h_VisGenTopMassLead, *h_VisGenTopMassNLead;
-    TH1D *h_VisGenLeptonpTLead, *h_VisGenLeptonpTNLead, *h_VisGenLeptonEtaLead,   *h_VisGenLeptonEtaNLead;
-    TH1D *h_VisGenBJetpTLead,   *h_VisGenBJetpTNLead,   *h_VisGenBJetEtaLead,     *h_VisGenBJetEtaNLead;
+    TH1 *h_VisGenToppTLead,    *h_VisGenToppTNLead,    *h_VisGenTopRapidityLead, *h_VisGenTopRapidityNLead, *h_VisGenTopMassLead, *h_VisGenTopMassNLead;
+    TH1 *h_VisGenLeptonpTLead, *h_VisGenLeptonpTNLead, *h_VisGenLeptonEtaLead,   *h_VisGenLeptonEtaNLead;
+    TH1 *h_VisGenBJetpTLead,   *h_VisGenBJetpTNLead,   *h_VisGenBJetEtaLead,     *h_VisGenBJetEtaNLead;
 
-    TH2D *h_GenRecoToppTLead,    *h_GenRecoToppTNLead,    *h_GenRecoTopRapidityLead, *h_GenRecoTopRapidityNLead, *h_GenRecoTopMassLead, *h_GenRecoTopMassNLead;
-    TH2D *h_GenRecoLeptonpTLead, *h_GenRecoLeptonpTNLead, *h_GenRecoLeptonEtaLead,   *h_GenRecoLeptonEtaNLead;
-    TH2D *h_GenRecoBJetpTLead,   *h_GenRecoBJetpTNLead,   *h_GenRecoBJetEtaLead,     *h_GenRecoBJetEtaNLead;
+    TH2 *h_GenRecoToppTLead,    *h_GenRecoToppTNLead,    *h_GenRecoTopRapidityLead, *h_GenRecoTopRapidityNLead, *h_GenRecoTopMassLead, *h_GenRecoTopMassNLead;
+    TH2 *h_GenRecoLeptonpTLead, *h_GenRecoLeptonpTNLead, *h_GenRecoLeptonEtaLead,   *h_GenRecoLeptonEtaNLead;
+    TH2 *h_GenRecoBJetpTLead,   *h_GenRecoBJetpTNLead,   *h_GenRecoBJetEtaLead,     *h_GenRecoBJetEtaNLead;
 
+    
 //     //Begin: Plots for Carmen
-//     TH1D *h_RecoLeadingJetpT,    *h_RecoNLeadingJetpT,    *h_RecoLeadingJetEta,    *h_RecoNLeadingJetEta;
-//     TH1D *h_HypLeadingJetpT,     *h_HypNLeadingJetpT,     *h_HypLeadingJetEta,     *h_HypNLeadingJetEta;
-//     TH2D *h_GenRecoLeadingJetpT, *h_GenRecoLeadingJetEta, *h_GenRecoNLeadingJetpT, *h_GenRecoNLeadingJetEta;
-//     TH1D *h_VisGenLeadingJetpT,  *h_VisGenLeadingJetEta,  *h_VisGenNLeadingJetpT,  *h_VisGenNLeadingJetEta;
+//     TH1 *h_RecoLeadingJetpT,    *h_RecoNLeadingJetpT,    *h_RecoLeadingJetEta,    *h_RecoNLeadingJetEta;
+//     TH1 *h_HypLeadingJetpT,     *h_HypNLeadingJetpT,     *h_HypLeadingJetEta,     *h_HypNLeadingJetEta;
+//     TH2 *h_GenRecoLeadingJetpT, *h_GenRecoLeadingJetEta, *h_GenRecoNLeadingJetpT, *h_GenRecoNLeadingJetEta;
+//     TH1 *h_VisGenLeadingJetpT,  *h_VisGenLeadingJetEta,  *h_VisGenNLeadingJetpT,  *h_VisGenNLeadingJetEta;
 // 
 //     //Begin: Plots for Carmen
-//     TH1D *h_RecoExtraJetpT,  *h_HypExtraJetpT, *h_VisGenExtraJetpT, *h_RecoExtraJetEta, *h_HypExtraJetEta, *h_VisGenExtraJetEta;
-//     TH1D *h_RecoExtraJetpT2, *h_HypExtraJetpT2, *h_VisGenExtraJetpT2, *h_RecoExtraJetEta2, *h_HypExtraJetEta2, *h_VisGenExtraJetEta2;
-//     TH1D *h_RecoExtraJetpT3, *h_HypExtraJetpT3, *h_VisGenExtraJetpT3, *h_RecoExtraJetEta3, *h_HypExtraJetEta3, *h_VisGenExtraJetEta3;
-//     TH1D *h_RecoExtraJetpT4, *h_HypExtraJetpT4, *h_VisGenExtraJetpT4, *h_RecoExtraJetEta4, *h_HypExtraJetEta4, *h_VisGenExtraJetEta4;
-//     TH2D *h_GenRecoExtraJetpT, *h_GenRecoExtraJetEta, *h_GenRecoExtraJetpT2, *h_GenRecoExtraJetEta2, *h_GenRecoExtraJetpT3, *h_GenRecoExtraJetEta3, *h_GenRecoExtraJetpT4, *h_GenRecoExtraJetEta4;
+//     TH1 *h_RecoExtraJetpT,  *h_HypExtraJetpT, *h_VisGenExtraJetpT, *h_RecoExtraJetEta, *h_HypExtraJetEta, *h_VisGenExtraJetEta;
+//     TH1 *h_RecoExtraJetpT2, *h_HypExtraJetpT2, *h_VisGenExtraJetpT2, *h_RecoExtraJetEta2, *h_HypExtraJetEta2, *h_VisGenExtraJetEta2;
+//     TH1 *h_RecoExtraJetpT3, *h_HypExtraJetpT3, *h_VisGenExtraJetpT3, *h_RecoExtraJetEta3, *h_HypExtraJetEta3, *h_VisGenExtraJetEta3;
+//     TH1 *h_RecoExtraJetpT4, *h_HypExtraJetpT4, *h_VisGenExtraJetpT4, *h_RecoExtraJetEta4, *h_HypExtraJetEta4, *h_VisGenExtraJetEta4;
+//     TH2 *h_GenRecoExtraJetpT, *h_GenRecoExtraJetEta, *h_GenRecoExtraJetpT2, *h_GenRecoExtraJetEta2, *h_GenRecoExtraJetpT3, *h_GenRecoExtraJetEta3, *h_GenRecoExtraJetpT4, *h_GenRecoExtraJetEta4;
 // 
-//     TH1D *h_RecoJetMultpt40, *h_HypJetMultpt40, *h_VisGenJetMultpt40, *h_RecoJetMultpt60, *h_HypJetMultpt60, *h_VisGenJetMultpt60;
-//     TH2D *h_GenRecoJetMultpt40, *h_GenRecoJetMultpt60, *h_GenRecoJetMultQ0, *h_GenRecoJetMultTotal;
+//     TH1 *h_RecoJetMultpt40, *h_HypJetMultpt40, *h_VisGenJetMultpt40, *h_RecoJetMultpt60, *h_HypJetMultpt60, *h_VisGenJetMultpt60;
+//     TH2 *h_GenRecoJetMultpt40, *h_GenRecoJetMultpt60, *h_GenRecoJetMultQ0, *h_GenRecoJetMultTotal;
 //     //End: Plots for Carmen
     
     // BEGIN of btag SF stuff
@@ -334,11 +333,13 @@ class Analysis : public TSelector
     bool isMC;
     bool getLeptonPair(size_t& LeadLeptonNumber, size_t& NLeadLeptonNumber);
     bool runViaTau;
+    int pdf_no;
     TH1* weightedEvents;
     PUReweighter *pureweighter;
     
     double calculateBtagSF();
     double getJetHT(const VLV& jet, int pt_cut);
+    void orderLVByPt(LV &leading, LV &Nleading, const LV &lv1, const LV &lv2);
     
 public:
     Analysis ( TTree * = 0 ) { runViaTau = 0; pureweighter = 0; }
@@ -352,6 +353,7 @@ public:
     void SetWeightedEvents(TH1* weightedEvents);
     void SetRunViaTau(bool runViaTau);
     void SetPUReweighter(PUReweighter *pu);
+    void SetPDF(int pdf_no);
     ClassDef ( Analysis,0 );
 };
 

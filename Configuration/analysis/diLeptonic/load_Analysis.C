@@ -70,6 +70,11 @@ void load_Analysis(TString validFilenamePattern, TString systematic){
             continue;
         }
         
+        if (systematic == "PDF" && (!isSignal || !(systematics_from_file->GetString() == "Nominal"))) {
+            cout << "Skipping file: is not signal or not nominal -- and running PDFs\n";
+            continue;
+        }
+        
         TString btagFile = "BTagEff/Nominal/" + channel->GetString() + "/" 
             + channel->GetString() + "_ttbarsignalplustau.root";
         
@@ -88,21 +93,34 @@ void load_Analysis(TString validFilenamePattern, TString systematic){
         selector->SetRunViaTau(0);
 
         TTree *tree = dynamic_cast<TTree*>(file.Get("writeNTuple/NTuple"));
-        if (! tree) { std::cerr << "Error: Tree not found!"; return; }
+        if (! tree) { std::cerr << "Error: Tree not found!\n"; exit(854); }
         
         TChain chain("writeNTuple/NTuple");
         chain.Add(filename);
 //         chain.SetProof(); //will work from 5.34 onwards
         
-        chain.Process(selector);
-        
-        if (isSignal) {
-            selector->SetRunViaTau(1);
-            filename.ReplaceAll("signalplustau", "bgviatau");
-            selector->SetOutputfilename(filename);
+        if (systematic == "PDF") {
+            TH1* pdfWeights = dynamic_cast<TH1*>(file.Get("EventsBeforeSelection/pdfEventWeights"));
+            if (!pdfWeights) { std::cerr << "Error: pdfEventWeights histo missing!\n"; exit(831); }
+            for (int pdf_no = 1; pdfWeights->GetBinContent(pdf_no) > 0; ++pdf_no) {
+                TString pdfName("PDF_");
+                pdfName += (pdf_no+1)/2;
+                pdfName += (pdf_no % 2 ? "_UP" : "_DOWN");
+                selector->SetSystematic(pdfName);
+                weightedEvents->SetBinContent(1, pdfWeights->GetBinContent(pdf_no));
+                selector->SetWeightedEvents(weightedEvents);
+                selector->SetPDF(pdf_no);
+                chain.Process(selector);
+            }
+        } else {
             chain.Process(selector);
+            if (isSignal) {
+                selector->SetRunViaTau(1);
+                filename.ReplaceAll("signalplustau", "bgviatau");
+                selector->SetOutputfilename(filename);
+                chain.Process(selector);
+            }
         }
-        
         file.Close();
     }
 }

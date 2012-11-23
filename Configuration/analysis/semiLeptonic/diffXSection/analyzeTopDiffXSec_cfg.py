@@ -386,22 +386,22 @@ if(not options.sample=="none"):
         usedSample="TopAnalysis/Configuration/Fall11/singleTop_twchannelDR_PythiaPowhegZ2_Fall11_AOD_cff"
 	outputFileName+="SingleTopTW"
     elif(options.sample=="singleTopTwScaleDown"):        
-        usedSample="TopAnalysis/Configuration/Fall11/singleTop_twchannelDR_scale_down_PythiaPowhegZ2_Fall11_AOD_cff"
+        usedSample="TopAnalysis/Configuration/Fall11/singleTop_tWchannelDR_scale_down_PythiaPowhegZ2_Fall11_AOD_cff"
 	additionalEventWeights=False
 	outputFileName+="SingleTopTWScaleDown"
     elif(options.sample=="singleTopTwScaleUp"):        
-        usedSample="TopAnalysis/Configuration/Fall11/singleTop_twchannelDR_scale_up_PythiaPowhegZ2_Fall11_AOD_cff"
+        usedSample="TopAnalysis/Configuration/Fall11/singleTop_tWchannelDR_scale_up_PythiaPowhegZ2_Fall11_AOD_cff"
 	additionalEventWeights=False
 	outputFileName+="SingleTopTWScaleUp"
     elif(options.sample=="singleAntiTopTw"):        
         usedSample="TopAnalysis/Configuration/Fall11/singleAntiTop_twchannelDR_PythiaPowhegZ2_Fall11_AOD_cff"
 	outputFileName+="SingleAntiTopTW"
     elif(options.sample=="singleAntiTopTwScaleDown"):        
-        usedSample="TopAnalysis/Configuration/Fall11/singleAntiTop_twchannelDR_scale_down_PythiaPowhegZ2_Fall11_AOD_cff"
+        usedSample="TopAnalysis/Configuration/Fall11/singleAntiTop_tWchannelDR_scale_down_PythiaPowhegZ2_Fall11_AOD_cff"
 	additionalEventWeights=False
 	outputFileName+="SingleAntiTopTWScaleDown"
     elif(options.sample=="singleAntiTopTwScaleUp"):        
-        usedSample="TopAnalysis/Configuration/Fall11/singleAntiTop_twchannelDR_scale_up_PythiaPowhegZ2_Fall11_AOD_cff"
+        usedSample="TopAnalysis/Configuration/Fall11/singleAntiTop_tWchannelDR_scale_up_PythiaPowhegZ2_Fall11_AOD_cff"
 	additionalEventWeights=False
 	outputFileName+="SingleAntiTopTWScaleUp"
     elif(options.sample=="zprime_m500gev_w5000mev"):        

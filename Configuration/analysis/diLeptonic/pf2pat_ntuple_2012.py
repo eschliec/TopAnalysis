@@ -21,7 +21,7 @@ process = cms.Process("pf2patDilepton")
 options = VarParsing.VarParsing ('standard')
 options.register('runOnMC', True, VarParsing.VarParsing.multiplicity.singleton, VarParsing.VarParsing.varType.bool, "decide to run on MC or data")
 options.register('runOnAOD', True, VarParsing.VarParsing.multiplicity.singleton, VarParsing.VarParsing.varType.bool, "run on AOD")
-options.register('globalTag', 'START52_V9::All', VarParsing.VarParsing.multiplicity.singleton, VarParsing.VarParsing.varType.string, "which globalTag should be used")
+options.register('globalTag', '', VarParsing.VarParsing.multiplicity.singleton, VarParsing.VarParsing.varType.string, "which globalTag should be used")
 options.register('mode', '', VarParsing.VarParsing.multiplicity.singleton, VarParsing.VarParsing.varType.string, "which type of analysis to run")
 options.register('samplename', '', VarParsing.VarParsing.multiplicity.singleton, VarParsing.VarParsing.varType.string, "which sample to run over")
 options.register('inputScript', '', VarParsing.VarParsing.multiplicity.singleton, VarParsing.VarParsing.varType.string, "python file with input source")
@@ -740,13 +740,13 @@ if options.runOnMC:
     process.scaledJetEnergy.resolutionFactors    = cms.vdouble(1.052, 1.057, 1.096, 1.134, 1.288) # JER standard
 
     #please change this on the top where the defaults for the VarParsing are given
-    if options.systematicsName == "JESUP":
+    if options.systematicsName == "JES_UP":
         process.scaledJetEnergy.scaleType = "jes:up"
-    if options.systematicsName == "JESDOWN":
+    if options.systematicsName == "JES_DOWN":
         process.scaledJetEnergy.scaleType = "jes:down"
-    if options.systematicsName == "JERUP":
+    if options.systematicsName == "JER_UP":
         process.scaledJetEnergy.resolutionFactors = cms.vdouble(1.114, 1.113, 1.159, 1.221, 1.443)
-    if options.systematicsName == "JERDOWN":
+    if options.systematicsName == "JER_DOWN":
         process.scaledJetEnergy.resolutionFactors = cms.vdouble(0.991, 1.002, 1.034, 1.049, 1.135)
     
 

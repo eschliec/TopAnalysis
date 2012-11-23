@@ -4,8 +4,11 @@ COMPFLAGS=`root-config --cflags` -Wall -Wextra -O2 -g -std=c++0x
 
 all: load_Analysis
 
-load_Analysis: dict.o Analysis.o load_Analysis.C PUReweighter.o
-	g++ $(COMPFLAGS) $(ROOTLIBS) -lGenVector -lProof dict.o Analysis.o load_Analysis.C PUReweighter.o -o load_Analysis
+load_Analysis: dict.o Analysis.o load_Analysis.o PUReweighter.o
+	g++ $(ROOTLIBS) -lGenVector -lProof dict.o Analysis.o load_Analysis.o PUReweighter.o -o load_Analysis
+
+load_Analysis.o:
+	g++ $(COMPFLAGS) -c -o load_Analysis.o load_Analysis.C
 
 dict.o: dict.cpp
 	g++ $(COMPFLAGS) -c -o dict.o dict.cpp

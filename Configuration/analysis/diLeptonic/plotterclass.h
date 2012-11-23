@@ -118,12 +118,12 @@ class Plotter {
 
   double SignalEventswithWeight;
   //static constexpr double topxsec = 220.0; //again changes with normalization; //Use this option when compiling via g++
-  static const double topxsec = 220.0; //again changes with normalization;       //Use this option when running it via 'root -l -b -q 'Histo.C+g...'
+  static const double topxsec = 213.192; //again changes with normalization;       //Use this option when running it via 'root -l -b -q 'Histo.C+g...'
   
   // DAVID
   bool doUnfolding; 
   bool doSystematics;
-  bool drawNLOCurves, drawMadgraph, drawMCATNLO, drawKidonakis, drawPOWHEG;
+  bool drawNLOCurves, drawMadSpinCorr, drawMCATNLO, drawKidonakis, drawPOWHEG;
   TString outpath;
   TString outpathPlots;
   TString outpathResults;
@@ -144,14 +144,14 @@ void Plotter::UnfoldingOptions(bool doSVD)
 {
   doUnfolding = doSVD;
   doSystematics = true;
-  drawNLOCurves = false;
-  /*
+  drawNLOCurves = true;
+
   //Still to add the next booleans in the code
-  drawMadgraph  = true;
-  drawMCATNLO   = true;
-  drawKidonakis = true;
+  drawMadSpinCorr  = true;
+  drawMCATNLO   = false;
+  drawKidonakis = false;
   drawPOWHEG    = true;
-  */
+
 }
 
 
@@ -2343,18 +2343,19 @@ void Plotter::PlotDiffXSec(TString Channel){
   
     
   
-    TH1* mcnlohist=0, *mcnlohistup=0, *mcnlohistdown=0, *powheghist=0;
+    TH1* mcnlohist=0, *mcnlohistup=0, *mcnlohistdown=0, *powheghist=0, *spincorrhist=0;
     TH1* mcnlohistnorm=0;
     TGraph *mcatnloBand=0;
     
     TH1* mcnlohistnormBinned = 0, *mcnlohistupBinned = 0;
     TH1 *mcnlohistdownBinned = 0, *mcnlohistBinned = 0;
     TH1* powheghistBinned = 0;
+    TH1* spincorrhistBinned = 0;
     
     TH1F *Kidoth1_Binned = 0;
     TFile *KidoFile = 0;
     
-    if (drawNLOCurves) {
+    if (drawNLOCurves && drawMCATNLO) {
         mcnlohist = GetNloCurve(newname,"MCATNLO");
         double mcnloscale = 1./mcnlohist->Integral("width");
         if (binned_theory==false) mcnlohist->Rebin(2);mcnlohist->Scale(0.5); //#####
@@ -2407,23 +2408,12 @@ void Plotter::PlotDiffXSec(TString Channel){
         //    if (binned_theory==false) mcnlohistdown->Rebin(5);mcnlohistdown->Scale(0.2);
         mcnlohistdownBinned    = mcnlohistdown->Rebin(bins,"genBinHist", Xbins);
 
-        powheghist = GetNloCurve(newname, "POWHEG");
-        double powhegscale = 1./powheghist->Integral("width");
-        if (binned_theory==false) powheghist->Rebin(2);powheghist->Scale(0.5);
-        powheghist->Scale(powhegscale);
-            
-        powheghistBinned = powheghist->Rebin(bins,"powhegplot",Xbins);	
+        mcnlohistBinned = mcnlohist->Rebin(bins,"mcnloplot",Xbins);     
         for (Int_t bin=0; bin<bins; bin++){
-        powheghistBinned->SetBinContent(bin+1,powheghistBinned->GetBinContent(bin+1)/((Xbins[bin+1]-Xbins[bin])/powheghist->GetBinWidth(1)));
-        }
-        powheghistBinned->Scale(1./powheghistBinned->Integral("width"));
-
-        mcnlohistBinned = mcnlohist->Rebin(bins,"mcnloplot",Xbins);	
-        for (Int_t bin=0; bin<bins; bin++){
-        mcnlohistBinned->SetBinContent(bin+1,mcnlohistBinned->GetBinContent(bin+1)/((Xbins[bin+1]-Xbins[bin])/mcnlohist->GetBinWidth(1)));
-        mcnlohistupBinned->SetBinContent(bin+1,mcnlohistupBinned->GetBinContent(bin+1)/((Xbins[bin+1]-Xbins[bin])/mcnlohistup->GetBinWidth(1)));
-        mcnlohistdownBinned->SetBinContent(bin+1,mcnlohistdownBinned->GetBinContent(bin+1)/((Xbins[bin+1]-Xbins[bin])/mcnlohistdown->GetBinWidth(1)));
-        mcnlohistnormBinned->SetBinContent(bin+1,mcnlohistnormBinned->GetBinContent(bin+1)/((Xbins[bin+1]-Xbins[bin])/mcnlohistnorm->GetBinWidth(1)));
+            mcnlohistBinned->SetBinContent(bin+1,mcnlohistBinned->GetBinContent(bin+1)/((Xbins[bin+1]-Xbins[bin])/mcnlohist->GetBinWidth(1)));
+            mcnlohistupBinned->SetBinContent(bin+1,mcnlohistupBinned->GetBinContent(bin+1)/((Xbins[bin+1]-Xbins[bin])/mcnlohistup->GetBinWidth(1)));
+            mcnlohistdownBinned->SetBinContent(bin+1,mcnlohistdownBinned->GetBinContent(bin+1)/((Xbins[bin+1]-Xbins[bin])/mcnlohistdown->GetBinWidth(1)));
+            mcnlohistnormBinned->SetBinContent(bin+1,mcnlohistnormBinned->GetBinContent(bin+1)/((Xbins[bin+1]-Xbins[bin])/mcnlohistnorm->GetBinWidth(1)));
         }
         mcnlohistBinned->Scale(1./mcnlohistBinned->Integral("width"));
         mcnlohistupBinned->Scale(1./mcnlohistnormBinned->Integral("width"));
@@ -2431,8 +2421,8 @@ void Plotter::PlotDiffXSec(TString Channel){
         mcnlohistnormBinned->Scale(1./mcnlohistnormBinned->Integral("width"));
 
         for (Int_t bin=0; bin<bins; bin++){
-        mcnlohistupBinned->SetBinContent(bin+1,(mcnlohistupBinned->GetBinContent(bin+1)/mcnlohistnormBinned->GetBinContent(bin+1))*mcnlohistBinned->GetBinContent(bin+1));
-        mcnlohistdownBinned->SetBinContent(bin+1,(mcnlohistdownBinned->GetBinContent(bin+1)/mcnlohistnormBinned->GetBinContent(bin+1))*mcnlohistBinned->GetBinContent(bin+1));
+            mcnlohistupBinned->SetBinContent(bin+1,(mcnlohistupBinned->GetBinContent(bin+1)/mcnlohistnormBinned->GetBinContent(bin+1))*mcnlohistBinned->GetBinContent(bin+1));
+            mcnlohistdownBinned->SetBinContent(bin+1,(mcnlohistdownBinned->GetBinContent(bin+1)/mcnlohistnormBinned->GetBinContent(bin+1))*mcnlohistBinned->GetBinContent(bin+1));
         }
 
         //Uncertainty band for MC@NLO
@@ -2443,15 +2433,14 @@ void Plotter::PlotDiffXSec(TString Channel){
         Double_t errorband[2*bins];
         
         for( Int_t j = 0; j< bins; j++ ){
-        x[j]=mcnlohistBinned->GetBinCenter(j+1);
-        errup[j]=(mcnlohistupBinned->GetBinContent(j+1)/mcnlohistnormBinned->GetBinContent(j+1))*mcnlohistBinned->GetBinContent(j+1);
-        errdn[j]=(mcnlohistdownBinned->GetBinContent(j+1)/mcnlohistnormBinned->GetBinContent(j+1))*mcnlohistBinned->GetBinContent(j+1);
-        
-        xband[j] = x[j];
-        errorband[j] = errdn[j]; //lower band
-        xband[2*bins-j-1] = x[j];
-        errorband[2*bins-j-1] = errup[j]; //upper band
-        
+            x[j]=mcnlohistBinned->GetBinCenter(j+1);
+            errup[j]=(mcnlohistupBinned->GetBinContent(j+1)/mcnlohistnormBinned->GetBinContent(j+1))*mcnlohistBinned->GetBinContent(j+1);
+            errdn[j]=(mcnlohistdownBinned->GetBinContent(j+1)/mcnlohistnormBinned->GetBinContent(j+1))*mcnlohistBinned->GetBinContent(j+1);
+            
+            xband[j] = x[j];
+            errorband[j] = errdn[j]; //lower band
+            xband[2*bins-j-1] = x[j];
+            errorband[2*bins-j-1] = errup[j]; //upper band
         }
         
         mcatnloBand = new TGraph(2*bins, xband, errorband);
@@ -2461,7 +2450,36 @@ void Plotter::PlotDiffXSec(TString Channel){
         mcatnloBand->SetLineWidth(2);
         mcatnloBand->SetLineStyle(5);
         
-        if(name.Contains("ToppT") || name.Contains("TopRapidity")){
+    }
+    if(drawNLOCurves && drawPOWHEG){
+        powheghist = GetNloCurve(newname, "POWHEG");
+        double powhegscale = 1./powheghist->Integral("width");
+        if (binned_theory==false) powheghist->Rebin(2);powheghist->Scale(0.5);
+        powheghist->Scale(powhegscale);
+            
+        powheghistBinned = powheghist->Rebin(bins,"powhegplot",Xbins);
+        for (Int_t bin=0; bin<bins; bin++){
+            powheghistBinned->SetBinContent(bin+1,powheghistBinned->GetBinContent(bin+1)/((Xbins[bin+1]-Xbins[bin])/powheghist->GetBinWidth(1)));
+        }
+        powheghistBinned->Scale(1./powheghistBinned->Integral("width"));
+    }
+    
+    if(drawNLOCurves && drawMadSpinCorr){
+        spincorrhist = GetNloCurve(newname, "SPINCORR");
+        double spincorrhistscale = 1./spincorrhist->Integral("width");
+        if (binned_theory==false) spincorrhist->Rebin(2);spincorrhist->Scale(0.5);
+        spincorrhist->Scale(spincorrhistscale);
+            
+        spincorrhistBinned = spincorrhist->Rebin(bins,"spincorrplot",Xbins);
+        for (Int_t bin=0; bin<bins; bin++){
+            spincorrhistBinned->SetBinContent(bin+1,spincorrhistBinned->GetBinContent(bin+1)/((Xbins[bin+1]-Xbins[bin])/spincorrhist->GetBinWidth(1)));
+        }
+        spincorrhistBinned->Scale(1./spincorrhistBinned->Integral("width"));
+    }
+    
+    
+    
+    if(drawNLOCurves && drawKidonakis && (name.Contains("ToppT") || name.Contains("TopRapidity"))){
         KidoFile=TFile::Open("dilepton_kidonakisNNLO.root");
         if(name.Contains("ToppT")){
             Kidoth1_Binned = (TH1F*)KidoFile->Get("topPt");
@@ -2469,8 +2487,9 @@ void Plotter::PlotDiffXSec(TString Channel){
         else if(name.Contains("TopRapidity")){
             Kidoth1_Binned = (TH1F*)KidoFile->Get("topY");
         }
-        }
-        
+    }
+    
+    if(drawNLOCurves){
     //    TH1 *MCFMHist;
     //    TFile* MCFMfile = new TFile("diffCrossSections_normalized_tt_bbl_todk_MSTW200_172_172_ful_central.root","READ");
     //
@@ -2506,7 +2525,7 @@ void Plotter::PlotDiffXSec(TString Channel){
     if (ymax!=0) h_GenDiffXSec->SetMaximum(ymax);
     //    h_DiffXSec->Draw("SAME, EP0");
     gStyle->SetEndErrorSize(8);
-    if (drawNLOCurves) {
+    if (drawNLOCurves && drawMCATNLO) {
     //    mcatnloBand->Draw("same, F");
         mcnlohistupBinned->SetFillColor(kGray);
         mcnlohistupBinned->SetLineColor(kGray);
@@ -2522,36 +2541,43 @@ void Plotter::PlotDiffXSec(TString Channel){
     h_GenDiffXSec->SetLineColor(kRed+1);
     h_GenDiffXSec->SetLineStyle(1);
 
-    if (drawNLOCurves) {
+    if (drawNLOCurves && drawMCATNLO) {
         mcnlohist->SetLineColor(kBlue); //#####################
         mcnlohist->SetLineStyle(5);
         mcnlohistBinned->SetLineColor(kBlue); //#####################
         mcnlohistBinned->SetLineWidth(2);
         mcnlohistBinned->SetLineStyle(5);
+        if(binned_theory==false){mcnlohist->Draw("SAME,C");}
+        else{mcnlohistBinned->Draw("SAME");}
+    }
+    if(drawNLOCurves && drawPOWHEG){
         powheghist->SetLineColor(kGreen+1); //#####################
         powheghist->SetLineStyle(7);
         powheghistBinned->SetLineColor(kGreen+1); //#####################
         powheghistBinned->SetLineWidth(2);
         powheghistBinned->SetLineStyle(7);
         
-        if(binned_theory==false){
-        mcnlohist->Draw("SAME,C");
-        powheghist->Draw("SAME,C");
-        }else{
-        mcnlohistBinned->Draw("SAME");
-        powheghistBinned->Draw("SAME");
-        }
-
-        if(name.Contains("ToppT") || name.Contains("TopRapidity")){
+        if(binned_theory==false){powheghist->Draw("SAME,C");}
+        else{powheghistBinned->Draw("SAME");}
+    }
+    if(drawNLOCurves && drawMadSpinCorr){
+        spincorrhist->SetLineColor(kOrange+3); //#####################
+        spincorrhist->SetLineStyle(2);
+        spincorrhistBinned->SetLineColor(kOrange+3); //#####################
+        spincorrhistBinned->SetLineWidth(2);
+        spincorrhistBinned->SetLineStyle(2);
+        
+        if(binned_theory==false){spincorrhist->Draw("SAME,C");}
+        else{spincorrhistBinned->Draw("SAME");}
+    }
+    
+    if(drawNLOCurves && drawKidonakis){
+        if(!name.Contains("ToppT") && !name.Contains("TopRapidity")){}
         Kidoth1_Binned->SetLineWidth(2);
         Kidoth1_Binned->SetLineColor(kOrange-3); //########################
         Kidoth1_Binned->SetLineStyle(1);
         Kidoth1_Binned->Draw("SAME");
-        }
-        //MCFMHist->Draw("SAME");
-        //h_DiffXSec->Draw("SAME, EP0");
     }
-
     if(!name.Contains("HypLLBarpT") && !name.Contains("HypTTBarpT") && !name.Contains("HypLeptonpT") && !name.Contains("HypBJetpT")){
         TH1D *SmoothMadgraph =(TH1D*)GenPlotTheory->Clone("SmoothMadgraph");
         SmoothMadgraph->Smooth(10);
@@ -2579,9 +2605,10 @@ void Plotter::PlotDiffXSec(TString Channel){
     leg2.AddEntry(h_DiffXSec, "Data",    "p");
     leg2.AddEntry(GenPlotTheory,            "MadGraph","l");
     if (drawNLOCurves) {
-        if (mcnlohistup->GetEntries() && mcnlohistdown->GetEntries()) leg2.AddEntry(mcatnloBand,      "MC@NLO",  "fl");
-        if (powheghist->GetEntries())  leg2.AddEntry(powheghistBinned,       "POWHEG",  "l");        
-        if (name.Contains("ToppT") || name.Contains("TopRapidity")) leg2.AddEntry(Kidoth1_Binned,       "Approx. NNLO",  "l");
+        if (drawMCATNLO && mcnlohistup->GetEntries() && mcnlohistdown->GetEntries())   leg2.AddEntry(mcatnloBand,      "MC@NLO",  "fl");
+        if (drawPOWHEG && powheghist->GetEntries())                                    leg2.AddEntry(powheghistBinned, "POWHEG",  "l");
+        if (drawMadSpinCorr && spincorrhist->GetEntries())                             leg2.AddEntry(spincorrhistBinned, "MadGraph SC",  "l");
+        if (drawKidonakis && (name.Contains("ToppT") || name.Contains("TopRapidity"))) leg2.AddEntry(Kidoth1_Binned,   "Approx. NNLO",  "l");
     }
     
     leg2.SetFillStyle(0);
@@ -2592,9 +2619,8 @@ void Plotter::PlotDiffXSec(TString Channel){
     leg2.SetY2NDC(1.0-gStyle->GetPadTopMargin()-gStyle->GetTickLength());
     leg2.SetTextSize(0.04);
     leg2.Draw("same");
-    if (drawNLOCurves) {
-        if (name.Contains("ToppT"))        DrawLabel("(arXiv:1009.4935)", leg2.GetX1NDC()+0.06, leg2.GetY1NDC()-0.025, leg2.GetX2NDC(), leg2.GetY1NDC(), 12, 0.025);
-        if (name.Contains("TopRapidity"))  DrawLabel("(arXiv:1105.5167)", leg2.GetX1NDC()+0.06, leg2.GetY1NDC()-0.025, leg2.GetX2NDC(), leg2.GetY1NDC(), 12, 0.025);
+     if (drawNLOCurves && drawKidonakis &&  (name.Contains("ToppT") || name.Contains("TopRapidity"))){
+        DrawLabel("(arXiv:1210.7813v1)", leg2.GetX1NDC()+0.06, leg2.GetY1NDC()-0.025, leg2.GetX2NDC(), leg2.GetY1NDC(), 12, 0.025);
     }
     
     h_GenDiffXSec->Draw("SAME");
@@ -2751,72 +2777,84 @@ TH1* Plotter::GetNloCurve(const char *particle, const char *quantity, const char
 
 TH1* Plotter::GetNloCurve(TString NewName, TString Generator){
 
-  TH1::AddDirectory(kFALSE);
-  TString histname("VisGen"+NewName);
-  
-  TH1* hist;
-  
-  TFile* file = 0;
-  TFile* file1 = 0;
-  TFile* file2 = 0;
+    TH1::AddDirectory(kFALSE);
+    TString histname("VisGen"+NewName);
+    
+    TH1* hist;
+    
+    TFile* file = 0;
+    TFile* file1 = 0;
+    TFile* file2 = 0;
 
-    
-  if(Generator=="MCATNLO"){
-    if(channelType == 0)file = TFile::Open("selectionRoot/"+Generator+"/ee/ttbarsignalplustau_mcatnlo.root","READ");
-    else if(channelType == 1)file = TFile::Open("selectionRoot/"+Generator+"/mumu/ttbarsignalplustau_mcatnlo.root","READ");
-    else if(channelType == 2)file = TFile::Open("selectionRoot/"+Generator+"/emu/ttbarsignalplustau_mcatnlo.root","READ");
-    else {
-      file = TFile::Open("selectionRoot/"+Generator+"/emu/ttbarsignalplustau_mcatnlo.root","READ");
-      file1 = TFile::Open("selectionRoot/"+Generator+"/ee/ttbarsignalplustau_mcatnlo.root","READ");
-      file2 = TFile::Open("selectionRoot/"+Generator+"/mumu/ttbarsignalplustau_mcatnlo.root","READ");
+        
+    if(Generator=="MCATNLO"){
+        if(channelType == 0)file = TFile::Open("selectionRoot/"+Generator+"/ee/ttbarsignalplustau_mcatnlo.root","READ");
+        else if(channelType == 1)file = TFile::Open("selectionRoot/"+Generator+"/mumu/ttbarsignalplustau_mcatnlo.root","READ");
+        else if(channelType == 2)file = TFile::Open("selectionRoot/"+Generator+"/emu/ttbarsignalplustau_mcatnlo.root","READ");
+        else {
+            file = TFile::Open("selectionRoot/"+Generator+"/emu/ttbarsignalplustau_mcatnlo.root","READ");
+            file1 = TFile::Open("selectionRoot/"+Generator+"/ee/ttbarsignalplustau_mcatnlo.root","READ");
+            file2 = TFile::Open("selectionRoot/"+Generator+"/mumu/ttbarsignalplustau_mcatnlo.root","READ");
+        }
     }
-  }else{
-    if(channelType == 0)file = TFile::Open("selectionRoot/"+Generator+"/ee/ttbarsignalplustau_powheg.root","READ");
-    else if(channelType == 1)file = TFile::Open("selectionRoot/"+Generator+"/mumu/ttbarsignalplustau_powheg.root","READ");
-    else if(channelType == 2)file = TFile::Open("selectionRoot/"+Generator+"/emu/ttbarsignalplustau_powheg.root","READ");
-    else {
-      file = TFile::Open("selectionRoot/"+Generator+"/emu/ttbarsignalplustau_powheg.root","READ");
-      file1 = TFile::Open("selectionRoot/"+Generator+"/ee/ttbarsignalplustau_powheg.root","READ");
-      file2 = TFile::Open("selectionRoot/"+Generator+"/mumu/ttbarsignalplustau_powheg.root","READ");
+    else if(Generator="POWHEG"){
+        if(channelType == 0)file = TFile::Open("selectionRoot/"+Generator+"/ee/ee_ttbarsignalplustau_powheg.root","READ");
+        else if(channelType == 1)file = TFile::Open("selectionRoot/"+Generator+"/mumu/mumu_ttbarsignalplustau_powheg.root","READ");
+        else if(channelType == 2)file = TFile::Open("selectionRoot/"+Generator+"/emu/emu_ttbarsignalplustau_powheg.root","READ");
+        else {
+            file = TFile::Open("selectionRoot/"+Generator+"/emu/emu_ttbarsignalplustau_powheg.root","READ");
+            file1 = TFile::Open("selectionRoot/"+Generator+"/ee/ee_ttbarsignalplustau_powheg.root","READ");
+            file2 = TFile::Open("selectionRoot/"+Generator+"/mumu/mumu_ttbarsignalplustau_powheg.root","READ");
+        }
     }
-  }
+    else{
+        if(channelType == 0)file = TFile::Open("selectionRoot/"+Generator+"/ee/ee_ttbarsignalplustau_ttbarsignalplustau_FullLeptMadgraphWithSpinCorrelation.root","READ");
+        else if(channelType == 1)file = TFile::Open("selectionRoot/"+Generator+"/mumu/mumu_ttbarsignalplustau_ttbarsignalplustau_FullLeptMadgraphWithSpinCorrelation.root","READ");
+        else if(channelType == 2)file = TFile::Open("selectionRoot/"+Generator+"/emu/emu_ttbarsignalplustau_ttbarsignalplustau_FullLeptMadgraphWithSpinCorrelation.root","READ");
+        else {
+            file = TFile::Open("selectionRoot/"+Generator+"/emu/emu_ttbarsignalplustau_ttbarsignalplustau_FullLeptMadgraphWithSpinCorrelation.root","READ");
+            file1 = TFile::Open("selectionRoot/"+Generator+"/ee/ee_ttbarsignalplustau_ttbarsignalplustau_FullLeptMadgraphWithSpinCorrelation.root","READ");
+            file2 = TFile::Open("selectionRoot/"+Generator+"/mumu/mumu_ttbarsignalplustau_ttbarsignalplustau_FullLeptMadgraphWithSpinCorrelation.root","READ");
+        }
 
-  if (file && !file->IsZombie()) {
-    if (channelType<3)hist=(TH1*)file->Get("VisGen"+NewName)->Clone();
-    else {
-      hist=(TH1*)file->Get("VisGen"+NewName)->Clone();
-      hist->Add((TH1*)file1->Get("VisGen"+NewName)->Clone());
-      hist->Add((TH1*)file2->Get("VisGen"+NewName)->Clone());
     }
-    if(NewName.Contains("Lepton")||NewName.Contains("Top")||NewName.Contains("BJet")){
-      if(channelType<3)hist->Add((TH1*)file->Get("VisGenAnti"+NewName)->Clone());
-      else{
-	hist->Add((TH1*)file->Get("VisGenAnti"+NewName)->Clone());
-	hist->Add((TH1*)file1->Get("VisGenAnti"+NewName)->Clone());
-	hist->Add((TH1*)file2->Get("VisGenAnti"+NewName)->Clone());
-      }
-    }
-    if(!hist){
-      std::cerr << "WARNING in GetNloCurve: input histogram '" << histname << "' could not been opened! Returning dummy!" << endl;
-      hist = new TH1D();
-      return hist;
+
+    if (file && !file->IsZombie()) {
+        if (channelType<3)hist=(TH1*)file->Get("VisGen"+NewName)->Clone();
+        else {
+        hist=(TH1*)file->Get("VisGen"+NewName)->Clone();
+        hist->Add((TH1*)file1->Get("VisGen"+NewName)->Clone());
+        hist->Add((TH1*)file2->Get("VisGen"+NewName)->Clone());
+        }
+        if(!NewName.Contains("Lead") && (NewName.Contains("Lepton")||NewName.Contains("Top")||NewName.Contains("BJet"))){
+            if(channelType<3)hist->Add((TH1*)file->Get("VisGenAnti"+NewName)->Clone());
+            else{
+                hist->Add((TH1*)file->Get("VisGenAnti"+NewName)->Clone());
+                hist->Add((TH1*)file1->Get("VisGenAnti"+NewName)->Clone());
+                hist->Add((TH1*)file2->Get("VisGenAnti"+NewName)->Clone());
+            }
+        }
+        if(!hist){
+            std::cerr << "WARNING in GetNloCurve: input histogram '" << histname << "' could not been opened! Returning dummy!" << endl;
+            hist = new TH1D();
+            return hist;
+        }
+        
+        TH1D* rethist = (TH1D*)hist->Clone();
+        
+//         Double_t wgt = 1.;
+//         Double_t nevents = 16420479;//weight->GetEntries();
+//         Double_t crosssection = topxsec;
+//         Double_t binw = hist->GetBinWidth(1);
+//         wgt = crosssection/nevents/binw;
+//         rethist->Scale(wgt);
+        return rethist;
     }
     
-    TH1D* rethist = (TH1D*)hist->Clone();
-    
-    Double_t wgt = 1.;
-    Double_t nevents = 16420479;//weight->GetEntries();
-    Double_t crosssection = 165.6;
-    Double_t binw = hist->GetBinWidth(1);
-    wgt = crosssection/nevents/binw;
-    rethist->Scale(wgt);
-    return rethist;
-  }
-  
-  std::cerr << "WARNING in GetNloCurve: input file could not been opened! Returning dummy!" << endl;
-  hist = new TH1D();
-  delete file;  delete file1;  delete file2;
-  return hist;
+    std::cerr << "WARNING in GetNloCurve: input file could not been opened! Returning dummy!" << endl;
+    hist = new TH1D();
+    delete file;  delete file1;  delete file2;
+    return hist;
 }
 
 // get new legend

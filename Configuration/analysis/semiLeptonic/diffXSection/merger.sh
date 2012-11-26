@@ -34,8 +34,8 @@ for fileName in `ls *.root.*`; do
 	echo "rm ${fileName}"
 	rm ${fileName}
 
-	echo "rm analyzeMuonDiffXSec*.root"
-	for rootFile in `ls analyzeMuonDiffXSec*.root`; do
+	echo "rm analyzeMuon*.root"
+	for rootFile in `ls analyzeMuon*.root`; do
 
 	    rm ${rootFile}
 

@@ -3,7 +3,7 @@ wait=30
 
 # do some printout and parameter definition
 echo "check status every $wait seconds" 
-start=$(date +%s)
+start=$(($(date +%s)-$wait))
 time=$(date +%s)
 
 # check 
@@ -29,6 +29,14 @@ while [ $wait -ge 0 ]
       #nafJobSplitter.pl check ./naf_analyzeMuonDiffXData2011AAug05ReReco_cfg 
       #nafJobSplitter.pl check ./naf_analyzeMuonDiffXData2011APromptRecoV6_cfg
       #nafJobSplitter.pl check ./naf_analyzeMuonDiffXData2011BPromptRecoV1_cfg
+
+      # check all naf folders
+      #for FOLDER in `ls -d naf_*`; do
+      #    nafJobSplitter.pl check ${FOLDER}
+      #done
+      # automatic removal of error files
+      # rm naf_*/err*.txt
+
       # reset waiting time
       start=$(date +%s)
   fi

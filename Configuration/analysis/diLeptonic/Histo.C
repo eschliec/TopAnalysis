@@ -39,6 +39,7 @@ set<TString> SetOfValidSystematics(){
 
 void Histo(TString type = "", TString oneHistoToProcess = "", TString systematic="", TString channel="") {
     gROOT->SetBatch(kTRUE);
+    const double lumi = 12100;
 
     //Take the list of systematica variations from 'SetOfValidSystematics()' and check if the systematic you want to run exists. If doesn't return
     set<TString> ListOfSysts = SetOfValidSystematics();
@@ -60,12 +61,6 @@ void Histo(TString type = "", TString oneHistoToProcess = "", TString systematic
     bool doUnfold = 1;
     if (type == "preunfold") doUnfold = 0;
     if (type == "unfold") doPreunfold = 0;
-
-    const double lumi = 12100;
-
-
-    std::vector<double> binCenters;
-    std::vector<double> Xbins;
 
     if (doUnfold) {
         HistoListReader histoList("HistoList");

@@ -12,7 +12,7 @@
 #include "HHStyle.h"
 #include "basicFunctions.h"
 #include <set>
-
+#include "HistoListReader.cpp"
 
 // you can run me like this:
 //    root -b -q 'Histo.C+g("preunfold", "vertmulti", "JERUP", "emu")'
@@ -38,6 +38,7 @@ set<TString> SetOfValidSystematics(){
 
 
 void Histo(TString type = "", TString oneHistoToProcess = "", TString systematic="", TString channel="") {
+    gROOT->SetBatch(kTRUE);
 
     //Take the list of systematica variations from 'SetOfValidSystematics()' and check if the systematic you want to run exists. If doesn't return
     set<TString> ListOfSysts = SetOfValidSystematics();
@@ -62,129 +63,84 @@ void Histo(TString type = "", TString oneHistoToProcess = "", TString systematic
 
     const double lumi = 12100;
 
-    gROOT->SetBatch(kTRUE);
 
     std::vector<double> binCenters;
     std::vector<double> Xbins;
 
-    string histolist = "HistoList";
-    ifstream HistStream;
-    HistStream.open(histolist.c_str());
+    if (doUnfold) {
+        HistoListReader histoList("HistoList");
+        if (histoList.IsZombie()) exit(11);
+        for (map< TString, PlotProperties >::iterator it = histoList.begin(); it != histoList.end(); ++it) {
+            const PlotProperties& p = it->second;
+            cout << "checking " << p.name << endl;
+            if (! p.name.Contains(oneHistoToProcess, TString::kIgnoreCase)) continue;
 
-    while(!HistStream.eof() && doUnfold){
+            // Create Plotter 
+            Plotter h_generalPlot;
+            h_generalPlot.setLumi(lumi);
+            h_generalPlot.ListOfSystematics(ListOfSysts);
 
-        // Read HistoList-File
-        TString name, specialComment, YAxis, XAxis;
-        bool logX, logY, DYScale;
-        int bins, rebin;
-        double ymin, ymax, xmin, xmax;
-        HistStream>>name>>specialComment>>YAxis>>XAxis>>rebin>>DYScale>>logX>>logY>>ymin>>ymax>>xmin>>xmax>>bins;
+            /////////////////////////////////////////////////////
+            /////////   UNFOLDING OPTIONS     ///////////////////
+            /////////////////////////////////////////////////////
 
-        // Avoid running over empty lines in 'HistoList'-File
-        if ( name.CompareTo("") == 0) continue;
+            // Unfolding Options
+            bool doSVD = true;
+            TString outpath = "";
+            h_generalPlot.UnfoldingOptions(doSVD);
+            h_generalPlot.SetOutpath("");
 
+            /////////////////////////////////////////////////////
+            /////////////////////////////////////////////////////
+            /////////////////////////////////////////////////////
 
-        //read in the remaining bins
-        Xbins.clear();
-        binCenters.clear();
-        for(int i = 0; i < bins+1; i++){
-            double temp;
-            HistStream>>temp; 
-            Xbins.push_back(temp);
+            h_generalPlot.setOptions(p.name,p.specialComment,p.ytitle,p.xtitle, 
+                                     p.rebin, p.do_dyscale, p.logX, p.logY, 
+                                     p.ymin, p.ymax, p.xmin, p.xmax, p.bins, p.xbinbounds, p.bincenters);
+            h_generalPlot.DYScaleFactor();
+            h_generalPlot.preunfolding(channel, systematic);
+            h_generalPlot.unfolding();
+            h_generalPlot.PlotDiffXSec("emu");
+            h_generalPlot.PlotDiffXSec("mumu");
+            h_generalPlot.PlotDiffXSec("ee");
+            h_generalPlot.PlotDiffXSec("combined");
+            
         }
-        for(int i = 0; i < bins; i++){//only until bincenter code is finalized
-            double temp;
-            HistStream>>temp;
-            binCenters.push_back(temp);
-        }
-
-        cout << "checking " << name << endl;
-        if (! name.Contains(oneHistoToProcess, TString::kIgnoreCase)) continue;
-
-        // Create Plotter 
-        Plotter h_generalPlot;
-        h_generalPlot.setLumi(lumi);
-        h_generalPlot.ListOfSystematics(ListOfSysts);
-
-        /////////////////////////////////////////////////////
-        /////////   UNFOLDING OPTIONS     ///////////////////
-        /////////////////////////////////////////////////////
-
-        // Unfolding Options
-        bool doSVD = true;
-        TString outpath = "";
-        h_generalPlot.UnfoldingOptions(doSVD);
-        h_generalPlot.SetOutpath("");
-
-        /////////////////////////////////////////////////////
-        /////////////////////////////////////////////////////
-        /////////////////////////////////////////////////////
-
-        h_generalPlot.setOptions(name,specialComment,YAxis,XAxis, rebin, DYScale, logX, logY, ymin, ymax, xmin, xmax, bins, Xbins, binCenters);
-        h_generalPlot.DYScaleFactor();
-        h_generalPlot.preunfolding(channel, systematic);
-        h_generalPlot.unfolding();
-        h_generalPlot.PlotDiffXSec("emu");
-        h_generalPlot.PlotDiffXSec("mumu");
-        h_generalPlot.PlotDiffXSec("ee");
-        h_generalPlot.PlotDiffXSec("combined");
     }
-
     cout << "Done with the unfolding\n";
 
-    string controlhistolist = "HistoList_control";
-    ifstream controlHistStream;
-    controlHistStream.open(controlhistolist.c_str());
 
-    while(!controlHistStream.eof() && doPreunfold){
-        // Read HistoList-File
-        TString name, specialComment, YAxis, XAxis;
-        bool logX, logY, DYScale;
-        int bins, rebin;
-        double ymin, ymax, xmin, xmax;
-        controlHistStream>>name>>specialComment>>YAxis>>XAxis>>rebin>>DYScale>>logX>>logY>>ymin>>ymax>>xmin>>xmax>>bins;
+    if (doPreunfold) {
+        HistoListReader histoList("HistoList_control");
+        if (histoList.IsZombie()) exit(12);
+        for (map< TString, PlotProperties >::iterator it = histoList.begin(); it != histoList.end(); ++it) {
+            const PlotProperties& p = it->second;
+            cout << "checking " << p.name << endl;
+            if (! p.name.Contains(oneHistoToProcess, TString::kIgnoreCase)) continue;
 
-        // Avoid running over empty lines in 'HistoList'-File
-        if (name.CompareTo("") == 0) continue;
+            // Create Plotter 
+            Plotter h_generalPlot;
+            h_generalPlot.setLumi(lumi);
+            h_generalPlot.ListOfSystematics(ListOfSysts);
+            /////////////////////////////////////////////////////
+            /////////   UNFOLDING OPTIONS     ///////////////////
+            /////////////////////////////////////////////////////
 
-        Xbins.clear();
-        binCenters.clear();
+            // Unfolding Options
+            bool doSVD = false; 
+            TString outpath = "";
+            h_generalPlot.UnfoldingOptions(doSVD);
+            h_generalPlot.SetOutpath("");
 
-        for(int i = 0; i < bins+1; i++){
-            double temp;
-            controlHistStream>>temp; 
-            Xbins.push_back(temp);
+            /////////////////////////////////////////////////////
+            /////////////////////////////////////////////////////
+            ///////////////////////////////////////////////////// 
+            
+            h_generalPlot.setOptions(p.name,p.specialComment,p.ytitle,p.xtitle, 
+                                     p.rebin, p.do_dyscale, p.logX, p.logY, 
+                                     p.ymin, p.ymax, p.xmin, p.xmax, p.bins, p.xbinbounds, p.bincenters);
+            h_generalPlot.DYScaleFactor();
+            h_generalPlot.preunfolding(channel, systematic);
         }
-        for(int i = 0; i < bins; i++){//only until bincenter code is finalized
-            double temp;
-            controlHistStream>>temp;
-            binCenters.push_back(temp);
-        }
-
-        cout << "checking " << name << endl;
-        if (! name.Contains(oneHistoToProcess, TString::kIgnoreCase)) continue;
-
-        // Create Plotter 
-        Plotter h_generalPlot;
-        h_generalPlot.setLumi(lumi);
-        h_generalPlot.ListOfSystematics(ListOfSysts);
-        /////////////////////////////////////////////////////
-        /////////   UNFOLDING OPTIONS     ///////////////////
-        /////////////////////////////////////////////////////
-
-        // Unfolding Options
-        bool doSVD = false; 
-        TString outpath = "";
-        h_generalPlot.UnfoldingOptions(doSVD);
-        h_generalPlot.SetOutpath("");
-
-        /////////////////////////////////////////////////////
-        /////////////////////////////////////////////////////
-        ///////////////////////////////////////////////////// 
-
-        
-        h_generalPlot.setOptions(name,specialComment,YAxis,XAxis, rebin, DYScale, logX, logY, ymin, ymax, xmin, xmax, bins, Xbins, binCenters);
-        h_generalPlot.DYScaleFactor();
-        h_generalPlot.preunfolding(channel, systematic);
     }
 }

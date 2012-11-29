@@ -1,0 +1,50 @@
+#ifndef HistoListReader_h
+#define HistoListReader_h
+
+#include <fstream>
+#include <vector>
+#include <map>
+#include <TString.h>
+#include <TH1.h>
+
+struct PlotProperties {
+    TString name;
+    TString specialComment;
+    TString ytitle;
+    TString xtitle;
+    int rebin;
+    bool do_dyscale;
+    bool logX;
+    bool logY;
+    double ymin;
+    double ymax;
+    double xmin;
+    double xmax;
+    int bins;
+    std::vector<double> xbinbounds;
+    std::vector<double> bincenters;
+    TH1 *getHistogram();
+    PlotProperties();
+    ~PlotProperties();
+private:
+    TH1 *histo_;
+    void MakeHisto();
+};
+
+class HistoListReader {
+    const char *filename_;
+    bool isZombie_;
+    std::map<TString, PlotProperties> plots_;
+    
+public:
+    HistoListReader(const char *filename);
+    bool IsZombie() const;
+    PlotProperties& getPlotProperties(TString name);
+    //rootcint does not like decltype! :-(
+    //auto begin() -> decltype(plots_.begin()) { return plots_.begin(); }
+    //auto end() -> decltype(plots_.end()) { return plots_.end(); }
+    std::map <TString, PlotProperties >::iterator begin()  { return plots_.begin(); }
+    std::map <TString, PlotProperties >::iterator end()  { return plots_.end(); }
+};
+
+#endif

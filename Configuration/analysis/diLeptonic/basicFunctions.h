@@ -505,7 +505,7 @@ namespace semileptonic {
     decch -> Draw("same");
   }
 
-  void DrawCMSLabels(bool cmsprelim=true, double luminosity=0.0, double textSize=0.04)
+  void DrawCMSLabels(int cmsprelim=1, double luminosity=0.0, double energy=8.0, double textSize=0.04)
   {
     // Draw official labels (CMS Preliminary, luminosity and CM energy) above plot
 
@@ -517,14 +517,19 @@ namespace semileptonic {
     label -> SetY2NDC(1.0);
     label -> SetTextFont(42);
 
-    if (cmsprelim)
-      {
-	label -> AddText(Form("CMS Preliminary, %2.1f fb^{-1} at #sqrt{s} = 7 TeV",luminosity/1000));
+    if(cmsprelim ==2)
+      {//Private work for PhDs students
+        label -> AddText(Form("Private Work, %2.1f fb^{-1} at #sqrt{s} = %2.f TeV",luminosity/1000, energy));
       }
-    else
-      {
-	label -> AddText(Form("CMS, %2.1f fb^{-1} at #sqrt{s} = 7 TeV",luminosity/1000));
+    else if (cmsprelim==1)
+      {//CMS preliminary label
+	label -> AddText(Form("CMS Preliminary, %2.1f fb^{-1} at #sqrt{s} = %2.f TeV",luminosity/1000, energy));
       }
+    else if(cmsprelim==0)
+      {//CMS label
+	label -> AddText(Form("CMS, %2.1f fb^{-1} at #sqrt{s} = %2.f TeV",luminosity/1000, energy));
+      }
+    
 
     label->SetFillStyle(0);
     label->SetBorderSize(0);

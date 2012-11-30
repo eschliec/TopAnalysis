@@ -30,9 +30,7 @@ set<TString> SetOfValidSystematics(){
     //Include also '' to be able to run in all the systematics
     static TString syst_array[]={"Nominal", "JERUP", "JERDOWN", "JESUP", "JESDOWN", "PU_UP", "PU_DOWN", "TRIG_UP", "TRIG_DOWN", "BTAG_UP", "BTAG_DOWN", "BTAG_PT_UP", "BTAG_PT_DOWN",
                           "BTAG_ETA_UP", "BTAG_ETA_DOWN", "MASSUP", "MASSDOWN", "MATCHUP", "MASSDOWN", "SCALEUP", "SCALEDOWN", "POWHEG", "MCATNLO", "SPINCORR", ""};
-
-    set<TString> SetOfSystematics (syst_array, syst_array+25);
-    
+    set<TString> SetOfSystematics (syst_array, syst_array+sizeof(syst_array)/sizeof(syst_array[0]));
     return SetOfSystematics;
 }
 
@@ -43,11 +41,6 @@ void Histo(TString type = "", TString oneHistoToProcess = "", TString systematic
 
     //Take the list of systematica variations from 'SetOfValidSystematics()' and check if the systematic you want to run exists. If doesn't return
     set<TString> ListOfSysts = SetOfValidSystematics();
-    if (ListOfSysts.find(systematic) == ListOfSysts.end()){
-        cout<<"\n\nWARNING (in Histo.C)!! The '"<<systematic<<"' systematic is not supported please use one of the availables:"<<endl;
-        for (set<TString>::iterator iter= ListOfSysts.begin(); iter!= ListOfSysts.end(); iter++){cout<<*iter<<endl;};
-        return;
-    };
 
     //Check if the channel in which the code will run is valid: ee, emu, mumu, combined or '' (all the channels)
     if(channel != "ee" && channel != "emu" && channel != "mumu" && channel != "combined" && channel != ""){

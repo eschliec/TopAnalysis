@@ -1,6 +1,8 @@
 #include "HistoListReader.h"
 #include <TH1.h>
 #include <iostream>
+#include <string>
+#include <sstream>
 
 HistoListReader::HistoListReader(const char* filename) : 
     filename_ ( filename ),
@@ -14,11 +16,20 @@ HistoListReader::HistoListReader(const char* filename) :
     }
     plots_.clear();
     
-    while(!controlHistStream.eof()){
+    while(controlHistStream.good()){
         // Read HistoList-File
+        std::string line;
+        getline(controlHistStream, line);
+        //remove leading whitespace
+        line.erase(0, line.find_first_not_of(" \t"));    
+        
+        //skip empty lines and/or comments
+        if (line.size() == 0 || line[0] == '#') continue;
+        
         PlotProperties m;
+        std::stringstream linestream(line);
 //        # Name, Extra, axis labels (y,x), rebin, do_dyscale, logx, logy, ymin, ymax, xmin, xmax, nbins, xbins, bcs
-        controlHistStream 
+        linestream 
             >> m.name
             >> m.specialComment
             >> m.ytitle
@@ -33,23 +44,45 @@ HistoListReader::HistoListReader(const char* filename) :
             >> m.xmax
             >> m.bins;
 
-        // Avoid running over empty lines in 'HistoList'-File
-        if (m.name == "") continue;
-
         m.xbinbounds.clear();
         m.bincenters.clear();
 
         for(int i = 0; i <= m.bins; ++i){
             double temp;
-            controlHistStream>>temp;
+            linestream>>temp;
             m.xbinbounds.push_back(temp);
         }
         for(int i = 0; i < m.bins; i++){//only until bincenter code is finalized
             double temp;
-            controlHistStream>>temp;
+            linestream>>temp;
             m.bincenters.push_back(temp);
         }
         plots_[m.name] = m;
+        
+        if (linestream.fail()) {
+            std::cerr 
+            << "********************************************************************\n"
+            << "Error reading file (too few entries?)\n" 
+            << "File: '" << filename << "'\n"
+            << "Line: '" << line << "'\n"
+            << "********************************************************************\n"
+            << std::endl; 
+            exit(981);
+        }
+        
+        if (!linestream.eof()) {
+            std::string rest;
+            getline(linestream, rest);
+            std::cerr 
+            << "********************************************************************\n"
+            << "Too many entries!\n" 
+            << "File: '" << filename << "'\n"
+            << "Line: '" << line << "'\n"
+            << "Not used: '" << rest << "'\n"
+            << "********************************************************************\n"
+            << std::endl; 
+            exit(981);
+        }
     }
 }
 

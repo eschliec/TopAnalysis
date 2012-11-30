@@ -9,6 +9,8 @@
 #include <TH2.h>
 #include <TF1.h>
 #include <vector>
+#include <map>
+#include <utility>
 #include <iostream>
 #include <fstream>
 #include "TCanvas.h"
@@ -23,6 +25,7 @@
 #include "classes.h"
 #include "PUReweighter.h"
 
+class HistoListReader;
 using namespace std;
 
 class Analysis : public TSelector
@@ -319,6 +322,7 @@ class Analysis : public TSelector
     double getLeptonIDSF(const LV& lep1, const LV& lep2);
     double get2DSF(TH2* histo, const double x, const double y);
     
+    // store the object in the output list and return it
     template<class T> T* store(T* obj);
     
     // Variables added from the outside
@@ -339,10 +343,31 @@ class Analysis : public TSelector
     
     double calculateBtagSF();
     double getJetHT(const VLV& jet, int pt_cut);
+    
+    //order two LorentzVectors by transverse momentum
+    //first two parameters are output, 3rd and 4th input
     void orderLVByPt(LV &leading, LV &Nleading, const LV &lv1, const LV &lv2);
     
+    //binnedControlPlots contains:
+    //map of name of differential distribution
+    // -> pair( histogram with the binning of the differential distribution,
+    //          vector(bin) -> map( control plot name -> TH1*))
+    std::map<std::string, std::pair<TH1*, std::vector<std::map<std::string, TH1*> > > > *binnedControlPlots;
+    
+    // Create Nbins control plots for the differential distribution h_differential
+    // Use h_control for the control plot name and binning
+    void CreateBinnedControlPlots(TH1* h_differential, TH1* h_control);
+    
+    // h: differential distribution histogram
+    // binvalue: the value of the quantity in the differential distribution histogram
+    // the control plot histogram
+    // the value for the control plot
+    // weight: event weight
+    void FillBinnedControlPlot(TH1* h_differential, double binvalue, 
+                               TH1 *h_control, double value, double weight);
+        
 public:
-    Analysis ( TTree * = 0 ) { runViaTau = 0; pureweighter = 0; }
+    Analysis ( TTree * = 0 ) : runViaTau {0}, pureweighter {nullptr} {};
     void SetBTagFile(TString btagFile);
     void SetChannel(TString channel);
     void SetSignal(bool isSignal);

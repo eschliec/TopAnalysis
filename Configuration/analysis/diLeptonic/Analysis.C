@@ -1,6 +1,7 @@
 #define Analysis_cxx
 
 #include "Analysis.h"
+#include "HistoListReader.h"
 #include <TH1.h>
 #include <TH2.h>
 #include <TStyle.h>
@@ -15,6 +16,7 @@
 #include <cmath>
 #include <TString.h>
 #include <limits>
+#include "utils.h"
 
 // #define run_sonnenschein
 #ifdef run_sonnenschein
@@ -25,14 +27,6 @@
 using namespace std;
 using ROOT::Math::VectorUtil::DeltaPhi;
 using ROOT::Math::VectorUtil::DeltaR;
-
-void LVtod4(LV lv, double *d) {
-    d[0] = lv.E();
-    d[1] = lv.Px();
-    d[2] = lv.Py();
-    d[3] = lv.Pz();
-}
-
 
 double SampleXSection(TString sample){
     
@@ -75,7 +69,7 @@ void Analysis::Begin ( TTree * )
     prepareTriggerSF();
     prepareLeptonIDSF();
     prepareBtagSF();
-    
+
     //lumiWeight = 5100*SampleXSection(samplename)/weightedEvents->GetBinContent(1);
     lumiWeight = 12100*SampleXSection(samplename)/weightedEvents->GetBinContent(1);
 }
@@ -93,6 +87,8 @@ void Analysis::SlaveBegin ( TTree * )
     // When running with PROOF SlaveBegin() is called on each slave server.
     // The tree argument is deprecated (on PROOF 0 is passed).
 
+    binnedControlPlots = new std::map<std::string, std::pair<TH1*, std::vector<std::map<std::string, TH1*> > > >;
+    
     h_step5 = store(new TH1D ( "step5", "event count at step 5", 10, 0, 10 ));
     h_step6 = store(new TH1D ( "step6", "event count at step 6", 10, 0, 10 ));
     h_step7 = store(new TH1D ( "step7", "event count at step 7", 10, 0, 10 ));
@@ -281,10 +277,10 @@ void Analysis::SlaveBegin ( TTree * )
     h_RecoMet = store(new TH1D("RecoMet", "Reconstructed MET", 500, 0, 500));
     h_HypMet = store(new TH1D("HypMet","MET ", 500, 0, 500));
     
-    h_GenRecoHT = store(new TH2D("GenRecoHT", "HT in the event", 400, 0, 400, 400, 0, 400));
-    h_VisGenHT = store(new TH1D("VisGenHT", "HT (VisGEN)", 400, 0, 400));
-    h_RecoHT = store(new TH1D("RecoHT", "Reconstructed HT", 400, 0, 400));
-    h_HypHT = store(new TH1D("HypHT", "HT", 400, 0, 400));
+    h_GenRecoHT = store(new TH2D("GenRecoHT", "HT in the event", 800, 0, 800, 800, 0, 800));
+    h_VisGenHT = store(new TH1D("VisGenHT", "HT (VisGEN)", 800, 0, 800));
+    h_RecoHT = store(new TH1D("RecoHT", "Reconstructed HT", 800, 0, 800));
+    h_HypHT = store(new TH1D("HypHT", "HT", 800, 0, 800));
     
     h_GenRecoTTBarRapidity = store(new TH2D ( "GenRecoTTBarRapidity", "Rapidity of TTbar System (HYP)", 100, -5, 5, 100, -5, 5 ));
     h_GenRecoTTBarpT = store(new TH2D ( "GenRecoTTBarpT", "pT of TTbar System (HYP)", 500, 0, 500, 500, 0, 500 ));
@@ -457,6 +453,15 @@ void Analysis::SlaveBegin ( TTree * )
     //New plots from Carmen: End
 */
 
+    CreateBinnedControlPlots(h_HypToppT, h_LeptonpT);
+    CreateBinnedControlPlots(h_HypToppT, h_LeptonEta);
+    CreateBinnedControlPlots(h_HypToppT, h_MET);
+    
+    CreateBinnedControlPlots(h_HypToppT, h_diLepMassFull);
+    
+//     CreateBinnedControlPlots(h_HypTopRapidity, h_LeptonpT);
+//     CreateBinnedControlPlots(h_HypTopRapidity, h_diLepMassFull);
+
     //btagSF
     const int PtMax = 17;
     const int EtaMax = 6;
@@ -471,6 +476,7 @@ void Analysis::SlaveBegin ( TTree * )
     
     h_BTagSF = store(new TH1D ( "BTagSF", "BTagging SF per event", 100 , 0.95, 1.05 ));
     h_BTagSF->Sumw2();
+
 }
 
 double Analysis::Median(TH1 * h1)
@@ -1154,6 +1160,7 @@ Bool_t Analysis::Process ( Long64_t entry )
     h_HypAntiTopMass->Fill(HypAntiTop->at(solutionIndex).M(), weight);
     h_HypToppT->Fill(HypTop->at(solutionIndex).Pt(), weight);
     h_HypAntiToppT->Fill(HypAntiTop->at(solutionIndex).Pt(), weight);
+        
     h_HypLeptonpT->Fill(HypLepton->at(solutionIndex).Pt(), weight);
     h_HypAntiLeptonpT->Fill(HypAntiLepton->at(solutionIndex).Pt(), weight);
 
@@ -1164,7 +1171,7 @@ Bool_t Analysis::Process ( Long64_t entry )
 
     h_HypTopRapidity->Fill(HypTop->at(solutionIndex).Rapidity(), weight);
     h_HypAntiTopRapidity->Fill(HypAntiTop->at(solutionIndex).Rapidity(), weight);
-
+    
     h_HypTopEta->Fill(HypTop->at(solutionIndex).Eta(), weight);
     h_HypAntiTopEta->Fill(HypAntiTop->at(solutionIndex).Eta(), weight);
     h_HypBJetEta->Fill(HypBJet->at(solutionIndex).Eta(), weight);
@@ -1193,7 +1200,21 @@ Bool_t Analysis::Process ( Long64_t entry )
     h_HypBJetpTNLead->Fill(NLeadHypBJet.Pt(), weight);
     h_HypBJetEtaLead->Fill(LeadHypBJet.Eta(), weight);
     h_HypBJetEtaNLead->Fill(NLeadHypBJet.Eta(), weight);
-    
+
+    //make sure you have called CreateBinnedControlPlots in the SlaveBegin first
+    for (const auto& i : { HypTop->at(solutionIndex), HypAntiTop->at(solutionIndex) } ) {
+        FillBinnedControlPlot(h_HypToppT, i.Pt(), h_LeptonpT, leptonMinus.Pt(), weight);
+        FillBinnedControlPlot(h_HypToppT, i.Pt(), h_LeptonpT, leptonPlus.Pt(), weight);
+        FillBinnedControlPlot(h_HypToppT, i.Pt(), h_diLepMassFull, dilepton.M(), weight);
+        FillBinnedControlPlot(h_HypToppT, i.Pt(), h_LeptonEta, leptonMinus.Eta(), weight);
+        FillBinnedControlPlot(h_HypToppT, i.Pt(), h_LeptonEta, leptonPlus.Eta(), weight);
+        FillBinnedControlPlot(h_HypToppT, i.Pt(), h_MET, met->Pt(), weight);
+        
+//         FillBinnedControlPlot(h_HypTopRapidity, i.Rapidity(), h_LeptonpT, leptonMinus.Pt(), weight);
+//         FillBinnedControlPlot(h_HypTopRapidity, i.Rapidity(), h_LeptonpT, leptonPlus.Pt(), weight);
+//         FillBinnedControlPlot(h_HypTopRapidity, i.Rapidity(), h_diLepMassFull, dilepton.M(), weight);
+    }
+
     if (!isZregion) { //also apply Z cut in emu!
         TTh1->Fill(dilepton.M(), weight);
         Allh1->Fill(dilepton.M(), weight);  //this is also filled in the Z region in the code above
@@ -1413,7 +1434,10 @@ void Analysis::SlaveTerminate()
     // The SlaveTerminate() function is called after all entries or objects
     // have been processed. When running with PROOF SlaveTerminate() is called
     // on each slave server.
-    
+    for (auto it = binnedControlPlots->begin(); it != binnedControlPlots->end(); ++it) {
+        delete (*it).second.first;
+    }
+    delete binnedControlPlots;
 }
 
 void Analysis::Terminate()
@@ -2149,4 +2173,47 @@ void Analysis::prepareBtagSF()
     bEfficiencies->Delete();
     // END: BTag SF calculation neccessary stuff
 
+}
+
+void Analysis::FillBinnedControlPlot(TH1* h_differential, double binvalue, 
+                                     TH1* h_control, double value, double weight)
+{
+    auto pair = (*binnedControlPlots)[h_differential->GetName()];
+    auto bin = pair.first->FindBin(binvalue);
+    auto m = pair.second.at(bin);
+    TH1* h = m[h_control->GetName()];
+    if (!h) { 
+        std::cerr << "Error: please CreateBinnedControlPlots for " << h_differential->GetName() 
+            << " and " << h_control->GetName() << std::endl;
+        exit(911);
+    }
+    h->Fill(value, weight);
+}
+
+void Analysis::CreateBinnedControlPlots(TH1* h_differential, TH1* h_control)
+{
+    HistoListReader histoList("HistoList");
+    if (histoList.IsZombie()) { cout << "Need a HistoList to create binned control plots!\n"; exit(273); }
+    auto &pair = (*binnedControlPlots)[h_differential->GetName()];
+    pair.first = dynamic_cast<TH1*>(histoList.getPlotProperties(h_differential->GetName()).getHistogram()->Clone());
+    std::string name = "bcp_";
+    name.append(h_differential->GetName()).append("_bin_");
+    //create maps if we are called for the first time with a certain h_differential
+    if (pair.second.size() == 0) {
+        for (int i = 0; i <= pair.first->GetNbinsX() + 1; ++i)
+            pair.second.push_back(std::map<std::string, TH1*>());
+    }
+    //now really create the histograms
+    for (int i = 0; i <= pair.first->GetNbinsX() + 1; ++i) {
+        std::string binning = 
+            i == 0 ? "underflow" :
+            i == pair.first->GetNbinsX() + 1 ? "overflow" :
+            d2s(pair.first->GetBinLowEdge(i)) + " to " + d2s(pair.first->GetBinLowEdge(i+1));
+        binning = std::string(" (") + h_differential->GetName() + " " + binning + ")";
+        std::string n = name + std::to_string(i) + "_" + h_control->GetName();
+        pair.second[i][h_control->GetName()] = store(
+            new TH1D(n.c_str(), (std::string(h_control->GetName())+binning).c_str(), 
+                     h_control->GetNbinsX(), h_control->GetBinLowEdge(1), 
+                     h_control->GetBinLowEdge(h_control->GetNbinsX()+1)));
+    }
 }

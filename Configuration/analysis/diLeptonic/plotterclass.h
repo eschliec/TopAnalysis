@@ -40,7 +40,7 @@ class Plotter {
   void   setOptions(TString name_, TString specialComment_, TString YAxis_, TString XAxis_, int rebin_, bool doDYScale_, bool logX_, bool logY_, double ymin_, double ymax_, double rangemin_, double rangemax_, int bins_, std::vector<double> XAxisbins_, std::vector<double> XAxisbinCenters_);
   void   setDataSet(std::vector<TString>, std::vector<double>, std::vector<TString>, std::vector<int>, TString);
   void   setDataSet(TString, TString);
-  void   fillHisto();
+  bool   fillHisto();
   void   setStyle(TH1*, unsigned int, bool = false);
   void   unfolding();
   void   preunfolding(TString Chan="", TString System="");
@@ -919,21 +919,33 @@ std::vector<TString> Plotter::InputFileList(TString mode, TString Systematic)
 }
 
 
-void Plotter::fillHisto()
+bool Plotter::fillHisto()
 {   
-    if (initialized) { return; }
+    if (initialized) { return true; }
     TH1::AddDirectory(kFALSE);
     hists.clear();
     for(unsigned int i=0; i<dataset.size(); i++){
         TFile *ftemp = TFile::Open(dataset[i]);
-        TH1D *hist = (TH1D*)ftemp->Get(name)->Clone();
-        if(!name.Contains("Lead") && (name.Contains("Lepton") || name.Contains("BJet") || name.Contains("Top"))){
+        if (!ftemp) {
+            cerr << "*** Could not open file " << dataset[i] << "!" << endl;
+            return false;
+        }
+        TH1D *hist = dynamic_cast<TH1D*>(ftemp->Get(name));
+        if (!hist) {
+            cerr << "*** Could not find histogram " << name << " in file " << dataset[i] << "!" << endl;
+            return false;
+        }
+        hist = static_cast<TH1D*>(hist->Clone());
+        if (!name.Contains("bcp_") && !name.Contains("Lead") 
+            && (name.Contains("Lepton") || name.Contains("BJet") || name.Contains("Top")))
+        {
             TString stemp = name;
             if(name.Contains("Lepton"))    {stemp.ReplaceAll("Lepton",6,"AntiLepton",10);}
             else if(name.Contains("BJet")) {stemp.ReplaceAll("BJet",4,"AntiBJet",8);}
             else if(name.Contains("Top"))  {stemp.ReplaceAll("Top",3,"AntiTop",7);}
-            TH1D *hist2 = (TH1D*)ftemp->Get(stemp)->Clone();
-            hist->Add(hist2);
+            TH1D *other = dynamic_cast<TH1D*>(ftemp->Get(stemp));
+            if (other) hist->Add(other); 
+            else cerr << "Cannot find corresponding anti-quantity histogram: "<<stemp<<endl;
         }
 
         //Rescaling to the data luminosity
@@ -950,7 +962,7 @@ void Plotter::fillHisto()
         delete ftemp;
     }
     initialized=true;
-    
+    return true;
 }
 
 
@@ -1018,7 +1030,7 @@ void Plotter::ApplyMCATNLOWeight(TH1* hist, TString Systematic, TString Shift, T
 void Plotter::write(TString Channel, TString Systematic) // do scaling, stacking, legending, and write in file 
 {
     setDataSet(Channel,Systematic);
-    fillHisto();
+    if (!fillHisto()) return;
 
     TCanvas * c = new TCanvas("","");
 

@@ -35,17 +35,17 @@ class Analysis : public TSelector
     
     TTree          *fChain;   //!pointer to the analyzed TTree or TChain
     Int_t           EventCounter;
-    VLV             *lepton;
+    VLV             *leptons;
     vector<int>     *lepQ;
     vector<int>     *lepType;
     vector<double>  *lepPfIso;
     vector<double>  *lepCombIso;
-    VLV             *jet;
+    VLV             *jets;
     vector<double>  *jetBTagTCHE;
     vector<double>  *jetBTagCSV;
     vector<double>  *jetBTagSSVHE;
     vector<int>     *jetType;
-    VLV             *genJet;
+    //VLV             *genJets;
     LV              *met;
     UInt_t          runNumber;
     UInt_t          lumiBlock;
@@ -106,7 +106,7 @@ class Analysis : public TSelector
     TBranch        *b_jetBTagCSV;   //!
     TBranch        *b_jetBTagSSVHE;   //!
     TBranch        *b_jetType;   //!
-    TBranch        *b_genJet;   //!
+    //TBranch        *b_genJet;   //!
     TBranch        *b_met;   //!
     TBranch        *b_runNumber;   //!
     TBranch        *b_lumiBlock;   //!

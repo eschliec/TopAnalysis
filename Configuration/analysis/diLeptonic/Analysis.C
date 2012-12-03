@@ -456,11 +456,13 @@ void Analysis::SlaveBegin ( TTree * )
     CreateBinnedControlPlots(h_HypToppT, h_LeptonpT);
     CreateBinnedControlPlots(h_HypToppT, h_LeptonEta);
     CreateBinnedControlPlots(h_HypToppT, h_MET);
-    
     CreateBinnedControlPlots(h_HypToppT, h_diLepMassFull);
     
-//     CreateBinnedControlPlots(h_HypTopRapidity, h_LeptonpT);
-//     CreateBinnedControlPlots(h_HypTopRapidity, h_diLepMassFull);
+    CreateBinnedControlPlots(h_HypTopRapidity, h_LeptonpT);
+    CreateBinnedControlPlots(h_HypTopRapidity, h_LeptonEta);
+    CreateBinnedControlPlots(h_HypTopRapidity, h_MET);
+    CreateBinnedControlPlots(h_HypTopRapidity, h_diLepMassFull);
+    
 
     //btagSF
     const int PtMax = 17;
@@ -711,8 +713,8 @@ Bool_t Analysis::Process ( Long64_t entry )
     bool hasSolution = false;
     int solutionIndex = 0;
     for ( size_t i =0; i < HypTop->size(); ++i ) {
-        if (jet->at((*HypJet0index)[i]).pt() < JETPTCUT 
-            || jet->at((*HypJet1index)[i]).pt() < JETPTCUT)
+        if (jets->at((*HypJet0index)[i]).pt() < JETPTCUT 
+            || jets->at((*HypJet1index)[i]).pt() < JETPTCUT)
             // || abs(HypTop->at(i).M() - 172.5) > 1 ) 
         {       
             continue;
@@ -904,7 +906,7 @@ Bool_t Analysis::Process ( Long64_t entry )
     // we need an OS lepton pair
     if (! hasLeptonPair) return kTRUE;
     
-    LV dilepton = lepton->at(LeadLeptonNumber) + lepton->at(NLeadLeptonNumber);
+    LV dilepton = leptons->at(LeadLeptonNumber) + leptons->at(NLeadLeptonNumber);
     
     //===CUT===
     //with at least 12 GeV invariant mass
@@ -914,11 +916,11 @@ Bool_t Analysis::Process ( Long64_t entry )
     LV leptonPlus;
     LV leptonMinus;
     if (lepQ->at(LeadLeptonNumber) == +1) {
-        leptonPlus = lepton->at(LeadLeptonNumber);
-        leptonMinus = lepton->at(NLeadLeptonNumber);
+        leptonPlus = leptons->at(LeadLeptonNumber);
+        leptonMinus = leptons->at(NLeadLeptonNumber);
     } else {
-        leptonMinus = lepton->at(LeadLeptonNumber);
-        leptonPlus = lepton->at(NLeadLeptonNumber);
+        leptonMinus = leptons->at(LeadLeptonNumber);
+        leptonPlus = leptons->at(NLeadLeptonNumber);
     }
 
     //Now determine the lepton trigger and ID scale factors
@@ -934,7 +936,7 @@ Bool_t Analysis::Process ( Long64_t entry )
     weight *= weightPU;
     h_vertMulti->Fill(vertMulti, weight);
     
-    h_jetMulti_diLep->Fill(jet->size(), weight);
+    h_jetMulti_diLep->Fill(jets->size(), weight);
     h_diLepMassFull->Fill(dilepton.M(), weight);
 
     
@@ -942,7 +944,7 @@ Bool_t Analysis::Process ( Long64_t entry )
     //handle inverted Z cut
     // Fill loose dilepton mass histogram before any jet cuts
     bool isZregion = dilepton.M() > 76 && dilepton.M() < 106;
-    bool hasJets = jet->size() > 1 && jet->at(1).Pt() > JETPTCUT;
+    bool hasJets = jets->size() > 1 && jets->at(1).Pt() > JETPTCUT;
     bool hasMetOrEmu = channel == "emu" || met->Pt() > 30;
     bool hasBtag = BJetIndex.size() > 0;
     double weightKinFit = 1;
@@ -988,13 +990,13 @@ Bool_t Analysis::Process ( Long64_t entry )
     h_step8->Fill(1, weight );
 
     h_BjetMulti->Fill(BJetIndex.size(), weight);
-    h_jetMulti->Fill(jet->size(), weight);
+    h_jetMulti->Fill(jets->size(), weight);
     
     //for HT, count only >= 30 GeV jets
-    double jetHT = getJetHT(*jet, JETPTCUT);
+    double jetHT = getJetHT(*jets, JETPTCUT);
     h_jetHT->Fill(jetHT, weight);
     for ( size_t i = 0; i < 2; ++i ) {
-        h_jetpT->Fill(jet->at(i).Pt(), weight);
+        h_jetpT->Fill(jets->at(i).Pt(), weight);
     }
 
     h_LeptonpT->Fill(leptonMinus.Pt(), weight);
@@ -1007,12 +1009,12 @@ Bool_t Analysis::Process ( Long64_t entry )
     //loop over both leptons
     for (auto i : {LeadLeptonNumber, NLeadLeptonNumber}) {
         if ( lepType->at(i) == LEP_TYPE_ELECTRON ) {
-            h_ElectronpT->Fill(lepton->at(i).Pt(), weight);
-            h_ElectronEta->Fill(lepton->at(i).Eta(), weight);
+            h_ElectronpT->Fill(leptons->at(i).Pt(), weight);
+            h_ElectronEta->Fill(leptons->at(i).Eta(), weight);
         }
         if ( lepType->at(i) == LEP_TYPE_MUON ) {
-            h_MuonpT->Fill(lepton->at(i).Pt(), weight);
-            h_MuonEta->Fill(lepton->at(i).Eta(), weight);
+            h_MuonpT->Fill(leptons->at(i).Pt(), weight);
+            h_MuonEta->Fill(leptons->at(i).Eta(), weight);
         }
     }
 
@@ -1022,8 +1024,8 @@ Bool_t Analysis::Process ( Long64_t entry )
 
     weight *= weightKinFit;
     h_step9->Fill(1, weight);
-    h_jetMultiXSec->Fill(jet->size(), weight);
-    h_jetMultiNoPU->Fill(jet->size(), weight / weightPU );
+    h_jetMultiXSec->Fill(jets->size(), weight);
+    h_jetMultiNoPU->Fill(jets->size(), weight / weightPU );
     h_diLepMassFull_fullSel->Fill(dilepton.M(), weight);
     
     //create helper variables
@@ -1210,9 +1212,13 @@ Bool_t Analysis::Process ( Long64_t entry )
         FillBinnedControlPlot(h_HypToppT, i.Pt(), h_LeptonEta, leptonPlus.Eta(), weight);
         FillBinnedControlPlot(h_HypToppT, i.Pt(), h_MET, met->Pt(), weight);
         
-//         FillBinnedControlPlot(h_HypTopRapidity, i.Rapidity(), h_LeptonpT, leptonMinus.Pt(), weight);
-//         FillBinnedControlPlot(h_HypTopRapidity, i.Rapidity(), h_LeptonpT, leptonPlus.Pt(), weight);
-//         FillBinnedControlPlot(h_HypTopRapidity, i.Rapidity(), h_diLepMassFull, dilepton.M(), weight);
+        FillBinnedControlPlot(h_HypTopRapidity, i.Rapidity(), h_LeptonpT, leptonMinus.Pt(), weight);
+        FillBinnedControlPlot(h_HypTopRapidity, i.Rapidity(), h_LeptonpT, leptonPlus.Pt(), weight);
+        FillBinnedControlPlot(h_HypTopRapidity, i.Rapidity(), h_diLepMassFull, dilepton.M(), weight);
+        FillBinnedControlPlot(h_HypTopRapidity, i.Rapidity(), h_LeptonEta, leptonMinus.Eta(), weight);
+        FillBinnedControlPlot(h_HypTopRapidity, i.Rapidity(), h_LeptonEta, leptonPlus.Eta(), weight);
+        FillBinnedControlPlot(h_HypTopRapidity, i.Rapidity(), h_MET, met->Pt(), weight);
+        
     }
 
     if (!isZregion) { //also apply Z cut in emu!
@@ -1382,9 +1388,9 @@ if (HypTop->size()) {
 //     }
     
     if ( BHadronIndex>=0 && AntiBHadronIndex>=0 ) {
-        h_GenRecoJetMult->Fill(jet->size(), allGenJets->size(), weight );
+        h_GenRecoJetMult->Fill(jets->size(), allGenJets->size(), weight );
     } else {
-        h_GenRecoJetMult->Fill(jet->size(), -1000., weight );
+        h_GenRecoJetMult->Fill(jets->size(), -1000., weight );
     }
 
     LV genllbar(*GenLepton + *GenAntiLepton);
@@ -1397,26 +1403,26 @@ if (HypTop->size()) {
     h_GenRecoTTBarRapidity->Fill(hypttbar.Rapidity(), genttbar.Rapidity(), weight );
 
     //finally do the btag SF calculation stuff
-    for (size_t i = 0; i < jet->size(); ++i) {
-        if (jet->at(i).Pt() <= JETPTCUT) break;
-        if (TMath::Abs(jet->at(i).Eta())<2.4) {
+    for (size_t i = 0; i < jets->size(); ++i) {
+        if (jets->at(i).Pt() <= JETPTCUT) break;
+        if (TMath::Abs(jets->at(i).Eta())<2.4) {
             int type = (*jetType)[i];
             if(type == 2){//b-quark
-                h_bjets->Fill(jet->at(i).Pt(), TMath::Abs(jet->at(i).Eta()));
+                h_bjets->Fill(jets->at(i).Pt(), TMath::Abs(jets->at(i).Eta()));
                 if((*jetBTagCSV)[i]>BtagWP){
-                    h_btaggedjets->Fill(jet->at(i).Pt(), TMath::Abs(jet->at(i).Eta()));
+                    h_btaggedjets->Fill(jets->at(i).Pt(), TMath::Abs(jets->at(i).Eta()));
                 }
             }
             else if (type == 1){//c-quark
-                h_cjets->Fill(jet->at(i).Pt(), TMath::Abs(jet->at(i).Eta()));
+                h_cjets->Fill(jets->at(i).Pt(), TMath::Abs(jets->at(i).Eta()));
                 if((*jetBTagCSV)[i]>BtagWP){
-                    h_ctaggedjets->Fill(jet->at(i).Pt(), TMath::Abs(jet->at(i).Eta()));
+                    h_ctaggedjets->Fill(jets->at(i).Pt(), TMath::Abs(jets->at(i).Eta()));
                 }
             }
             else if (type == 0){//l-quark
-                h_ljets->Fill(jet->at(i).Pt(), TMath::Abs(jet->at(i).Eta()));
+                h_ljets->Fill(jets->at(i).Pt(), TMath::Abs(jets->at(i).Eta()));
                 if((*jetBTagCSV)[i]>BtagWP){
-                    h_ltaggedjets->Fill(jet->at(i).Pt(), TMath::Abs(jet->at(i).Eta()));
+                    h_ltaggedjets->Fill(jets->at(i).Pt(), TMath::Abs(jets->at(i).Eta()));
                 }
             }
             else {
@@ -1702,12 +1708,12 @@ void Analysis::Init ( TTree *tree )
     // (once per file to be processed).
 
     // Set object pointer
-    lepton = 0;
+    leptons = 0;
     lepQ = 0;
     lepType = 0;
     lepPfIso = 0;
     lepCombIso = 0;
-    jet = 0;
+    jets = 0;
     jetBTagTCHE = 0;
     jetBTagCSV = 0;
     jetBTagSSVHE = 0;
@@ -1725,7 +1731,7 @@ void Analysis::Init ( TTree *tree )
     HypAntiBJet = 0;
 
     //for the signal
-    genJet = 0;
+//     genJets = 0;
     allGenJets = 0;
     BHadrons = 0;
     GenWPlus = 0;
@@ -1751,17 +1757,17 @@ void Analysis::Init ( TTree *tree )
     if ( !tree ) return;
     fChain = tree;
     fChain->SetMakeClass ( 0 );
-    fChain->SetBranchAddress("lepton", &lepton, &b_lepton );
+    fChain->SetBranchAddress("lepton", &leptons, &b_lepton );
     fChain->SetBranchAddress("lepQ", &lepQ, &b_lepQ );
     fChain->SetBranchAddress("lepType", &lepType, &b_lepType );
     fChain->SetBranchAddress("lepPfIso", &lepPfIso, &b_lepPfIso );
     fChain->SetBranchAddress("lepCombIso", &lepCombIso, &b_lepCombIso );
-    fChain->SetBranchAddress("jet", &jet, &b_jet );
+    fChain->SetBranchAddress("jet", &jets, &b_jet );
     fChain->SetBranchAddress("jetBTagTCHE", &jetBTagTCHE, &b_jetBTagTCHE );
     fChain->SetBranchAddress("jetBTagCSV", &jetBTagCSV, &b_jetBTagCSV );
     fChain->SetBranchAddress("jetBTagSSVHE", &jetBTagSSVHE, &b_jetBTagSSVHE );
     fChain->SetBranchAddress("jetType", &jetType, &b_jetType );
-    fChain->SetBranchAddress("genJet", &genJet, &b_genJet );
+    //fChain->SetBranchAddress("genJet", &genJets, &b_genJet );
     fChain->SetBranchAddress("met", &met, &b_met );
     fChain->SetBranchAddress("runNumber", &runNumber, &b_runNumber );
     fChain->SetBranchAddress("triggerBits", &triggerBits, &b_triggerBits );
@@ -1851,7 +1857,7 @@ void Analysis::GetRecoBranches ( Long64_t & entry )
     b_vertMulti->GetEntry(entry); //!
     b_vertMultiTrue->GetEntry(entry); //!
 
-    b_genJet->GetEntry(entry); //!
+    //b_genJet->GetEntry(entry); //!
     b_allGenJets->GetEntry(entry); //!
 
     b_HypTop->GetEntry(entry); //!
@@ -1916,9 +1922,9 @@ void Analysis::GetSignalBranches ( Long64_t & entry )
 
 bool Analysis::getLeptonPair(size_t &LeadLeptonNumber, size_t &NLeadLeptonNumber)
 {
-    if ( lepton->size() > 1 ) {
+    if ( leptons->size() > 1 ) {
         if ( channel == "emu" ) { //quick and DIRTY!
-            for ( size_t i = 1; i < lepton->size(); i++ ) {
+            for ( size_t i = 1; i < leptons->size(); i++ ) {
                 if ( ( ( *lepQ )[0] != ( *lepQ )[i] ) && ( (*lepType)[0] != (*lepType)[i] ) ) {
                     LeadLeptonNumber = 0;
                     NLeadLeptonNumber = i;
@@ -1927,13 +1933,13 @@ bool Analysis::getLeptonPair(size_t &LeadLeptonNumber, size_t &NLeadLeptonNumber
             }
         }
         if ( channel == "ee" ) { //quick and DIRTY!
-            for ( size_t i = 0; i < lepton->size(); i++ ) {
+            for ( size_t i = 0; i < leptons->size(); i++ ) {
                 if ( ( *lepType ) [i] == LEP_TYPE_ELECTRON ) {
                     LeadLeptonNumber=i;
                     break;
                 }
             }
-            for ( size_t i = LeadLeptonNumber+1; i < lepton->size(); i++ ) {
+            for ( size_t i = LeadLeptonNumber+1; i < leptons->size(); i++ ) {
                 if ( ( ( *lepQ ) [LeadLeptonNumber]!= ( *lepQ ) [i] ) && ( *lepType ) [i] == LEP_TYPE_ELECTRON ) {
                     NLeadLeptonNumber = i;
                     return true;
@@ -1941,13 +1947,13 @@ bool Analysis::getLeptonPair(size_t &LeadLeptonNumber, size_t &NLeadLeptonNumber
             }
         }
         if ( channel == "mumu" ) { //quick and DIRTY!
-            for ( size_t i = 0; i < lepton->size(); i++ ) {
+            for ( size_t i = 0; i < leptons->size(); i++ ) {
                 if ( ( *lepType )[i] == LEP_TYPE_MUON ) {
                     LeadLeptonNumber=i;
                     break;
                 }
             }
-            for ( size_t i = LeadLeptonNumber+1; i<lepton->size(); i++ ) {
+            for ( size_t i = LeadLeptonNumber+1; i<leptons->size(); i++ ) {
                 if ( ( ( *lepQ )[LeadLeptonNumber]!= ( *lepQ )[i] ) && ( *lepType )[i] == LEP_TYPE_MUON ) {
                     NLeadLeptonNumber = i;
                     return true;
@@ -1976,9 +1982,9 @@ double Analysis::calculateBtagSF()
     double OneMinusEff=1;
     double OneMinusSEff=1;
     double SFPerJet=1, eff=1;
-    for ( size_t i = 0; i < jet->size(); ++i ) {
-        double pt = jet->at(i).Pt();
-        double eta = abs(jet->at(i).Eta());
+    for ( size_t i = 0; i < jets->size(); ++i ) {
+        double pt = jets->at(i).Pt();
+        double eta = abs(jets->at(i).Eta());
         if ( pt > 30 && eta < 2.4 ) {
             int ptbin, etabin, dummy;
             bEff->GetBinXYZ(bEff->FindBin(pt, eta), ptbin, etabin, dummy);

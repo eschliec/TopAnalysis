@@ -111,6 +111,16 @@ TH1* PlotProperties::getHistogram()
     return histo_;
 }
 
+TH1* PlotProperties::getClonedHistogram()
+{
+    bool old = TH1::AddDirectoryStatus();
+    TH1::AddDirectory(false);
+    TH1* clone = static_cast<TH1*>(getHistogram()->Clone());
+    TH1::AddDirectory(old);
+    return clone;
+}
+
+
 void PlotProperties::MakeHisto()
 {
     bool old = TH1::AddDirectoryStatus();

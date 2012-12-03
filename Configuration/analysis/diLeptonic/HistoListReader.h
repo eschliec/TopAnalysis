@@ -23,7 +23,10 @@ struct PlotProperties {
     int bins;
     std::vector<double> xbinbounds;
     std::vector<double> bincenters;
+    //return a histogram with the binning and labels as defined in the properties
     TH1 *getHistogram();
+    //like getHistogram, but returns a clone, i.e. the caller must delete the histogram
+    TH1 *getClonedHistogram();
     PlotProperties();
     ~PlotProperties();
 private:

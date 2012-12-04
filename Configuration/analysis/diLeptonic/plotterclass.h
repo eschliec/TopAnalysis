@@ -117,8 +117,6 @@ class Plotter {
   vector<TString> channelLabel;
 
   double SignalEventswithWeight;
-  //static constexpr double topxsec = 220.0; //again changes with normalization; //Use this option when compiling via g++
-  static const double topxsec = 213.192; //again changes with normalization;       //Use this option when running it via 'root -l -b -q 'Histo.C+g...'
   
   // DAVID
   bool doUnfolding; 
@@ -130,7 +128,10 @@ class Plotter {
   TString subfolderChannel;
   TString subfolderSpecial;
 
+  static const double topxsec; //set in constructor
 };
+
+const double Plotter::topxsec = 213.192; //again changes with normalization, must be set outside of the class
 
 
 void Plotter::setLumi(double newLumi)

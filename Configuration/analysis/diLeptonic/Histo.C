@@ -132,3 +132,11 @@ void Histo(TString type = "", TString oneHistoToProcess = "", TString systematic
         }
     }
 }
+
+int main(int argc, const char * const argv[]) {
+    TString type = argc > 1 ? argv[1] : "";
+    TString oneHistoToProcess = argc > 2 ? argv[2] : "";
+    TString systematic = argc > 3 ? argv[3] : "";
+    TString channel = argc > 4 ? argv[4] : "";
+    Histo(type, oneHistoToProcess, systematic, channel);
+}

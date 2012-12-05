@@ -1,18 +1,16 @@
-#include "THStack.h"
-#include "TFile.h"
-#include "TString.h"
-#include "TH1.h"
-#include "TH1F.h"
+#include <TCanvas.h>
+#include <TLegend.h>
+#include <THStack.h>
+#include <TFile.h>
+#include <TString.h>
+#include <TH1.h>
+
 #include <vector>
 #include <iostream>
-#include "TCanvas.h"
-#include "TLegend.h"
-#include <sstream>
-#include "plotterclass.h"
-#include "HHStyle.h"
-#include "basicFunctions.h"
 #include <set>
-#include "HistoListReader.cpp"
+
+#include "plotterclass.h"
+#include "HistoListReader.h"
 
 // you can run me like this:
 //    root -b -q 'Histo.C+g("preunfold", "vertmulti", "JERUP", "emu")'
@@ -22,21 +20,20 @@
 // or root -b -q 'Histo.C+g("preunfold")' //all preunfolded
 // or root -b -q 'Histo.C+g' //everything
 
+using namespace std;
 
-
-set<TString> SetOfValidSystematics(){
+std::set<TString> SetOfValidSystematics(){
     
     //Dummy function to create a 'set' containing the list of all systematics
     //Include also '' to be able to run in all the systematics
     static TString syst_array[]={"Nominal", "JERUP", "JERDOWN", "JESUP", "JESDOWN", "PU_UP", "PU_DOWN", "TRIG_UP", "TRIG_DOWN", "BTAG_UP", "BTAG_DOWN", "BTAG_PT_UP", "BTAG_PT_DOWN",
                           "BTAG_ETA_UP", "BTAG_ETA_DOWN", "MASSUP", "MASSDOWN", "MATCHUP", "MASSDOWN", "SCALEUP", "SCALEDOWN", "POWHEG", "MCATNLO", "SPINCORR", ""};
-    set<TString> SetOfSystematics (syst_array, syst_array+sizeof(syst_array)/sizeof(syst_array[0]));
+    std::set<TString> SetOfSystematics (syst_array, syst_array+sizeof(syst_array)/sizeof(syst_array[0]));
     return SetOfSystematics;
 }
 
 
 void Histo(TString type = "", TString oneHistoToProcess = "", TString systematic="", TString channel="") {
-    gROOT->SetBatch(kTRUE);
     const double lumi = 12100;
 
     //Take the list of systematica variations from 'SetOfValidSystematics()' and check if the systematic you want to run exists. If doesn't return

@@ -39,17 +39,15 @@ class Plotter {
         void setDataSet(TString);
         void fillSystHisto();
         void fillHisto();
-        void setStyle(TH1D&, unsigned int);
+        void setStyle(TH1*, unsigned int);
         void write();
         void DYScaleFactor();
         // DAVID
         void SetOutpath(TString path); 
         // IVAN
         TLegend* ControlLegend(int HistsSize, TH1* drawhists[], std::vector<TString> legends, TLegend *leg);
-        TLegend* ControlLegend(int HistsSize, TH1D* drawhists[], std::vector<TString> Legends, TLegend *leg);
         void DrawLabel(TString text, const double x1, const double y1, const double x2, const double y2, int centering, double textSize);
-        void ApplyFlatWeights(TH1* varhists,   const double weight);
-        void ApplyFlatWeights(TH1* varhists[], const double weight);
+        void ApplyFlatWeights(TH1* varhist,   const double weight);
         double SampleXSection(TString filename);
         double CalcLumiWeight(TString WhichSample);
         void SetDataLumi(double Lumi);

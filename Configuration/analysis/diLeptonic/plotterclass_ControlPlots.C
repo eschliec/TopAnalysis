@@ -1,6 +1,7 @@
 #include "plotterclass_ControlPlots.h"
+#include <iostream>
 
-
+using namespace std;
 
 Plotter::Plotter(TString name_, TString XAxis_,TString YAxis_, double rangemin_, double rangemax_)
 {
@@ -311,7 +312,7 @@ void Plotter::write() // do scaling, stacking, legending, and write in file
   for(unsigned int i=0; i<hists.size() ; i++){ // prepare histos and leg
     drawhists[i]=(TH1D*) hists[i].Clone();
     if(rebin>1) drawhists[i]->Rebin(rebin);
-    setStyle(*drawhists[i], i);
+    setStyle(drawhists[i], i);
     if(legends[i] != "Data"){
         if(legends[i] == legends[0]){drawhists[0]->Add(drawhists[i]);}
         if(legends[i] == "t#bar{t} Signal"){signalHist = i;}
@@ -440,40 +441,40 @@ void Plotter::write() // do scaling, stacking, legending, and write in file
   else std::cout << "Histogram " << name << " not filled during the process." << std::endl;
 }
 
-void Plotter::setStyle(TH1D &hist, unsigned int i)
+void Plotter::setStyle(TH1 *hist, unsigned int i)
 {
-  hist.SetFillColor(colors[i]);
-  hist.SetLineColor(colors[i]);
+  hist->SetFillColor(colors[i]);
+  hist->SetLineColor(colors[i]);
   
   if(legends[i] == "Data"){
-    hist.SetMarkerStyle(20); 
-    hist.SetMarkerSize(1.);
-    hist.SetLineWidth(1);
-    hist.GetXaxis()->SetLabelFont(42);
-    hist.GetYaxis()->SetLabelFont(42);
-    hist.GetXaxis()->SetTitleSize(0.04);
-    hist.GetYaxis()->SetTitleSize(0.04);
-    hist.GetXaxis()->SetTitleFont(42);
-    hist.GetYaxis()->SetTitleFont(42);
-    hist.GetYaxis()->SetTitle(YAxis);
-    hist.GetYaxis()->SetTitleOffset(1.7);
-    hist.GetXaxis()->SetTitleOffset(1.25);
+    hist->SetMarkerStyle(20); 
+    hist->SetMarkerSize(1.);
+    hist->SetLineWidth(1);
+    hist->GetXaxis()->SetLabelFont(42);
+    hist->GetYaxis()->SetLabelFont(42);
+    hist->GetXaxis()->SetTitleSize(0.04);
+    hist->GetYaxis()->SetTitleSize(0.04);
+    hist->GetXaxis()->SetTitleFont(42);
+    hist->GetYaxis()->SetTitleFont(42);
+    hist->GetYaxis()->SetTitle(YAxis);
+    hist->GetYaxis()->SetTitleOffset(1.7);
+    hist->GetXaxis()->SetTitleOffset(1.25);
     
     //set XAxis label
-    TString h_name= TString(hist.GetName());
-    if(h_name.Contains("pT") || h_name.Contains("Mass")){hist.GetXaxis()->SetTitle(XAxis+" #left[GeV#right]");}
-    else {hist.GetXaxis()->SetTitle(XAxis);};
+    TString h_name= TString(hist->GetName());
+    if(h_name.Contains("pT") || h_name.Contains("Mass")){hist->GetXaxis()->SetTitle(XAxis+" #left[GeV#right]");}
+    else {hist->GetXaxis()->SetTitle(XAxis);};
     
     //set YAxis label with binwidth
-    double binwidth = hist.GetXaxis()->GetBinWidth(1);
+    double binwidth = hist->GetXaxis()->GetBinWidth(1);
     std::ostringstream width;
     width<<binwidth;
-    TString ytitle = TString(hist.GetYaxis()->GetTitle()).Copy();
+    TString ytitle = TString(hist->GetYaxis()->GetTitle()).Copy();
     ytitle.Append(" / ").Append(width.str());
     if(h_name.Contains("pT") || h_name.Contains("Mass") || h_name.Contains("mass") || h_name.Contains("MET") || h_name.Contains("HT")){
         ytitle.Append(" / ").Append(width.str()).Append(" GeV");
     };
-    hist.GetYaxis()->SetTitle(ytitle);
+    hist->GetYaxis()->SetTitle(ytitle);
   }
 }
 
@@ -518,64 +519,23 @@ TLegend* Plotter::ControlLegend(int HistsSize, TH1* drawhists[], std::vector<TSt
     return leg;
 }
 
-TLegend* Plotter::ControlLegend(int HistsSize, TH1D* drawhists[], std::vector<TString> Legends, TLegend *leg){
-    
-    //hardcoded ControlPlot legend
-    std::vector<TString> OrderedLegends;    
-    OrderedLegends.push_back("Data");
-    OrderedLegends.push_back("t#bar{t} Signal");
-    OrderedLegends.push_back("t#bar{t} Other");
-    OrderedLegends.push_back("Single Top");
-    OrderedLegends.push_back("W+Jets");
-    OrderedLegends.push_back(DYEntry);
-    OrderedLegends.push_back("Z / #gamma* #rightarrow #tau#tau");
-    OrderedLegends.push_back("Diboson");
-    OrderedLegends.push_back("QCD Multijet");
-    
-    leg->Clear();
-    leg->SetX1NDC(1.0-gStyle->GetPadRightMargin()-gStyle->GetTickLength()-0.25);
-    leg->SetY1NDC(1.0-gStyle->GetPadTopMargin()-gStyle->GetTickLength()-0.30);
-    leg->SetX2NDC(1.0-gStyle->GetPadRightMargin()-gStyle->GetTickLength());
-    leg->SetY2NDC(1.0-gStyle->GetPadTopMargin()-gStyle->GetTickLength());
-    leg->SetTextFont(42);
-    leg->SetTextSize(0.03);
-    leg->SetFillStyle(0);
-    leg->SetBorderSize(0);
-    leg->SetTextAlign(12);
-    for(int i=0; i<(int)OrderedLegends.size(); ++i){
-        for(int j=0; j<HistsSize; ++j){
-            if (OrderedLegends[i] == Legends[j]){
-                if( OrderedLegends[i] == "Data"){
-                    leg->AddEntry(drawhists[j], OrderedLegends[i], "pe");
-                    break;
-                }
-                else{
-                    leg->AddEntry(drawhists[j], OrderedLegends[i], "f");
-                    break;
-                }
-            }
-        }
-    }
-    return leg;
-}
 
-
-void Plotter::ApplyFlatWeights(TH1* varhists, const double weight){
-
+void Plotter::ApplyFlatWeights(TH1* varhist, const double weight)
+{
     if(weight == 0) {cout<<"Warning: the weight your applying is 0. This will remove your distribution."<<endl;}
     if(weight >=1e3){cout<<"Warning: the weight your applying is >= 1e3. This will enlarge too much your distribution."<<endl;}
-    varhists->Scale(weight);
+    varhist->Scale(weight);
 }
 
 
-void Plotter::ApplyFlatWeights(TH1* varhists[], const double weight){
-
-    if(weight == 0) {cout<<"Warning: the weight your applying is 0. This will remove your distribution."<<endl;}
-    if(weight >=1e3){cout<<"Warning: the weight your applying is >= 1e3. This will enlarge too much your distribution."<<endl;}
-    for(size_t i=0; i<hists.size(); i++){
-        varhists[i]->Scale(weight);
-    }
-}
+// void Plotter::ApplyFlatWeights(TH1* varhists[], const double weight){
+// 
+//     if(weight == 0) {cout<<"Warning: the weight your applying is 0. This will remove your distribution."<<endl;}
+//     if(weight >=1e3){cout<<"Warning: the weight your applying is >= 1e3. This will enlarge too much your distribution."<<endl;}
+//     for(size_t i=0; i<hists.size(); i++){
+//         varhists[i]->Scale(weight);
+//     }
+// }
 
 double Plotter::CalcLumiWeight(TString WhichSample){
     if (WhichSample.Contains("run")) return 1;
@@ -622,30 +582,29 @@ double Plotter::SampleXSection(TString filename){
     //  https://twiki.cern.ch/twiki/bin/view/CMS/StandardModelCrossSectionsat8TeV
     //  AN-12/194    AN-12/228
     
-    double XSec=-1.;
-    if(filename.Contains("run"))              {XSec = 1;}
-    else if(filename.Contains("ttbar"))       {XSec = 225.197;}
-    else if(filename.Contains("single"))      {XSec = 22.2;}
-    else if(filename.Contains("ww"))          {XSec = 54.838;}
-    else if(filename.Contains("wz"))          {XSec = 33.21;}
-    else if(filename.Contains("zz"))          {XSec = 17.654;}
-    else if(filename.Contains("1050"))        {XSec = 860.5;}
-    else if(filename.Contains("50inf"))       {XSec = 3532.8;}
-    else if(filename.Contains("wtolnu"))      {XSec = 36257.2;}
-    else if(filename.Contains("qcdmu15"))     {XSec = 3.640E8*3.7E-4;}
-    else if(filename.Contains("qcdmu2030"))   {XSec = 2.870E8*6.500E-3;}
-    else if(filename.Contains("qcdmu3050"))   {XSec = 6.609E7*12.20E-3;}
-    else if(filename.Contains("qcdmu5080"))   {XSec = 8.802E6*21.80E-3;}
-    else if(filename.Contains("qcdmu80120"))  {XSec = 1.024E6*39.50E-3;}
-    else if(filename.Contains("qcdmu120170")) {XSec = 1.578E5*47.30E-3;}
-    else if(filename.Contains("qcdem2030"))   {XSec = 2.886E8*10.10E-3;}
-    else if(filename.Contains("qcdem3080"))   {XSec = 7.433E7*62.10E-3;}
-    else if(filename.Contains("qcdem80170"))  {XSec = 1.191E6*153.9E-3;}
-    else if(filename.Contains("qcdbcem2030")) {XSec = 2.886E8*5.800E-4;}
-    else if(filename.Contains("qcdbcem3080")) {XSec = 7.424E7*2.250E-3;}
-    else if(filename.Contains("qcdbcem80170")){XSec = 1.191E6*10.90E-3;}
+    if(filename.Contains("run"))              {return 1;}
+    else if(filename.Contains("ttbar"))       {return 225.197;}
+    else if(filename.Contains("single"))      {return 22.2;}
+    else if(filename.Contains("ww"))          {return 54.838;}
+    else if(filename.Contains("wz"))          {return 33.21;}
+    else if(filename.Contains("zz"))          {return 17.654;}
+    else if(filename.Contains("1050"))        {return 860.5;}
+    else if(filename.Contains("50inf"))       {return 3532.8;}
+    else if(filename.Contains("wtolnu"))      {return 36257.2;}
+    else if(filename.Contains("qcdmu15"))     {return 3.640E8*3.7E-4;}
+    else if(filename.Contains("qcdmu2030"))   {return 2.870E8*6.500E-3;}
+    else if(filename.Contains("qcdmu3050"))   {return 6.609E7*12.20E-3;}
+    else if(filename.Contains("qcdmu5080"))   {return 8.802E6*21.80E-3;}
+    else if(filename.Contains("qcdmu80120"))  {return 1.024E6*39.50E-3;}
+    else if(filename.Contains("qcdmu120170")) {return 1.578E5*47.30E-3;}
+    else if(filename.Contains("qcdem2030"))   {return 2.886E8*10.10E-3;}
+    else if(filename.Contains("qcdem3080"))   {return 7.433E7*62.10E-3;}
+    else if(filename.Contains("qcdem80170"))  {return 1.191E6*153.9E-3;}
+    else if(filename.Contains("qcdbcem2030")) {return 2.886E8*5.800E-4;}
+    else if(filename.Contains("qcdbcem3080")) {return 7.424E7*2.250E-3;}
+    else if(filename.Contains("qcdbcem80170")){return 1.191E6*10.90E-3;}
     
-    return XSec;
+    return -1;
 }
 
 
@@ -655,16 +614,16 @@ void Plotter::DrawDecayChLabel(TString decaychannel, double textSize){
 
     TPaveText *decch = new TPaveText();
 
-    decch -> AddText(decaychannel);
+    decch->AddText(decaychannel);
 
-    decch -> SetX1NDC(      gStyle->GetPadLeftMargin() + gStyle->GetTickLength()        );
-    decch -> SetY1NDC(1.0 - gStyle->GetPadTopMargin()  - gStyle->GetTickLength() - 0.05 );
-    decch -> SetX2NDC(      gStyle->GetPadLeftMargin() + gStyle->GetTickLength() + 0.15 );
-    decch -> SetY2NDC(1.0 - gStyle->GetPadTopMargin()  - gStyle->GetTickLength()        );
+    decch->SetX1NDC(      gStyle->GetPadLeftMargin() + gStyle->GetTickLength()        );
+    decch->SetY1NDC(1.0 - gStyle->GetPadTopMargin()  - gStyle->GetTickLength() - 0.05 );
+    decch->SetX2NDC(      gStyle->GetPadLeftMargin() + gStyle->GetTickLength() + 0.15 );
+    decch->SetY2NDC(1.0 - gStyle->GetPadTopMargin()  - gStyle->GetTickLength()        );
 
-    decch -> SetFillStyle(0);
-    decch -> SetBorderSize(0);
+    decch->SetFillStyle(0);
+    decch->SetBorderSize(0);
     if(textSize!=0) decch->SetTextSize(textSize);
-    decch -> SetTextAlign(12);
-    decch -> Draw("same");
+    decch->SetTextAlign(12);
+    decch->Draw("same");
 }

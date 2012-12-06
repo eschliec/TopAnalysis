@@ -216,54 +216,50 @@ void setHHStyle(TStyle& HHStyle)
     // HHStyle.SetHistMinimumZero(kTRUE);
 }
 
-  void DrawDecayChLabel(TString decaychannel, double textSize)
-  {
-    // Draw label for Decay Channel in upper left corner of plot
+// Draw label for Decay Channel in upper left corner of plot
+void DrawDecayChLabel(TString decaychannel, double textSize) {
 
     TPaveText *decch = new TPaveText();
 
-    decch -> AddText(decaychannel);
+    decch->AddText(decaychannel);
 
-    decch -> SetX1NDC(      gStyle->GetPadLeftMargin() + gStyle->GetTickLength()        );
-    decch -> SetY1NDC(1.0 - gStyle->GetPadTopMargin()  - gStyle->GetTickLength() - 0.05 );
-    decch -> SetX2NDC(      gStyle->GetPadLeftMargin() + gStyle->GetTickLength() + 0.15 );
-    decch -> SetY2NDC(1.0 - gStyle->GetPadTopMargin()  - gStyle->GetTickLength()        );
+    decch->SetX1NDC(      gStyle->GetPadLeftMargin() + gStyle->GetTickLength()        );
+    decch->SetY1NDC(1.0 - gStyle->GetPadTopMargin()  - gStyle->GetTickLength() - 0.05 );
+    decch->SetX2NDC(      gStyle->GetPadLeftMargin() + gStyle->GetTickLength() + 0.15 );
+    decch->SetY2NDC(1.0 - gStyle->GetPadTopMargin()  - gStyle->GetTickLength()        );
 
-    decch -> SetFillStyle(0);
-    decch -> SetBorderSize(0);
-    if(textSize!=0) decch->SetTextSize(textSize);
-    decch -> SetTextAlign(12);
-    decch -> Draw("same");
-  }
+    decch->SetFillStyle(0);
+    decch->SetBorderSize(0);
+    if (textSize!=0) decch->SetTextSize(textSize);
+    decch->SetTextAlign(12);
+    decch->Draw("same");
+}
 
-  void DrawCMSLabels(bool cmsprelim, double luminosity, double textSize)
-  {
-    // Draw official labels (CMS Preliminary, luminosity and CM energy) above plot
+// Draw official labels (CMS Preliminary, luminosity and CM energy) above plot
+void DrawCMSLabels(int cmsprelim, double luminosity, double energy, double textSize) {
 
+    const char *text;
+    if(cmsprelim ==2 ) {//Private work for PhDs students
+        text = "Private Work, %2.1f fb^{-1} at #sqrt{s} = %2.f TeV";
+    } else if (cmsprelim==1) {//CMS preliminary label
+        text = "CMS Preliminary, %2.1f fb^{-1} at #sqrt{s} = %2.f TeV";
+    } else {//CMS label
+        text = "CMS, %2.1f fb^{-1} at #sqrt{s} = %2.f TeV";
+    }
+    
     TPaveText *label = new TPaveText();
-
-    label -> SetX1NDC(gStyle->GetPadLeftMargin());
-    label -> SetY1NDC(1.0-gStyle->GetPadTopMargin());
-    label -> SetX2NDC(1.0-gStyle->GetPadRightMargin());
-    label -> SetY2NDC(1.0);
-    label -> SetTextFont(42);
-
-    if (cmsprelim)
-      {
-        label -> AddText(Form("CMS Preliminary, %2.1f fb^{-1} at #sqrt{s} = 7 TeV",luminosity/1000));
-      }
-    else
-      {
-        label -> AddText(Form("CMS, %2.1f fb^{-1} at #sqrt{s} = 7 TeV",luminosity/1000));
-      }
-
+    label->SetX1NDC(gStyle->GetPadLeftMargin());
+    label->SetY1NDC(1.0-gStyle->GetPadTopMargin());
+    label->SetX2NDC(1.0-gStyle->GetPadRightMargin());
+    label->SetY2NDC(1.0);
+    label->SetTextFont(42);
+    label->AddText(Form(text, luminosity/1000, energy));
     label->SetFillStyle(0);
     label->SetBorderSize(0);
-    if(textSize!=0) label->SetTextSize(textSize);
+    if (textSize!=0) label->SetTextSize(textSize);
     label->SetTextAlign(32);
     label->Draw("same");
-  }
-
+}
 
 ///////////////////////////////////////////
 

@@ -13,12 +13,12 @@
 #include "HistoListReader.h"
 
 // you can run me like this:
-//    root -b -q 'Histo.C+g("preunfold", "vertmulti", "JERUP", "emu")'
-//    root -b -q 'Histo.C+g("preunfold", "vertmulti", "JERUP")' //all channels
-// or root -b -q 'Histo.C+g("preunfold", "vertmulti")' //all systematics and all channels
-// or root -b -q 'Histo.C+g("unfold", "toppt")'
-// or root -b -q 'Histo.C+g("preunfold")' //all preunfolded
-// or root -b -q 'Histo.C+g' //everything
+// ./Histo preunfold vertmulti JERUP emu
+// ./Histo preunfold vertmulti JERUP //all channels
+// ./Histo preunfold vertmulti //all systematics and all channels
+// ./Histo unfold toppt
+// ./Histo preunfold //all preunfolded
+// ./Histo //everything
 
 using namespace std;
 
@@ -55,7 +55,7 @@ void Histo(TString type = "", TString oneHistoToProcess = "", TString systematic
     if (doUnfold) {
         HistoListReader histoList("HistoList");
         if (histoList.IsZombie()) exit(11);
-        for (map< TString, PlotProperties >::iterator it = histoList.begin(); it != histoList.end(); ++it) {
+        for (auto it = histoList.begin(); it != histoList.end(); ++it) {
             const PlotProperties& p = it->second;
             cout << "checking " << p.name << endl;
             if (! p.name.Contains(oneHistoToProcess, TString::kIgnoreCase)) continue;
@@ -98,7 +98,7 @@ void Histo(TString type = "", TString oneHistoToProcess = "", TString systematic
     if (doPreunfold) {
         HistoListReader histoList("HistoList_control");
         if (histoList.IsZombie()) exit(12);
-        for (map< TString, PlotProperties >::iterator it = histoList.begin(); it != histoList.end(); ++it) {
+        for (auto it = histoList.begin(); it != histoList.end(); ++it) {
             const PlotProperties& p = it->second;
             cout << "checking " << p.name << endl;
             if (! p.name.Contains(oneHistoToProcess, TString::kIgnoreCase)) continue;

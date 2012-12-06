@@ -38,7 +38,7 @@ void Plotter::setLumi(double newLumi)
 void Plotter::UnfoldingOptions(bool doSVD)
 {
   doUnfolding = doSVD;
-  doSystematics = false;
+  doSystematics = true;
   drawNLOCurves = true; // boolean to draw/not-draw extra theory curves in the Diff.XSection plots
 
   drawMadSpinCorr  = true;
@@ -103,47 +103,42 @@ void Plotter::unfolding()
 
 }
 
-void Plotter::preunfolding(TString Chan, TString System)
+void Plotter::preunfolding(TString Channel, TString Systematic)
 {
     
     //The preunfolding funtion can run now in a single channel and/or single systematic sample
     //for that in just run the Histo.C with the correct parameters. Check the 'Histo' function in Histo.C file
     
-    TString sys_array[] = {"Nominal","DY_UP","DY_DOWN","BG_UP","BG_DOWN","PU_UP","PU_DOWN", "JERUP", "JERDOWN", "JESUP", "JESDOWN", "TRIG_UP", "TRIG_DOWN", "MASSUP", "MASSDOWN",
+    std::vector<TString> vec_systematic {"Nominal","DY_UP","DY_DOWN","BG_UP","BG_DOWN","PU_UP","PU_DOWN", "JERUP", "JERDOWN", "JESUP", "JESDOWN", "TRIG_UP", "TRIG_DOWN", "MASSUP", "MASSDOWN",
                            "MATCHUP", "MATCHDOWN", "SCALEUP", "SCALEDOWN", "BTAG_ETA_UP", "BTAG_ETA_DOWN", "BTAG_PT_UP", "BTAG_PT_DOWN"};
-    TString channel_array[] = {"ee","mumu","emu","combined"};
-    vector<TString> vec_systematic (sys_array, sys_array + sizeof(sys_array)/sizeof(sys_array[0]));
-    vector<TString> vec_channel (channel_array, channel_array + sizeof(channel_array)/sizeof(channel_array[0]));
+    std::vector<TString> vec_channel {"ee","mumu","emu","combined"};
 
     //Check if we run on a single channel or in all of them
-    if(Chan!=""){
+    if(Channel!=""){
         vec_channel.clear();
-        vec_channel.push_back(Chan);
+        vec_channel.push_back(Channel);
     }
-    if(System!=""){
+    if (!doSystematics) {
         vec_systematic.clear();
-        vec_systematic.push_back(System);
+        vec_systematic.push_back("Nominal");
     }
-
-    for(int i=0; i<(int) vec_channel.size(); i++){//loop over channels
-        for(int j=0; j<(int)vec_systematic.size(); j++){//loop over systematics
+    if(Systematic!=""){
+        vec_systematic.clear();
+        vec_systematic.push_back(Systematic);
+    }
+    
+    for(size_t i=0; i < vec_channel.size(); i++){//loop over channels
+        for(size_t j=0; j < vec_systematic.size(); j++){//loop over systematics
             write(vec_channel.at(i),vec_systematic.at(j));
         }//systematic loop
-
     }//channel loop
 }
 
 void Plotter::DYScaleFactor(){
 
-    if(!doDYScale){
-        DYScale.at(0)=1.;//need to make a switch for control plots that don't want DYScale
-        DYScale.at(1)=1.;
-        DYScale.at(2)=1.;
-        DYScale.at(3)=1.;
-        return;
-    }
-
-    if(DYScale.size() <4){DYScale.insert(DYScale.begin(), 4, 1.);} //If DYScale has not the appropriate size initialize to (1., 1., 1., 1.)
+    DYScale = {1,1,1,1}; 
+    
+    if(!doDYScale) return; //need to make a switch for control plots that don't want DYScale
 
     cout<<"\n\nBegin DYSCALE FACTOR calculation"<<endl;
 
@@ -157,14 +152,13 @@ void Plotter::DYScaleFactor(){
     double NinEEloose=0, NinMuMuloose=0;//Number of data events in Z-Veto region with MET cut
     double NinEEMC=0, NinMuMuMC=0;//All other MC events
 
-    for(int i=0; i<(int) Vec_Files.size(); i++){
+    for(size_t i=0; i < Vec_Files.size(); i++){
         double LumiWeight = CalcLumiWeight(Vec_Files.at(i));
         double allWeights=LumiWeight;//calculate here all the flat-weights we apply: Lumi*others*...
-        TFile *ftemp = TFile::Open(Vec_Files.at(i));
         if(Vec_Files.at(i).Contains("ee") || Vec_Files.at(i).Contains("mumu")){
             if(Vec_Files.at(i).Contains("run")){
-                TH1D *htemp = (TH1D*)ftemp->Get("Zh1");
-                TH1D *htemp1 = (TH1D*)ftemp->Get("Looseh1");
+                TH1D *htemp = fileReader->GetClone<TH1D>(Vec_Files.at(i), "Zh1");
+                TH1D *htemp1 = fileReader->GetClone<TH1D>(Vec_Files.at(i), "Looseh1");
                 ApplyFlatWeights(htemp, allWeights);
                 ApplyFlatWeights(htemp1, allWeights);
                 if(Vec_Files.at(i).Contains("ee")){
@@ -178,8 +172,8 @@ void Plotter::DYScaleFactor(){
             }
             else if(Vec_Files.at(i).Contains("dy")){
                 if(Vec_Files.at(i).Contains("50inf")){
-                    TH1D *htemp = (TH1D*)ftemp->Get("Zh1");
-                    TH1D *htemp1 = (TH1D*)ftemp->Get("TTh1");
+                    TH1D *htemp = fileReader->GetClone<TH1D>(Vec_Files.at(i), "Zh1");
+                    TH1D *htemp1 = fileReader->GetClone<TH1D>(Vec_Files.at(i), "TTh1");
                     ApplyFlatWeights(htemp, LumiWeight);
                     ApplyFlatWeights(htemp1, LumiWeight);
                     if(Vec_Files.at(i).Contains("ee")){
@@ -190,29 +184,32 @@ void Plotter::DYScaleFactor(){
                         NinMuMuDYMC+=htemp->Integral();
                         NoutMuMuDYMC+=htemp1->Integral();
                     }
+                    delete htemp; delete htemp1;
                 }
                 else{
-                    TH1D *htemp = (TH1D*)ftemp->Get("TTh1");
+                    TH1D *htemp = fileReader->GetClone<TH1D>(Vec_Files.at(i), "TTh1");
                     ApplyFlatWeights(htemp, LumiWeight);
                     if(Vec_Files.at(i).Contains("ee")){   NoutEEDYMC+=htemp->Integral();}
                     if(Vec_Files.at(i).Contains("mumu")){ NoutMuMuDYMC+=htemp->Integral();}
+                    delete htemp;
                 }
             }
             else{
-                TH1D *htemp = (TH1D*)ftemp->Get("Zh1");
+                TH1D *htemp = fileReader->GetClone<TH1D>(Vec_Files.at(i), "Zh1");
                 ApplyFlatWeights(htemp, LumiWeight);
                 if(Vec_Files.at(i).Contains("ee")){   NinEEMC+=htemp->Integral();   }
                 if(Vec_Files.at(i).Contains("mumu")){ NinMuMuMC+=htemp->Integral(); }
+                delete htemp;
             }
         }
         
         if(Vec_Files.at(i).Contains("emu") && Vec_Files.at(i).Contains("run")){
-            TH1D *htemp = (TH1D*)ftemp->Get("Zh1");
+            TH1D *htemp = fileReader->GetClone<TH1D>(Vec_Files.at(i), "Zh1");
             ApplyFlatWeights(htemp, LumiWeight);
             NinEMu+=htemp->Integral();
+            delete htemp;
         }
 
-        delete ftemp;
     }
     
     double kee = sqrt(NinEEloose/NinMuMuloose);
@@ -271,9 +268,7 @@ void Plotter::CalcDiffSystematics(TString Channel, TString Systematic, TString S
     cout << "    Preparing to Calculate " << Systematic << "-Uncertainty ... " << endl;
 
     ofstream ResultsFile;
-    gSystem->MakeDirectory("UnfoldingResults");
-    gSystem->MakeDirectory("UnfoldingResults/"+Systematic);
-    gSystem->MakeDirectory("UnfoldingResults/"+Systematic+"/"+Channel);
+    gSystem->mkdir("UnfoldingResults/"+Systematic+"/"+Channel, true);
     
     string ResultsFilestring = outpathResults.Data();
     ResultsFilestring.append(subfolderSpecial.Data());
@@ -288,10 +283,10 @@ void Plotter::CalcDiffSystematics(TString Channel, TString Systematic, TString S
     ResultsFile.open(ResultsFilestring.c_str());
         
     double Xbins[XAxisbins.size()];
-    for(unsigned int i = 0; i<XAxisbins.size();i++){Xbins[i]=XAxisbins[i];} 
+    for(size_t i = 0; i<XAxisbins.size();i++){Xbins[i]=XAxisbins[i];} 
 
     if(flat_Syst > 0.0){// flat systematics will be: flat_Syst != 0.0
-        for(int bin = 0; bin<(int)XAxisbinCenters.size(); bin++){
+        for(size_t bin = 0; bin < XAxisbinCenters.size(); bin++){
             ResultsFile<<"XAxisbinCenters[bin]: "<<XAxisbinCenters[bin]<<" bin: "<<Xbins[bin]<<" to "<<Xbins[bin+1]<<" SystematicError: "<<flat_Syst<<endl;
         }
     }
@@ -341,31 +336,27 @@ void Plotter::CalcDiffSystematics(TString Channel, TString Systematic, TString S
         // Notice, that the DY Background will be scaled with
         // the DYScale.
 
+        TString filename = "preunfolded/Nominal/"+Channel+"/"+name+"_UnfoldingHistos.root";
+        theDataHist = fileReader->GetClone<TH1D>(filename, "aDataHist");
+        theBgrHist =  fileReader->GetClone<TH1D>(filename, "aBgrHist");
+        theTtBgrHist =  fileReader->GetClone<TH1D>(filename, "aTtBgrHist");
+        theRecHist =  fileReader->GetClone<TH1D>(filename, "aRecHist");
+        theGenHist =  fileReader->GetClone<TH1D>(filename, "aGenHist");
+        theRespHist = fileReader->GetClone<TH2D>(filename, "aRespHist");
 
-        TFile *ftemp = TFile::Open("preunfolded/Nominal/"+Channel+"/"+name+"_UnfoldingHistos.root");
-        theDataHist =  (TH1D*)ftemp->Get("aDataHist")->Clone();
-        theBgrHist =  (TH1D*)ftemp->Get("aBgrHist")->Clone();
-        theTtBgrHist =  (TH1D*)ftemp->Get("aTtBgrHist")->Clone();
-        theRecHist =  (TH1D*)ftemp->Get("aRecHist")->Clone();
-        theGenHist =  (TH1D*)ftemp->Get("aGenHist")->Clone();
-        theRespHist =  (TH2D*)ftemp->Get("aRespHist")->Clone();
-        delete ftemp;
+        TString filenameUp = "preunfolded/"+SystematicUp+"/"+Channel+"/"+name+"_UnfoldingHistos.root";
+        theBgrHistUp =  fileReader->GetClone<TH1D>(filenameUp, "aBgrHist");
+        theTtBgrHistUp =  fileReader->GetClone<TH1D>(filenameUp, "aTtBgrHist");
+        theRecHistUp =  fileReader->GetClone<TH1D>(filenameUp, "aRecHist");
+        theGenHistUp =  fileReader->GetClone<TH1D>(filenameUp, "aGenHist");
+        theRespHistUp =  fileReader->GetClone<TH2D>(filenameUp, "aRespHist");
 
-        TFile *ftempUp = TFile::Open("preunfolded/"+SystematicUp+"/"+Channel+"/"+name+"_UnfoldingHistos.root");
-        theBgrHistUp =  (TH1D*)ftempUp->Get("aBgrHist")->Clone();
-        theTtBgrHistUp =  (TH1D*)ftempUp->Get("aTtBgrHist")->Clone();
-        theRecHistUp =  (TH1D*)ftempUp->Get("aRecHist")->Clone();
-        theGenHistUp =  (TH1D*)ftempUp->Get("aGenHist")->Clone();
-        theRespHistUp =  (TH2D*)ftempUp->Get("aRespHist")->Clone();
-        delete ftempUp;
-
-        TFile *ftempDown = TFile::Open("preunfolded/"+SystematicDown+"/"+Channel+"/"+name+"_UnfoldingHistos.root");
-        theBgrHistDown =  (TH1D*)ftempDown->Get("aBgrHist")->Clone();
-        theTtBgrHistDown =  (TH1D*)ftempDown->Get("aTtBgrHist")->Clone();
-        theRecHistDown =  (TH1D*)ftempDown->Get("aRecHist")->Clone();
-        theGenHistDown =  (TH1D*)ftempDown->Get("aGenHist")->Clone();
-        theRespHistDown =  (TH2D*)ftempDown->Get("aRespHist")->Clone();
-        delete ftempDown;
+        TString filenameDown = "preunfolded/"+SystematicDown+"/"+Channel+"/"+name+"_UnfoldingHistos.root";
+        theBgrHistDown =  fileReader->GetClone<TH1D>(filenameDown, "aBgrHist");
+        theTtBgrHistDown =  fileReader->GetClone<TH1D>(filenameDown, "aTtBgrHist");
+        theRecHistDown =  fileReader->GetClone<TH1D>(filenameDown, "aRecHist");
+        theGenHistDown =  fileReader->GetClone<TH1D>(filenameDown, "aGenHist");
+        theRespHistDown =  fileReader->GetClone<TH2D>(filenameDown, "aRespHist");
 
         // Apply Scale Factor for MC@NLO 
         /*    if ( legendsSyst.size() > 0 ) {  
@@ -407,19 +398,19 @@ void Plotter::CalcDiffSystematics(TString Channel, TString Systematic, TString S
         cout << endl;
     
         // Get the integrals for the normalization
-        double totalDataEventsNom  = TopSVDFunctions::SVD_Integral1D((TH1D*)theDataHist, 0, false);
-        double totalBgrEventsNom   = TopSVDFunctions::SVD_Integral1D((TH1D*)theBgrHist, 0, false);
-        double totalBgrEventsUp    = TopSVDFunctions::SVD_Integral1D((TH1D*)theBgrHistUp, 0, false);
-        double totalBgrEventsDown  = TopSVDFunctions::SVD_Integral1D((TH1D*)theBgrHistDown, 0, false);
-        double totalTtBgrEventsNom   = TopSVDFunctions::SVD_Integral1D((TH1D*)theTtBgrHist, 0, false);
-        double totalTtBgrEventsUp    = TopSVDFunctions::SVD_Integral1D((TH1D*)theTtBgrHistUp, 0, false);
-        double totalTtBgrEventsDown  = TopSVDFunctions::SVD_Integral1D((TH1D*)theTtBgrHistDown, 0, false);
-        double totalRecEventsNom   = TopSVDFunctions::SVD_Integral1D((TH1D*)theRecHist, 0, false);
-        double totalRecEventsUp    = TopSVDFunctions::SVD_Integral1D((TH1D*)theRecHistUp, 0, false);
-        double totalRecEventsDown  = TopSVDFunctions::SVD_Integral1D((TH1D*)theRecHistDown, 0, false);
-        double totalGenEventsNom   = TopSVDFunctions::SVD_Integral1D((TH1D*)theGenHist, 0, false);
-        double totalGenEventsUp    = TopSVDFunctions::SVD_Integral1D((TH1D*)theGenHistUp, 0, false);
-        double totalGenEventsDown  = TopSVDFunctions::SVD_Integral1D((TH1D*)theGenHistDown, 0, false);
+        double totalDataEventsNom  = TopSVDFunctions::SVD_Integral1D(theDataHist, 0, false);
+        double totalBgrEventsNom   = TopSVDFunctions::SVD_Integral1D(theBgrHist, 0, false);
+        double totalBgrEventsUp    = TopSVDFunctions::SVD_Integral1D(theBgrHistUp, 0, false);
+        double totalBgrEventsDown  = TopSVDFunctions::SVD_Integral1D(theBgrHistDown, 0, false);
+        double totalTtBgrEventsNom = TopSVDFunctions::SVD_Integral1D(theTtBgrHist, 0, false);
+        double totalTtBgrEventsUp  = TopSVDFunctions::SVD_Integral1D(theTtBgrHistUp, 0, false);
+        double totalTtBgrEventsDown= TopSVDFunctions::SVD_Integral1D(theTtBgrHistDown, 0, false);
+        double totalRecEventsNom   = TopSVDFunctions::SVD_Integral1D(theRecHist, 0, false);
+        double totalRecEventsUp    = TopSVDFunctions::SVD_Integral1D(theRecHistUp, 0, false);
+        double totalRecEventsDown  = TopSVDFunctions::SVD_Integral1D(theRecHistDown, 0, false);
+        double totalGenEventsNom   = TopSVDFunctions::SVD_Integral1D(theGenHist, 0, false);
+        double totalGenEventsUp    = TopSVDFunctions::SVD_Integral1D(theGenHistUp, 0, false);
+        double totalGenEventsDown  = TopSVDFunctions::SVD_Integral1D(theGenHistDown, 0, false);
 
         // UNFOLDING OF SYSTEMATICS
         // Retrieve histograms with the unfolded quantities.
@@ -528,11 +519,11 @@ void Plotter::CalcDiffSystematics(TString Channel, TString Systematic, TString S
         }
         ResultsEE.close(); ResultsEMu.close(); ResultsMuMu.close();
 
-        double binWidth[bins];
+//         double binWidth[bins];
         double DiffXSecVecVaried[bins];
         //do the actual combined Diff.XSection calculation
         for(int i=0; i<bins; i++){
-            binWidth[i] = Xbins[i+1]-Xbins[i];
+//             binWidth[i] = Xbins[i+1]-Xbins[i];
             for(int j=0; j<3; j++){//check if any stat error is 0, in this case set their contribution to 0!!
                 if(perChannelDiffXSecStatError[j][i] == 0){
                     perChannelDiffXSecStatError[j][i] = 1e100;
@@ -575,21 +566,7 @@ Plotter::Plotter()
     
     
     //Ivan: Initialize list of systematics
-
-}
-
-Plotter::Plotter(TString name_, TString XAxis_,TString YAxis_, double rangemin_, double rangemax_)
-{
-  name=name_;
-  rangemin=rangemin_;
-  rangemax=rangemax_;
-  XAxis=XAxis_;
-  YAxis=YAxis_;
-  initialized=false;
-}
-
-Plotter::~Plotter()
-{
+    fileReader = RootFileReader::getInstance();
 }
 
 void Plotter::setOptions(TString name_, TString specialComment_, TString YAxis_, TString XAxis_, int rebin_, bool doDYScale_, bool logX_, bool logY_, double ymin_, double ymax_, double rangemin_, double rangemax_, int bins_, std::vector<double> XAxisbins_, std::vector<double> XAxisbinCenters_)
@@ -674,7 +651,13 @@ void Plotter::setDataSet(TString mode, TString Systematic)
 
     if(Systematic.Contains("DY_") || Systematic.Contains("BG_")){Systematic = "Nominal";}//We just need to vary the nominal DY and BG systematics
 
-    ifstream FileList("FileLists/HistoFileList_"+Systematic+"_"+mode+".txt");
+    TString histoListName = "FileLists/HistoFileList_"+Systematic+"_"+mode+".txt";
+    cout << "reading " << histoListName << endl;
+    ifstream FileList(histoListName);
+    if (FileList.fail()) {
+        cerr << "Error reading " << histoListName << endl;
+        exit(1);
+    }
     TString filename;
     datafiles=0;
 
@@ -820,17 +803,8 @@ bool Plotter::fillHisto()
     TH1::AddDirectory(kFALSE);
     hists.clear();
     for(unsigned int i=0; i<dataset.size(); i++){
-        TFile *ftemp = TFile::Open(dataset[i]);
-        if (!ftemp) {
-            cerr << "*** Could not open file " << dataset[i] << "!" << endl;
-            return false;
-        }
-        TH1D *hist = dynamic_cast<TH1D*>(ftemp->Get(name));
-        if (!hist) {
-            cerr << "*** Could not find histogram " << name << " in file " << dataset[i] << "!" << endl;
-            return false;
-        }
-        hist = static_cast<TH1D*>(hist->Clone());
+        TH1D *hist = fileReader->GetClone<TH1D>(dataset.at(i), name, true);
+        if (!hist) return false;
         if (!name.Contains("bcp_") && !name.Contains("Lead") 
             && (name.Contains("Lepton") || name.Contains("BJet") || name.Contains("Top")))
         {
@@ -838,7 +812,7 @@ bool Plotter::fillHisto()
             if(name.Contains("Lepton"))    {stemp.ReplaceAll("Lepton",6,"AntiLepton",10);}
             else if(name.Contains("BJet")) {stemp.ReplaceAll("BJet",4,"AntiBJet",8);}
             else if(name.Contains("Top"))  {stemp.ReplaceAll("Top",3,"AntiTop",7);}
-            TH1D *other = dynamic_cast<TH1D*>(ftemp->Get(stemp));
+            const TH1D* other = fileReader->Get<TH1D>(dataset.at(i), stemp);
             if (other) hist->Add(other); 
             else cerr << "Cannot find corresponding anti-quantity histogram: "<<stemp<<endl;
         }
@@ -854,7 +828,6 @@ bool Plotter::fillHisto()
         setHHStyle(*gStyle);
 
         hists.push_back(*hist);
-        delete ftemp;
     }
     initialized=true;
     return true;
@@ -927,6 +900,11 @@ void Plotter::write(TString Channel, TString Systematic) // do scaling, stacking
     setDataSet(Channel,Systematic);
     if (!fillHisto()) return;
 
+    if (hists.size() == 0) { 
+        cerr << "***ERROR! No histograms available! " << Channel << "/" << Systematic << endl; 
+        exit(1); 
+    }
+        
     TCanvas * c = new TCanvas("","");
 
     THStack * stack=  new THStack("def", "def");
@@ -937,8 +915,8 @@ void Plotter::write(TString Channel, TString Systematic) // do scaling, stacking
     leg->SetY1NDC(1.0 - gStyle->GetPadTopMargin()  - gStyle->GetTickLength() - 0.05 - leg->GetNRows()*0.04);
     leg->SetX2NDC(1.0 - gStyle->GetPadRightMargin() - gStyle->GetTickLength());
     leg->SetY2NDC(1.0 - gStyle->GetPadTopMargin()  - gStyle->GetTickLength());
-    TH1D *drawhists[hists.size()];
 
+    TH1 *drawhists[hists.size()];
     std::stringstream ss;
     ss << DYScale[channelType];
     TString scale;
@@ -977,9 +955,7 @@ void Plotter::write(TString Channel, TString Systematic) // do scaling, stacking
     }
 
 
-    gSystem->MakeDirectory("preunfolded");
-    gSystem->MakeDirectory("preunfolded/"+Systematic);
-    gSystem->MakeDirectory("preunfolded/"+Systematic+"/"+Channel);
+    gSystem->mkdir("preunfolded/"+Systematic+"/"+Channel, true);
 
 
     for(unsigned int i=0; i<hists.size() ; i++){ // prepare histos and leg
@@ -988,25 +964,24 @@ void Plotter::write(TString Channel, TString Systematic) // do scaling, stacking
 
         if(XAxisbins.size()>1){//only distributions we want to unfold will have a binning vector
             if(legends[i] == "t#bar{t} Signal"){
-                TFile *ftemp = TFile::Open(dataset[i]);
+                TString ftemp = dataset[i];
                 if(init==false){
-                    aRespHist = (TH2*)ftemp->Get("GenReco"+newname)->Clone();
-                    aGenHist=(TH1D*)ftemp->Get("VisGen"+newname)->Clone();
+                    aRespHist = fileReader->GetClone<TH2>(ftemp, "GenReco"+newname);
+                    aGenHist = fileReader->GetClone<TH1D>(ftemp, "VisGen"+newname);
                     //Rebin(bins,"aTtBgrHist",Xbins);
                     if(!newname.Contains("Lead") && (newname.Contains("Lepton")||newname.Contains("Top")||newname.Contains("BJet"))){
-                        aRespHist->Add((TH2*)ftemp->Get("GenRecoAnti"+newname)->Clone());
-                        aGenHist->Add((TH1D*)ftemp->Get("VisGenAnti"+newname)->Clone());
+                        aRespHist->Add(fileReader->Get<TH2>(ftemp, "GenRecoAnti"+newname));
+                        aGenHist->Add(fileReader->Get<TH1D>(ftemp, "VisGenAnti"+newname));
                     }
                     init =true;
                 } else {//account for more than one signal histogram
-                    aRespHist->Add((TH2*)ftemp->Get("GenReco"+newname)->Clone());
-                    aGenHist->Add((TH1D*)ftemp->Get("VisGen"+newname)->Clone());
+                    aRespHist->Add(fileReader->Get<TH2>(ftemp, "GenReco"+newname));
+                    aGenHist->Add(fileReader->Get<TH1D>(ftemp, "VisGen"+newname));
                     if(!newname.Contains("Lead") && (newname.Contains("Lepton")||newname.Contains("Top")||newname.Contains("BJet"))){
-                        aGenHist->Add((TH1D*)ftemp->Get("VisGenAnti"+newname)->Clone());
-                        aRespHist->Add((TH2*)ftemp->Get("GenRecoAnti"+newname)->Clone());
+                        aGenHist->Add(fileReader->Get<TH1D>(ftemp, "VisGenAnti"+newname));
+                        aRespHist->Add(fileReader->Get<TH2>(ftemp, "GenRecoAnti"+newname));
                     }
                 }
-                delete ftemp;
             }
             //cout<<"Legend: "<<legends[i]<<endl;
             if(legends[i] == "t#bar{t} Signal"){
@@ -1055,7 +1030,7 @@ void Plotter::write(TString Channel, TString Systematic) // do scaling, stacking
                     drawhists[i]->Scale(0.5);
                 }
 
-                if(aBgrHist == NULL){
+                if (!aBgrHist){
                     aBgrHist = drawhists[i]->Rebin(bins,"aBgrHist",Xbins);
                     //cout<<"Created "<<legends[i]<<" to aBgrHist"<<endl;
                 }else{
@@ -1115,6 +1090,7 @@ void Plotter::write(TString Channel, TString Systematic) // do scaling, stacking
         aRecHist->Write("aRecHist");
 
         f15->Close();
+        delete f15;
     }
 
     leg = ControlLegend(hists.size(), drawhists, legends, leg);
@@ -1212,15 +1188,13 @@ void Plotter::write(TString Channel, TString Systematic) // do scaling, stacking
     setex2->Draw();
     drawhists[0]->Draw("same,e1");
 
-    DrawCMSLabels(2, lumi, 8);
+    DrawCMSLabels(2, 8);
     DrawDecayChLabel(channelLabel[channelType]);
     leg->Draw("SAME");
     //drawRatio(drawhists[0], stacksum, 0.75, 1.5, *gStyle);
 
     // Create Directory for Output Plots 
-    gSystem->MakeDirectory(outpathPlots);
-    gSystem->MakeDirectory(outpathPlots+"/"+subfolderChannel);
-    gSystem->MakeDirectory(outpathPlots+"/"+subfolderChannel+"/"+Systematic);
+    gSystem->mkdir(outpathPlots+"/"+subfolderChannel+"/"+Systematic, true);
     c->Print(outpathPlots+subfolderChannel+"/"+Systematic+"/"+name+".eps");
     //c->Print(outpathPlots+subfolderChannel+"/"+Systematic+"/"+name+".C");
     c->Clear();
@@ -1263,8 +1237,6 @@ void Plotter::PlotXSec(){
   TH1::AddDirectory(kFALSE);
   
   //CalcXSec(dataset, InclusiveXsection, InclusiveXsectionStatError, "","");
-
-  double syst_square=0;
 
   //Here we'll just pull the values from the txt file like it was done for the diff case.
 
@@ -1380,9 +1352,7 @@ void Plotter::PlotXSec(){
    box2->Draw("SAME");
    box3->Draw("SAME");
    box4->Draw("SAME");
-   gSystem->MakeDirectory(outpathPlots);
-   gSystem->MakeDirectory(outpathPlots+subfolderChannel);
-   gSystem->MakeDirectory(outpathPlots+subfolderChannel+subfolderSpecial);
+   gSystem->mkdir(outpathPlots+subfolderChannel+subfolderSpecial, true);
    c->Print(outpathPlots+subfolderChannel+subfolderSpecial+"/"+"InclusiveXSec.eps");
    c->Print(outpathPlots+subfolderChannel+subfolderSpecial+"/"+"InclusiveXSec.C");
    c->Clear();
@@ -1407,15 +1377,15 @@ void Plotter::MakeTable(){
 
     for(unsigned int i=0; i<dataset.size(); i++){
     TFile *ftemp = TFile::Open(dataset[i]);
-    TH1D *temp_hist5 = (TH1D*)ftemp->Get("step5")->Clone();
+    TH1D *temp_hist5 = fileReader->GetClone<TH1D>(dataset[i], "step5");
     numhists5[i]=temp_hist5;
-    TH1D *temp_hist6 = (TH1D*)ftemp->Get("step6")->Clone();
+    TH1D *temp_hist6 = fileReader->GetClone<TH1D>(dataset[i], "step6");
     numhists6[i]=temp_hist6;
-    TH1D *temp_hist7 = (TH1D*)ftemp->Get("step7")->Clone();
+    TH1D *temp_hist7 = fileReader->GetClone<TH1D>(dataset[i], "step7");
     numhists7[i]=temp_hist7;
-    TH1D *temp_hist8 = (TH1D*)ftemp->Get("step8")->Clone();
+    TH1D *temp_hist8 = fileReader->GetClone<TH1D>(dataset[i], "step8");
     numhists8[i]=temp_hist8;
-    TH1D *temp_hist9 = (TH1D*)ftemp->Get("step9")->Clone();
+    TH1D *temp_hist9 = fileReader->GetClone<TH1D>(dataset[i], "step9");
     numhists9[i]=temp_hist9;
     delete ftemp;
     }
@@ -1445,9 +1415,7 @@ void Plotter::MakeTable(){
     string EventFilestring = outpathPlots.Data();
     EventFilestring.append(subfolderChannel.Data());
     EventFilestring.append(subfolderSpecial.Data());
-    gSystem->MakeDirectory(outpathPlots);
-    gSystem->MakeDirectory(outpathPlots+"/"+subfolderChannel);
-    gSystem->MakeDirectory(outpathPlots+"/"+subfolderChannel+"/"+subfolderSpecial);  
+    gSystem->mkdir(outpathPlots+"/"+subfolderChannel+"/"+subfolderSpecial, true);  
     string EventFilestring5;
     string EventFilestring6;
     string EventFilestring7;
@@ -1530,11 +1498,11 @@ double Plotter::CalcXSec(std::vector<TString> datasetVec, double InclusiveXsecti
 
   TH1D *numhists[hists.size()];
   double numbers[4]={0., 0., 0., 0.};//[0]=data, [1]=Signal, [2]Signal(only lumi & PU weights), [3]background (non-ttbar)
-  double TTbarBGnum =0;
+//   double TTbarBGnum =0;
 
   for(unsigned int i=0; i<datasetVec.size(); i++){
     TFile *ftemp = TFile::Open(datasetVec[i]);
-    TH1D *hist = (TH1D*)ftemp->Get("step9")->Clone();   
+    TH1D *hist = fileReader->GetClone<TH1D>(datasetVec[i], "step9");   
 
     double LumiWeight = CalcLumiWeight(datasetVec[i]);
     cout << "LumiWeight for " << dataset[i] << " = " << LumiWeight << endl;
@@ -1563,7 +1531,7 @@ double Plotter::CalcXSec(std::vector<TString> datasetVec, double InclusiveXsecti
       delete ftemp2;
        
       TFile *ftemp = TFile::Open(datasetVec[i]);   
-      TH1D *GenPlot = (TH1D*)ftemp->Get("GenAll")->Clone();  
+      TH1D *GenPlot = fileReader->GetClone<TH1D>(datasetVec[i], "GenAll");  
       
       // Apply Scale Factor for MC@NLO
       ApplyMCATNLOWeight(GenPlot, Systematic, Shift,  datasetVec[i]); 
@@ -1599,9 +1567,9 @@ double Plotter::CalcXSec(std::vector<TString> datasetVec, double InclusiveXsecti
 
   double tmp_num = 0;
 
-  double signalFraction = 0; 
+//   double signalFraction = 0; 
   
-  signalFraction = numbers[1]/(numbers[1]+TTbarBGnum); // is 1 right now, since TTbarBGnum is 0
+//   signalFraction = numbers[1]/(numbers[1]+TTbarBGnum); // is 1 right now, since TTbarBGnum is 0
 
   ofstream EventFile;  
   string EventFilestring = outpathPlots.Data();
@@ -1676,14 +1644,13 @@ void Plotter::CalcDiffXSec(TString Channel, TString Systematic){
     TH1* theRespHist = NULL;
 
 
-    TFile *ftemp = TFile::Open("preunfolded/"+Systematic+"/"+Channel+"/"+name+"_UnfoldingHistos.root");
-    theDataHist =  (TH1D*)ftemp->Get("aDataHist")->Clone();
-    theBgrHist =  (TH1D*)ftemp->Get("aBgrHist")->Clone();
-    theTtBgrHist =  (TH1D*)ftemp->Get("aTtBgrHist")->Clone();
-    theRecHist =  (TH1D*)ftemp->Get("aRecHist")->Clone();
-    theGenHist =  (TH1D*)ftemp->Get("aGenHist")->Clone();
-    theRespHist =  (TH2D*)ftemp->Get("aRespHist")->Clone();
-    delete ftemp;
+    TString ftemp = "preunfolded/"+Systematic+"/"+Channel+"/"+name+"_UnfoldingHistos.root";
+    theDataHist =  fileReader->GetClone<TH1D>(ftemp, "aDataHist");
+    theBgrHist =  fileReader->GetClone<TH1D>(ftemp, "aBgrHist");
+    theTtBgrHist =  fileReader->GetClone<TH1D>(ftemp, "aTtBgrHist");
+    theRecHist =  fileReader->GetClone<TH1D>(ftemp, "aRecHist");
+    theGenHist =  fileReader->GetClone<TH1D>(ftemp, "aGenHist");
+    theRespHist =  fileReader->GetClone<TH2D>(ftemp, "aRespHist");
     //  aDataHist = drawhists[0]
 
     for (Int_t bin=0; bin<bins; ++bin) {//poor for loop placement, but needed because genplot is the sum of all signal histograms
@@ -1850,9 +1817,7 @@ void Plotter::CalcDiffXSec(TString Channel, TString Systematic){
     
     ofstream ResultsFile, ResultsLateX;
 
-    gSystem->MakeDirectory("UnfoldingResults");
-    gSystem->MakeDirectory("UnfoldingResults/"+Systematic);
-    gSystem->MakeDirectory("UnfoldingResults/"+Systematic+"/"+Channel);
+    gSystem->mkdir("UnfoldingResults/"+Systematic+"/"+Channel, true);
 
     string ResultsFilestring = outpathResults.Data();
     ResultsFilestring.append(subfolderSpecial.Data());
@@ -1900,7 +1865,7 @@ void Plotter::PlotDiffXSec(TString Channel){
     double binCenters[XAxisbinCenters.size()];
     for(unsigned int i = 0; i<XAxisbinCenters.size();i++){binCenters[i]=XAxisbinCenters[i];}
 
-    TH1 *RecoPlot = new TH1D;
+//     TH1 *RecoPlot = new TH1D;
     TH1 *GenPlot =new TH1D;
     TH1 *GenPlotTheory =new TH1D;
 
@@ -1915,15 +1880,14 @@ void Plotter::PlotDiffXSec(TString Channel){
       newname.ReplaceAll("Hyp",3,"",0);
     }
 
-    TFile *ftemp = TFile::Open("preunfolded/Nominal/"+Channel+"/"+name+"_UnfoldingHistos.root");
+    TString ftemp = "preunfolded/Nominal/"+Channel+"/"+name+"_UnfoldingHistos.root";
 
-    //    theDataHist =  (TH1D*)ftemp->Get("aDataHist")->Clone();
-    //theBgrHist =  (TH1D*)ftemp->Get("aBgrHist")->Clone();
-    //theTtBgrHist =  (TH1D*)ftemp->Get("aTtBgrHist")->Clone();
-    RecoPlot =  (TH1D*)ftemp->Get("aRecHist")->Clone();
-    GenPlotTheory =  (TH1D*)ftemp->Get("aGenHist")->Clone();
-    genReco2d =  (TH2D*)ftemp->Get("aRespHist")->Clone();
-    delete ftemp;
+    //    theDataHist =  fileReader->GetClone<TH1D>(ftemp, "aDataHist");
+    //theBgrHist =  fileReader->GetClone<TH1D>(ftemp, "aBgrHist");
+    //theTtBgrHist =  fileReader->GetClone<TH1D>(ftemp, "aTtBgrHist");
+//     RecoPlot =  fileReader->GetClone<TH1D>(ftemp, "aRecHist");
+    GenPlotTheory =  fileReader->GetClone<TH1D>(ftemp, "aGenHist");
+    genReco2d =  fileReader->GetClone<TH2D>(ftemp, "aRespHist");
 
 
     for (unsigned int i =0; i<hists.size(); i++){
@@ -2084,7 +2048,7 @@ void Plotter::PlotDiffXSec(TString Channel){
     //cESP->Print(outpathPlots+subfolderChannel+subfolderSpecial+"/ESP_"+name+".C");
     cESP->Clear();
     delete cESP;
-    double efficiencies[XAxisbinCenters.size()];
+//     double efficiencies[XAxisbinCenters.size()];
 
     init = false;
 
@@ -2098,7 +2062,7 @@ void Plotter::PlotDiffXSec(TString Channel){
         signalHist=hist;
         init=true;
             for (Int_t bin=0; bin<bins; ++bin) {//poor for loop placement, but needed because genplot is the sum of all signal histograms
-                efficiencies[bin] = (RecoPlot->GetBinContent(bin+1)) / (GenPlot->GetBinContent(bin+1));
+//                 efficiencies[bin] = (RecoPlot->GetBinContent(bin+1)) / (GenPlot->GetBinContent(bin+1));
                 GenSignalSum[bin] += GenPlot->GetBinContent(bin+1);
                 //cout<<"efficiencies[bin]: "<<efficiencies[bin]<<endl;
             }
@@ -2603,7 +2567,7 @@ void Plotter::PlotDiffXSec(TString Channel){
 */
     h_GenDiffXSec->Draw("SAME"); //### 150512 ###
 
-    DrawCMSLabels(2, lumi, 8);
+    DrawCMSLabels(2, 8);
     
     DrawDecayChLabel(channelLabel[channelType]);
     
@@ -2708,7 +2672,7 @@ void Plotter::PlotDiffXSec(TString Channel){
     setex2->Draw();*/
     varhists[0]->Draw("same, e1"); //############
     //varhists[0]->Draw("same, e"); 
-    DrawCMSLabels(2, lumi, 8);
+    DrawCMSLabels(2, 8);
     DrawDecayChLabel(channelLabel[channelType]);    
     leg->Draw("SAME");
     gPad->RedrawAxis();
@@ -2761,7 +2725,6 @@ TH1* Plotter::GetNloCurve(const char *particle, const char *quantity, const char
     TH1D* rethist = (TH1D*)hist->Clone();
     TH1D* weight = (TH1D*)file->Get(TString("total_LeptonsPt_").Append(generator));
     
-    Double_t wgt = 1.;
     if(!weight){
       std::cerr << "WARNING in GetNloCurve: histogram to extract original number of events could not be opened! No weighting applied!" << endl;
     }
@@ -3022,47 +2985,6 @@ TLegend* Plotter::ControlLegend(int HistsSize, TH1* drawhists[], std::vector<TSt
     return leg;
 }
 
-TLegend* Plotter::ControlLegend(int HistsSize, TH1D* drawhists[], std::vector<TString> Legends, TLegend *leg){
-    
-    //hardcoded ControlPlot legend
-    std::vector<TString> OrderedLegends;    
-    OrderedLegends.push_back("Data");
-    OrderedLegends.push_back("t#bar{t} Signal");
-    OrderedLegends.push_back("t#bar{t} Other");
-    OrderedLegends.push_back("Single Top");
-    OrderedLegends.push_back("W+Jets");
-    OrderedLegends.push_back("Z / #gamma* #rightarrow ee/#mu#mu");
-    OrderedLegends.push_back("Z / #gamma* #rightarrow #tau#tau");
-    OrderedLegends.push_back("Diboson");
-    OrderedLegends.push_back("QCD Multijet");
-    
-    leg->Clear();
-    leg->SetX1NDC(1.0-gStyle->GetPadRightMargin()-gStyle->GetTickLength()-0.25);
-    leg->SetY1NDC(1.0-gStyle->GetPadTopMargin()-gStyle->GetTickLength()-0.30);
-    leg->SetX2NDC(1.0-gStyle->GetPadRightMargin()-gStyle->GetTickLength());
-    leg->SetY2NDC(1.0-gStyle->GetPadTopMargin()-gStyle->GetTickLength());
-    leg->SetTextFont(42);
-    leg->SetTextSize(0.03);
-    leg->SetFillStyle(0);
-    leg->SetBorderSize(0);
-    leg->SetTextAlign(12);
-    for(int i=0; i<(int)OrderedLegends.size(); ++i){
-        for(int j=0; j<HistsSize; ++j){
-            if (OrderedLegends[i] == Legends[j]){
-                if( OrderedLegends[i] == "Data"){
-                    leg->AddEntry(drawhists[j], OrderedLegends[i], "pe");
-                    break;
-                }
-                else{
-                    leg->AddEntry(drawhists[j], OrderedLegends[i], "f");
-                    break;
-                }
-            }
-        }
-    }
-    return leg;
-}
-
 void Plotter::DrawLabel(TString text, const double x1, const double y1, const double x2, const double y2, int centering, double textSize){
     //Function to add Kidonakis references to DiffXSection plots' legends
     TPaveText *label = new TPaveText(x1, y1, x2, y2, "br NDC");
@@ -3082,16 +3004,6 @@ void Plotter::ApplyFlatWeights(TH1* varhists, const double weight){
     if(weight == 0) {cout<<"Warning: the weight your applying is 0. This will remove your distribution."<<endl;}
     //if(weight >=1e3){cout<<"Warning: the weight your applying is >= 1e3. This will enlarge too much your distribution."<<endl;}
     varhists->Scale(weight);
-}
-
-
-void Plotter::ApplyFlatWeights(TH1* varhists[], const double weight){
-
-    if(weight == 0) {cout<<"Warning: the weight your applying is 0. This will remove your distribution."<<endl;}
-    if(weight >=1e3){cout<<"Warning: the weight your applying is >= 1e3. This will enlarge too much your distribution."<<endl;}
-    for(size_t i=0; i<hists.size(); i++){
-        varhists[i]->Scale(weight);
-    }
 }
 
 double Plotter::CalcLumiWeight(const TString& WhichSample){
@@ -3160,4 +3072,49 @@ double Plotter::SampleXSection(const TString& filename){
     else if(filename.Contains("qcdbcem80170")){return 1.191E6*10.90E-3;}
     
     return -1;
+}
+
+// Draw label for Decay Channel in upper left corner of plot
+void Plotter::DrawDecayChLabel(TString decaychannel, double textSize) {
+
+    TPaveText *decch = new TPaveText();
+
+    decch->AddText(decaychannel);
+
+    decch->SetX1NDC(      gStyle->GetPadLeftMargin() + gStyle->GetTickLength()        );
+    decch->SetY1NDC(1.0 - gStyle->GetPadTopMargin()  - gStyle->GetTickLength() - 0.05 );
+    decch->SetX2NDC(      gStyle->GetPadLeftMargin() + gStyle->GetTickLength() + 0.15 );
+    decch->SetY2NDC(1.0 - gStyle->GetPadTopMargin()  - gStyle->GetTickLength()        );
+
+    decch->SetFillStyle(0);
+    decch->SetBorderSize(0);
+    if (textSize!=0) decch->SetTextSize(textSize);
+    decch->SetTextAlign(12);
+    decch->Draw("same");
+}
+
+// Draw official labels (CMS Preliminary, luminosity and CM energy) above plot
+void Plotter::DrawCMSLabels(int cmsprelim, double energy, double textSize) {
+
+    const char *text;
+    if(cmsprelim ==2 ) {//Private work for PhDs students
+        text = "Private Work, %2.1f fb^{-1} at #sqrt{s} = %2.f TeV";
+    } else if (cmsprelim==1) {//CMS preliminary label
+        text = "CMS Preliminary, %2.1f fb^{-1} at #sqrt{s} = %2.f TeV";
+    } else {//CMS label
+        text = "CMS, %2.1f fb^{-1} at #sqrt{s} = %2.f TeV";
+    }
+    
+    TPaveText *label = new TPaveText();
+    label->SetX1NDC(gStyle->GetPadLeftMargin());
+    label->SetY1NDC(1.0-gStyle->GetPadTopMargin());
+    label->SetX2NDC(1.0-gStyle->GetPadRightMargin());
+    label->SetY2NDC(1.0);
+    label->SetTextFont(42);
+    label->AddText(Form(text, lumi/1000, energy));
+    label->SetFillStyle(0);
+    label->SetBorderSize(0);
+    if (textSize!=0) label->SetTextSize(textSize);
+    label->SetTextAlign(32);
+    label->Draw("same");
 }

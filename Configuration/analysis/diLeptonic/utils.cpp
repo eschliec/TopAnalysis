@@ -3,9 +3,7 @@
 #include <string>
 #include <iostream>
 #include <stdlib.h>
-#include <TObject.h>
 #include <TPaveText.h>
-#include <type_traits>
 
 void LVtod4(const LV lv, double *d) {
     d[0] = lv.E();
@@ -216,55 +214,11 @@ void setHHStyle(TStyle& HHStyle)
     // HHStyle.SetHistMinimumZero(kTRUE);
 }
 
-// Draw label for Decay Channel in upper left corner of plot
-void DrawDecayChLabel(TString decaychannel, double textSize) {
-
-    TPaveText *decch = new TPaveText();
-
-    decch->AddText(decaychannel);
-
-    decch->SetX1NDC(      gStyle->GetPadLeftMargin() + gStyle->GetTickLength()        );
-    decch->SetY1NDC(1.0 - gStyle->GetPadTopMargin()  - gStyle->GetTickLength() - 0.05 );
-    decch->SetX2NDC(      gStyle->GetPadLeftMargin() + gStyle->GetTickLength() + 0.15 );
-    decch->SetY2NDC(1.0 - gStyle->GetPadTopMargin()  - gStyle->GetTickLength()        );
-
-    decch->SetFillStyle(0);
-    decch->SetBorderSize(0);
-    if (textSize!=0) decch->SetTextSize(textSize);
-    decch->SetTextAlign(12);
-    decch->Draw("same");
-}
-
-// Draw official labels (CMS Preliminary, luminosity and CM energy) above plot
-void DrawCMSLabels(int cmsprelim, double luminosity, double energy, double textSize) {
-
-    const char *text;
-    if(cmsprelim ==2 ) {//Private work for PhDs students
-        text = "Private Work, %2.1f fb^{-1} at #sqrt{s} = %2.f TeV";
-    } else if (cmsprelim==1) {//CMS preliminary label
-        text = "CMS Preliminary, %2.1f fb^{-1} at #sqrt{s} = %2.f TeV";
-    } else {//CMS label
-        text = "CMS, %2.1f fb^{-1} at #sqrt{s} = %2.f TeV";
-    }
-    
-    TPaveText *label = new TPaveText();
-    label->SetX1NDC(gStyle->GetPadLeftMargin());
-    label->SetY1NDC(1.0-gStyle->GetPadTopMargin());
-    label->SetX2NDC(1.0-gStyle->GetPadRightMargin());
-    label->SetY2NDC(1.0);
-    label->SetTextFont(42);
-    label->AddText(Form(text, luminosity/1000, energy));
-    label->SetFillStyle(0);
-    label->SetBorderSize(0);
-    if (textSize!=0) label->SetTextSize(textSize);
-    label->SetTextAlign(32);
-    label->Draw("same");
-}
 
 ///////////////////////////////////////////
 
 TObject *RootFileReader::GetObj(const char * filename, const char * histoname, bool allowNonexisting) {
-    auto file = fileMap[filename];
+    auto& file = fileMap[filename];
     if (!file) {
         file = TFile::Open(filename);
         if (!file) {
@@ -277,7 +231,7 @@ TObject *RootFileReader::GetObj(const char * filename, const char * histoname, b
     }
     ++accessed[filename];
     //at max, keep 20 files open
-    if (fileMap.size() > 20) {
+    if (fileMap.size() > 60) {
         //delete 0th element
         delete fileMap[fileOrder[0]];
         fileMap.erase(fileOrder[0]);
@@ -285,39 +239,20 @@ TObject *RootFileReader::GetObj(const char * filename, const char * histoname, b
     }
     return file->Get(histoname);
 }
-
-template<typename T>
-void RootFileReader::Get(const char * filename, const char * histoname, T*& result, bool allowNonexisting) {
-    result = dynamic_cast<T*>(GetObj(filename, histoname, allowNonexisting));
-    if (!result && !allowNonexisting) {
-        std::cerr << "The histogram " << histoname << " in file " << filename 
-            << " is of incompatible type (cannot typecast)!" << std::endl;
-        exit(1);
-    }
-}
-
-template <typename T>
-T RootFileReader::Get(const char* filename, const char* histoname, bool allowNonexisting) {
-    static_assert(std::is_pointer<T>::value == true, "You must convert to a pointer type!");
-    T result;
-    Get(filename, histoname, result, allowNonexisting);
-    return result;
-}
-
-    
+   
 RootFileReader::~RootFileReader()
 {
-    std::cout << "Deleting RootFileReader\n";
-    for (const auto& i : fileMap) {
-        delete i.second;
-    }
-    for (const auto& i : accessed) {
-        std::cout << "accessed: " << i.first << " " << i.second << std::endl;
-    }
-    for (const auto& i : opened) {
-        std::cout << "opened: " << i.first << " " << i.second << std::endl;
-    }
-    
+//     std::cout << "Deleting RootFileReader\n";
+//     for (const auto& i : fileMap) {
+//         delete i.second;
+//     }
+//     for (const auto& i : accessed) {
+//         std::cout << "accessed: " << i.first << " " << i.second << std::endl;
+//     }
+//     for (const auto& i : opened) {
+//         std::cout << "opened: " << i.first << " " << i.second << std::endl;
+//     }
+//     
 }
 
 RootFileReader* RootFileReader::getInstance() {

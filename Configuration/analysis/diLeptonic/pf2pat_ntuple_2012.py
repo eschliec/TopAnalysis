@@ -47,12 +47,6 @@ process.load("PhysicsTools.PatAlgos.patSequences_cff")
 #pfpostfix = "PFlow"
 pfpostfix = ""
 
-if options.runOnMC:
-    jetCorr =('AK5PFchs', ['L1FastJet','L2Relative','L3Absolute'])
-else:
-    jetCorr = ('AK5PFchs', ['L1FastJet','L2Relative','L3Absolute', 'L2L3Residual'])
-
-process.load("PhysicsTools.PatAlgos.patSequences_cff")
 
 from PhysicsTools.PatAlgos.tools.pfTools import *
 
@@ -102,6 +96,11 @@ else:
 
 ####################################################################
 # limit to json file (if passed as parameter)
+if options.runOnMC:
+    jetCorr =('AK5PFchs', ['L1FastJet','L2Relative','L3Absolute'])
+else:
+    jetCorr = ('AK5PFchs', ['L1FastJet','L2Relative','L3Absolute', 'L2L3Residual'])
+
 
 usePF2PAT(process, runPF2PAT=True, jetAlgo='AK5', runOnMC=options.runOnMC, postfix=pfpostfix, jetCorrections=jetCorr, pvCollection=cms.InputTag('goodOfflinePrimaryVertices'),typeIMetCorrections=True) 
 

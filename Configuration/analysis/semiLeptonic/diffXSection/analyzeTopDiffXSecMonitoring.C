@@ -7,7 +7,7 @@ void analyzeTopDiffXSecMonitoring(double luminosity = 4967.5, //4955 //4980 //49
 				  //TString dataFile= "/afs/naf.desy.de/group/cms/scratch/tophh/RecentAnalysisRun/analyzeDiffXData2011AllCombinedElectron.root",
 				  TString dataFile= "/afs/naf.desy.de/group/cms/scratch/tophh/RecentAnalysisRun/analyzeDiffXData2011AllCombinedElectron.root:/afs/naf.desy.de/group/cms/scratch/tophh/RecentAnalysisRun/analyzeDiffXData2011AllCombinedMuon.root",
 				  const std::string decayChannel = "combined", 
-				  bool withRatioPlot = false, bool extrapolate=true, bool hadron=false)
+				  bool withRatioPlot = true, bool extrapolate=true, bool hadron=false)
 {
   // ============================
   //  Set Root Style

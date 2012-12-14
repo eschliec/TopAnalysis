@@ -2,7 +2,7 @@
 
 void bothDecayChannelsCombination(double luminosity=4967.5, bool save=true, unsigned int verbose=0, //TString inputFolderName="RecentAnalysisRun",
 				  TString inputFolderName="RecentAnalysisRun",
-				  bool pTPlotsLog=false, bool extrapolate=false, bool hadron=true, bool addCrossCheckVariables=false, bool combinedEventYields=true, TString closureTestSpecifier=""){
+				  bool pTPlotsLog=false, bool extrapolate=true, bool hadron=false, bool addCrossCheckVariables=false, bool combinedEventYields=true, TString closureTestSpecifier=""){
 
   // run automatically in batch mode
   gROOT->SetBatch();
@@ -209,19 +209,31 @@ void bothDecayChannelsCombination(double luminosity=4967.5, bool save=true, unsi
 	//std::cout << xSecFolder+"/"+sysLabel(sysNo)+"/"+xSecVariables_[i] << "/" << plotNameTheo << std::endl;
 	TH1F* plotMu   = combinedEventYields ? 0 : (TH1F*)canvasMu  ->GetPrimitive(plotName+"kData");
 	TH1F* plotEl   = combinedEventYields ? 0 : (TH1F*)canvasEl  ->GetPrimitive(plotName+"kData");
-	TH1F* plotTheo = combinedEventYields ? (TH1F*)canvasTheoComb->GetPrimitive(plotNameTheo) : (TH1F*)canvasTheo->GetPrimitive(plotNameTheo);
 	// if already combined at yield level:
 	TH1F* plotComb = combinedEventYields ? (TH1F*)canvasComb    ->GetPrimitive(plotName+"kData") : 0;
-	if( plotTheo) plotTheo->SetName(plotName);
+	// theory
+	TH1F* plotTheo = combinedEventYields ? (TH1F*)canvasTheoComb->GetPrimitive(plotNameTheo) : (TH1F*)canvasTheo->GetPrimitive(plotNameTheo);
 	if(!plotTheo){
+	  if(verbose>0) std::cout << "INFO: can not find " << plotNameTheo << std::endl;
+	  plotNameTheo.ReplaceAll("Theory","");
+	  plotTheo = combinedEventYields ? (TH1F*)canvasTheoComb->GetPrimitive(plotNameTheo) : (TH1F*)canvasTheo->GetPrimitive(plotNameTheo);
+	}	
+	if(!plotTheo){
+	  if(verbose>0) std::cout << "INFO: can not find " << plotNameTheo << std::endl;
+	  plotNameTheo.ReplaceAll("xSec/","");
+	  plotTheo = combinedEventYields ? (TH1F*)canvasTheoComb->GetPrimitive(plotNameTheo) : (TH1F*)canvasTheo->GetPrimitive(plotNameTheo);
+	}
+	if(!plotTheo){
+	  if(verbose>0) std::cout << "INFO: can not find " << plotNameTheo << std::endl;
 	  // take care of differing naming convention for hadron level plots
 	  if(hadron) plotTheo = combinedEventYields ? (TH1F*)canvasTheoComb->GetPrimitive(plotName+"Gen") : (TH1F*)canvasTheo->GetPrimitive(plotName+"Gen");
 	  // if theory is not found, load parton level theory plots directly
 	  else plotTheo = combinedEventYields ? (TH1F*)canvasTheoComb->GetPrimitive("analyzeTop"+LV+"LevelKinematics"+PS+"/"+plotName) : (TH1F*)canvasTheo->GetPrimitive("analyzeTop"+LV+"LevelKinematics"+PS+"/"+plotName);
-	  if(plotTheo) plotTheo->SetName(plotName);
+	  if(verbose>0) std::cout << "INFO: can not find " << "analyzeTop"+LV+"LevelKinematics"+PS+"/"+plotName << std::endl;
 	}
 	
 	if(((plotMu&&plotEl)||plotComb)&&plotTheo){ 
+	  plotTheo->SetName(plotName);
 	  if(verbose>1){
 	    if(!combinedEventYields) std::cout << "plot "+plotName+"kData in "+xSecFolder+"/"+subfolder+"/"+xSecVariables_[i] << " for both channels found!" << std::endl;
 	    else std::cout << "plot "+plotName+"kData in "+xSecFolder+"/"+subfolder+"/"+xSecVariables_[i] << " for combined event yield found!" << std::endl;
@@ -664,15 +676,15 @@ void bothDecayChannelsCombination(double luminosity=4967.5, bool save=true, unsi
 	    plotname.ReplaceAll("Norm", "");
 	    std::map<TString, std::vector<double> > binning_ = makeVariableBinning(addCrossCheckVariables);
 
-	    // g1) draw NNLO curve for topPt (normalized) and topY (normalized)
-
-	    if(DrawNNLOPlot&&(xSecVariables_[i].Contains("topPtNorm")||xSecVariables_[i].Contains("topYNorm"))){
+	    // g1) draw NNLO curve for topPt (normalized), topY (normalized) or ttbarMass (normalized)
+ 
+	    if(DrawNNLOPlot&&(xSecVariables_[i].Contains("topPtNorm")||xSecVariables_[i].Contains("topYNorm")||xSecVariables_[i].Contains("ttbarMassNorm"))){
 	    
-	      TFile  *file = new TFile("/afs/naf.desy.de/group/cms/scratch/tophh/CommonFiles/kidonakisNNLO.root");
+	      TFile  *file = xSecVariables_[i].Contains("ttbarMassNorm") ? new TFile("/afs/naf.desy.de/group/cms/scratch/tophh/CommonFiles/ahrensNNLO.root") : new TFile("/afs/naf.desy.de/group/cms/scratch/tophh/CommonFiles/kidonakisNNLO.root");
 	      TH1F   *newPlotNNLOHisto = (TH1F*)(file->Get(plotname)->Clone(plotname+"nnlo"));
 	      //TGraph *newPlotNNLOGraph = (TGraph*)(file->Get(plotname+"_graph")->Clone(plotname+"nnlo_graph"));
 	      if(newPlotNNLOHisto){
-		newPlotNNLOHisto->GetXaxis()->SetRange(0, newPlotNNLOHisto->GetNbinsX()-1); 	
+		if(!xSecVariables_[i].Contains("ttbarMassNorm")) newPlotNNLOHisto->GetXaxis()->SetRange(0, newPlotNNLOHisto->GetNbinsX()-1);
 		//newPlotNNLOHisto->SetName(plotname+"nnlo"); 
 		newPlotNNLOHisto->SetLineColor(constNnloColor);
 		newPlotNNLOHisto->SetLineWidth(2);
@@ -755,7 +767,7 @@ void bothDecayChannelsCombination(double luminosity=4967.5, bool save=true, unsi
 	  TString MGcombFile="/afs/naf.desy.de/group/cms/scratch/tophh/"+inputFolderName+"/"+TopFilename(kSig, 0, "muon").ReplaceAll("muon", "combined");
 	  if(largeMGfile) MGcombFile="/afs/naf.desy.de/group/cms/scratch/tophh/"+inputFolderName+"/combinedDiffXSecSigFall11PFLarge.root";
 	  //std::cout << plotNameMadgraph << std::endl;
-	  if(DrawSmoothMadgraph2) DrawTheoryCurve(MGcombFile, plotNameMadgraph, normalize, smoothFactor, rebinFactor, kRed+1, 1, rangeLow, rangeHigh, false, 1., 1., verbose-1, false, false, "madgraph", DrawSmoothMadgraph2, LV);
+	  if(DrawSmoothMadgraph2) DrawTheoryCurve(MGcombFile, plotNameMadgraph, normalize, smoothFactor, rebinFactor, kRed, 1, rangeLow, rangeHigh, false, 1., 1., verbose-1, false, false, "madgraph", DrawSmoothMadgraph2, LV);
 	  // j) re-draw binned MADGRAPH theory curve
 	  // load it from combined file
 	  TString plotNameMadgraph2=plotNameMadgraph;
@@ -885,8 +897,11 @@ void bothDecayChannelsCombination(double luminosity=4967.5, bool save=true, unsi
 	    else if (xSecVariables_[i].Contains("topYNorm" )){
 	      //std::cout << "searching " << "topYnnlo" << std::endl; 	    
 	      nnlocurve =(TH1F*)combicanvas->GetPrimitive("topYnnlo"); 
-
-}
+	    }
+	    else if (xSecVariables_[i].Contains("ttbarMassNorm" )){
+	      //std::cout << "searching " << "topYnnlo" << std::endl; 	    
+	      nnlocurve =(TH1F*)combicanvas->GetPrimitive("ttbarMassnnlo"); 
+	    }
 	    if(nnlocurve){
 	      leg->AddEntry(nnlocurve, "Approx. NNLO", "L");
 	      //std::cout << "found!" << std::endl;
@@ -922,8 +937,9 @@ void bothDecayChannelsCombination(double luminosity=4967.5, bool save=true, unsi
 	  DrawCMSLabels(false,luminosity);
 	  DrawDecayChLabel("e/#mu + Jets Combined");
 	  if(DrawNNLOPlot&&extrapolate){
-	    if (xSecVariables_[i].Contains("topPtNorm")) DrawLabel("(arXiv:1009.4935)", leg->GetX1NDC()+0.06, leg->GetY1NDC()-0.025, leg->GetX2NDC(), leg->GetY1NDC(), 12, 0.025);
-	    if (xSecVariables_[i].Contains("topYNorm"))  DrawLabel("(arXiv:1105.5167)", leg->GetX1NDC()+0.06, leg->GetY1NDC()-0.025, leg->GetX2NDC(), leg->GetY1NDC(), 12, 0.025);
+	    if (xSecVariables_[i].Contains("topPtNorm"    )) DrawLabel("(arXiv:1009.4935)", leg->GetX1NDC()+0.06, leg->GetY1NDC()-0.025, leg->GetX2NDC(), leg->GetY1NDC(), 12, 0.025);
+	    if (xSecVariables_[i].Contains("topYNorm"     )) DrawLabel("(arXiv:1105.5167)", leg->GetX1NDC()+0.06, leg->GetY1NDC()-0.025, leg->GetX2NDC(), leg->GetY1NDC(), 12, 0.025);
+	    if (xSecVariables_[i].Contains("ttbarMassNorm")) DrawLabel("(arXiv:1003.5827)", leg->GetX1NDC()+0.06, leg->GetY1NDC()-0.025, leg->GetX2NDC(), leg->GetY1NDC(), 12, 0.025);
 	  }
 
 	  histo_[xSecVariables_[i]][sys]=(TH1F*)(plotCombination->Clone());
@@ -948,7 +964,9 @@ void bothDecayChannelsCombination(double luminosity=4967.5, bool save=true, unsi
 	}
 	else{ 
 	  std::cout << " ERROR in bothDecayChannelsCombination.C! " << std::endl;
-	  std::cout << " plot " << xSecVariables_[i]+"kData" << " not found in ";
+	  std::cout << " plot " << xSecVariables_[i];
+	  if((plotMu&&plotEl)||plotComb) std::cout << "kData";
+	  std::cout << " not found in ";
 	  std::cout << xSecFolder+"/"+subfolder+"/"+xSecVariables_[i] << " for:" << std::endl;
 	  if(!combinedEventYields){
 	    if(!plotMu)   std::cout << "muon channel data"     << std::endl;

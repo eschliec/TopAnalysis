@@ -91,7 +91,7 @@ namespace semileptonic {
 
   // Colors for event samples
 
-  int color_[] ={ kRed+1  , kRed-7  , kAzure-2, kGreen-3, 
+  int color_[] ={ kRed    , kRed-7  , kAzure-2, kGreen-3, 
 		  kYellow , kMagenta, 10      , kBlack  , 
 		  kYellow , kYellow , kYellow , kYellow , kYellow , kYellow ,
 		  10      , 10      , 10      , 
@@ -100,7 +100,7 @@ namespace semileptonic {
   // Colors for data and theory curves
 
   const unsigned int constDataColor     = kBlack;
-  const unsigned int constMadgraphColor = kRed+1;
+  const unsigned int constMadgraphColor = kRed;
   const unsigned int constMcatnloColor  = kBlue;
   const unsigned int constPowhegColor   = kGreen+1;
   const unsigned int constNnloColor     = kOrange-3;

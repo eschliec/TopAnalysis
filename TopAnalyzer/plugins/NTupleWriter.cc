@@ -13,7 +13,7 @@ Implementation:
 //
 // Original Author:  Jan Kieseler,,,DESY
 //         Created:  Thu Aug 11 16:37:05 CEST 2011
-// $Id: NTupleWriter.cc,v 1.30.2.1 2012/10/31 15:57:59 wbehrenh Exp $
+// $Id: NTupleWriter.cc,v 1.30.2.2 2012/11/21 18:40:37 wbehrenh Exp $
 //
 //
 
@@ -140,6 +140,7 @@ private:
     ////////dileptons and leptons/////
     std::vector<LV>     Vlep;
     std::vector<int>    VlepQ ; //and more possible
+    std::vector<double> VlepID ; //mvaID for electrons (-1 for muon)
     std::vector<int>    VlepType; // -1 for electron, 1 for muon
     std::vector<double> VlepPfIso;
     std::vector<double> VlepCombIso;
@@ -556,7 +557,8 @@ NTupleWriter::analyze ( const edm::Event& iEvent, const edm::EventSetup& iSetup 
             Vlep.push_back( amuon->polarP4());
             VlepQ.push_back ( amuon->charge() ) ;
             VlepType.push_back ( 1 ) ;
-            VlepPfIso.push_back ( ( ( amuon->chargedHadronIso() +amuon->neutralHadronIso() +amuon->photonIso() ) / amuon->pt() ) );
+            VlepID.push_back ( -1 ) ;
+	    VlepPfIso.push_back ( ( ( amuon->chargedHadronIso() +amuon->neutralHadronIso() +amuon->photonIso() ) / amuon->pt() ) );
             VlepCombIso.push_back ( ( amuon->trackIso() +amuon->caloIso() ) /amuon->pt() );
 
 
@@ -578,6 +580,21 @@ NTupleWriter::analyze ( const edm::Event& iEvent, const edm::EventSetup& iSetup 
         if ( writeelec )
         {
             //Fill elestuff
+
+	    //Electron MVAID values
+
+	    std::vector<std::pair<std::string,float> > electronMVAIDs = anelectron->electronIDs();
+
+	    double idtemp = -9999.0;
+	    for(unsigned int id = 0; id < electronMVAIDs.size(); id++){
+	        if(electronMVAIDs[id].first == "mvaTrigV0"){
+		    idtemp = electronMVAIDs[id].second;
+		    break;
+	        }
+	    }
+
+	    VlepID.push_back ( idtemp );
+
             Vlep.push_back ( anelectron->polarP4() ) ;
             VlepQ.push_back ( anelectron->charge() ) ;
             VlepType.push_back ( -1 ) ;
@@ -757,6 +774,7 @@ NTupleWriter::beginJob()
     ///////////////dilepton and lepton properties//////////
     Ntuple->Branch ( "lepton", VLVstr, &Vlep );
     Ntuple->Branch ( "lepQ", &VlepQ );
+    Ntuple->Branch ( "lepID", &VlepID );
     Ntuple->Branch ( "lepType", &VlepType );
     Ntuple->Branch ( "lepPfIso", &VlepPfIso );
     Ntuple->Branch ( "lepCombIso", &VlepCombIso );
@@ -900,6 +918,7 @@ void NTupleWriter::clearVariables()
 
     ////////dileptons and leptons/////
     Vlep.clear() ;
+    VlepID.clear() ;
     VlepQ.clear() ;
     VlepType.clear() ;
     VlepPfIso.clear();

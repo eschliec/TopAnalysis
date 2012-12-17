@@ -1,5 +1,5 @@
 ROOTLIBS=`root-config --ldflags --libs`
-COMPFLAGS=`root-config --cflags` -Wall -Wextra -O3 -g -std=c++0x -DSTANDALONE_COMPILE
+COMPFLAGS=`root-config --cflags` -Wall -Wextra -O2 -g -std=c++0x -DSTANDALONE_COMPILE
 
 
 all: load_Analysis Histo
@@ -28,7 +28,7 @@ Analysis.o: Analysis.C Analysis.h HistoListReader.h utils.h
 HistoListReader.o: HistoListReader.h HistoListReader.cpp
 	g++ $(COMPFLAGS) -c -o HistoListReader.o HistoListReader.cpp
 
-Histo.o:
+Histo.o: Histo.C
 	g++ $(COMPFLAGS) -c -o Histo.o Histo.C
 	
 DilepSVDFunctions.o: DilepSVDFunctions.h DilepSVDFunctions.C 

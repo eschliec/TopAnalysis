@@ -965,6 +965,7 @@ void Plotter::write(TString Channel, TString Systematic) // do scaling, stacking
         if(XAxisbins.size()>1){//only distributions we want to unfold will have a binning vector
             if(legends.at(i) == "t#bar{t} Signal"){
                 TString ftemp = dataset.at(i);
+		double LumiWeight = CalcLumiWeight(dataset.at(i));
                 if (!init) {
                     aRespHist = fileReader->GetClone<TH2>(ftemp, "GenReco"+newname);
                     aGenHist = fileReader->GetClone<TH1D>(ftemp, "VisGen"+newname);
@@ -982,7 +983,9 @@ void Plotter::write(TString Channel, TString Systematic) // do scaling, stacking
                         aRespHist->Add(fileReader->Get<TH2>(ftemp, "GenRecoAnti"+newname));
                     }
                 }
-            }
+		aRespHist->Scale(LumiWeight);
+		aGenHist->Scale(LumiWeight);
+	    }
             //cout<<"Legend: "<<legends.at(i)<<endl;
             if(legends.at(i) == "t#bar{t} Signal"){
                 signalHist = i; //What is happening for the combined channel?? only 1 integer value??

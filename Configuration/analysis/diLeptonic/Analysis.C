@@ -42,7 +42,7 @@ double SampleXSection(TString sample){
     
     if(sample.Contains("data"))        {return 1;}
     if(sample.Contains("ttbar"))       {return 225.197;}
-    if(sample.Contains("single"))      {return 22.2;}
+    if(sample.Contains("single"))      {return 11.1;}
     if(sample.Contains("ww"))          {return 54.838;}
     if(sample.Contains("wz"))          {return 33.21;}
     if(sample.Contains("zz"))          {return 17.654;}

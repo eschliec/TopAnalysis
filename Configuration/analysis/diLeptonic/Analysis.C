@@ -28,6 +28,12 @@ using namespace std;
 using ROOT::Math::VectorUtil::DeltaPhi;
 using ROOT::Math::VectorUtil::DeltaR;
 
+//remove this function once we have new ntuples with correct jetType's
+//also remove the lines in which this function is called!
+constexpr int useOldPartonFlavour(int flavour) {
+    return flavour == 2 ? 5 : flavour == 1 ? 4 : 1;
+}
+
 double SampleXSection(TString sample){
     
     //MC cross sections taken from:
@@ -476,7 +482,7 @@ void Analysis::SlaveBegin ( TTree * )
     h_ljets = store(new TH2D("ljets2D", "unTagged Ljets", PtMax, ptbins, EtaMax, etabins));              h_ljets->Sumw2();
     h_ltaggedjets = store(new TH2D("ljetsTagged2D", "Tagged Ljets", PtMax, ptbins, EtaMax, etabins));    h_ltaggedjets->Sumw2();
     
-    h_BTagSF = store(new TH1D ( "BTagSF", "BTagging SF per event", 100 , 0.95, 1.05 ));
+    h_BTagSF = store(new TH1D ( "BTagSF", "BTagging SF per event", 200 , 0.95, 1.15 ));
     h_BTagSF->Sumw2();
 
 }
@@ -887,15 +893,13 @@ Bool_t Analysis::Process ( Long64_t entry )
     }//for visible top events
 
     //===CUT===
-    // check if event was triggered (only needed for the signal sample which does not
-    // contain trigger preselection cuts)
-    if (isTtbarPlusTauSample) {
-        if (!(((triggerBits & 0x0000FF) && channel == "mumu")    //mumu triggers in rightmost byte
-           || ((triggerBits & 0x00FF00) && channel == "emu")     //emu in 2nd byte
-           || ((triggerBits & 0xFF0000) && channel == "ee")))    //ee in 3rd byte
-        {
-            return kTRUE;
-        }
+    // check if event was triggered
+    //if (isTtbarPlusTauSample || true) {
+    if (!(((triggerBits & 0x0000FF) && channel == "mumu")    //mumu triggers in rightmost byte
+        ||((triggerBits & 0x00FF00) && channel == "emu")     //emu in 2nd byte
+        ||((triggerBits & 0xFF0000) && channel == "ee")))    //ee in 3rd byte
+    {
+        return kTRUE;
     }
 
     size_t LeadLeptonNumber = 0;
@@ -1405,30 +1409,32 @@ if (HypTop->size()) {
     //finally do the btag SF calculation stuff
     for (size_t i = 0; i < jets->size(); ++i) {
         if (jets->at(i).Pt() <= JETPTCUT) break;
-        if (TMath::Abs(jets->at(i).Eta())<2.4) {
-            int type = (*jetType)[i];
-            if(type == 2){//b-quark
-                h_bjets->Fill(jets->at(i).Pt(), TMath::Abs(jets->at(i).Eta()));
+        double absJetEta = abs(jets->at(i).Eta());
+        if (absJetEta<2.4) {
+            int partonFlavour = abs(jetType->at(i));
+            partonFlavour = useOldPartonFlavour(partonFlavour);
+            if(partonFlavour == 5){//b-quark
+                h_bjets->Fill(jets->at(i).Pt(), absJetEta);
                 if((*jetBTagCSV)[i]>BtagWP){
-                    h_btaggedjets->Fill(jets->at(i).Pt(), TMath::Abs(jets->at(i).Eta()));
+                    h_btaggedjets->Fill(jets->at(i).Pt(), absJetEta);
                 }
             }
-            else if (type == 1){//c-quark
-                h_cjets->Fill(jets->at(i).Pt(), TMath::Abs(jets->at(i).Eta()));
+            else if (partonFlavour == 4){//c-quark
+                h_cjets->Fill(jets->at(i).Pt(), absJetEta);
                 if((*jetBTagCSV)[i]>BtagWP){
-                    h_ctaggedjets->Fill(jets->at(i).Pt(), TMath::Abs(jets->at(i).Eta()));
+                    h_ctaggedjets->Fill(jets->at(i).Pt(), absJetEta);
                 }
             }
-            else if (type == 0){//l-quark
-                h_ljets->Fill(jets->at(i).Pt(), TMath::Abs(jets->at(i).Eta()));
+            else if (partonFlavour != 0){//l-quark
+                h_ljets->Fill(jets->at(i).Pt(), absJetEta);
                 if((*jetBTagCSV)[i]>BtagWP){
-                    h_ltaggedjets->Fill(jets->at(i).Pt(), TMath::Abs(jets->at(i).Eta()));
+                    h_ltaggedjets->Fill(jets->at(i).Pt(), absJetEta);
                 }
             }
-            else {
-                cout<<"I found a jet in event "<<eventNumber<<" which is not b, c nor ligth"<<endl; 
-                return kFALSE;
-            }
+//             else {
+//                 cout<<"I found a jet in event "<<eventNumber<<" which is not b, c nor ligth"<<partonFlavour<<endl; 
+//                 return kFALSE;
+//             }
         }
     }
 
@@ -1986,6 +1992,9 @@ double Analysis::calculateBtagSF()
         double pt = jets->at(i).Pt();
         double eta = abs(jets->at(i).Eta());
         if ( pt > 30 && eta < 2.4 ) {
+            int partonFlavour = abs(jetType->at(i)); //store absolute value
+            partonFlavour = useOldPartonFlavour(partonFlavour);
+            if (partonFlavour == 0) continue;
             int ptbin, etabin, dummy;
             bEff->GetBinXYZ(bEff->FindBin(pt, eta), ptbin, etabin, dummy);
             //overflow to last bin
@@ -1993,25 +2002,25 @@ double Analysis::calculateBtagSF()
             etabin = std::min(etabin, bEff->GetNbinsY());
             //do the type-jet selection & Eff and SF obtention
             double SF_Error=0;
-            if ( ( *jetType )[i] == 2 ) { //b-quark
+            if ( partonFlavour == 5 ) { //b-quark
                 eff=bEff->GetBinContent ( ptbin, etabin );
                 SFPerJet=BJetSF( pt, eta );
                 SF_Error = BJetSFAbsErr ( ptbin );
-            } else if ( ( *jetType )[i] == 1 ) { //c-quark
+            } else if ( partonFlavour == 4 ) { //c-quark
                 SFPerJet=CJetSF( pt, eta );
                 eff=cEff->GetBinContent ( ptbin, etabin );
-            } else if ( ( *jetType )[i] == 0 ) { //l-quark
+            } else if ( partonFlavour != 0 ) { //l-quark
                 SFPerJet=LJetSF( pt, eta );
                 eff=lEff->GetBinContent ( ptbin, etabin );
             } else {
-                cout<<"I found a jet in event "<<eventNumber<<" which is not b, c nor light"<<endl;
+                cout<<"I found a jet in event "<<eventNumber<<" which is not b, c nor light: "<<partonFlavour<<endl;
                 return kFALSE;
             }
             if ( eff <= 0 ) eff = 1;
             //calculate both numerator and denominator for per-event SF calculation
             //consider also the UP and DOWN variation for systematics calculation. Same procedure as PU
             OneMinusEff = OneMinusEff* ( 1-eff );
-            OneMinusSEff= OneMinusSEff* ( 1-SFPerJet*eff );
+            //OneMinusSEff= OneMinusSEff* ( 1-SFPerJet*eff );
             double sf = SFPerJet;
             if ( systematic == "BTAG_UP" ) {
                 sf = SFPerJet + SF_Error;

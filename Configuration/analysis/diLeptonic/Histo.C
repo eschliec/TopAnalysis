@@ -126,6 +126,7 @@ void Histo(TString type = "", TString oneHistoToProcess = "", TString systematic
                                      p.ymin, p.ymax, p.xmin, p.xmax, p.bins, p.xbinbounds, p.bincenters);
             h_generalPlot.DYScaleFactor();
             h_generalPlot.preunfolding(channel, systematic);
+            h_generalPlot.MakeTable();
         }
     }
 }

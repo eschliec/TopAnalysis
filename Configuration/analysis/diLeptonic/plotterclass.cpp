@@ -20,13 +20,13 @@
 #include <TH1.h>
 
 #include "utils.h"
-
-// DAVID
+  
+  // DAVID
 #include "DilepSVDFunctions.h"
 
 using namespace std;
 
-const double Plotter::topxsec = 213.192; //again changes with normalization, must be set outside of the class
+const double Plotter::topxsec = 238.1; //again changes with normalization, must be set outside of the class
 
 void Plotter::setLumi(double newLumi)
 {
@@ -126,7 +126,7 @@ void Plotter::preunfolding(TString Channel, TString Systematic)
         vec_systematic.clear();
         vec_systematic.push_back(Systematic);
     }
-    
+
     for(size_t i=0; i < vec_channel.size(); i++){//loop over channels
         for(size_t j=0; j < vec_systematic.size(); j++){//loop over systematics
             write(vec_channel.at(i),vec_systematic.at(j));
@@ -134,15 +134,15 @@ void Plotter::preunfolding(TString Channel, TString Systematic)
     }//channel loop
 }
 
+
 void Plotter::DYScaleFactor(){
 
     DYScale = {1,1,1,1}; 
-    
+
     if(!doDYScale) return; //need to make a switch for control plots that don't want DYScale
 
     cout<<"\n\nBegin DYSCALE FACTOR calculation"<<endl;
 
-    TH1::AddDirectory(kFALSE);
 
     vector<TString> Vec_Files = InputFileList("combined", "Nominal");//Read the hardcoded list of files
     if(Vec_Files.size()<1) {cout<<"WARNING(in DYScaleFactor)!!! No datasets available to calculate DY SF. EXITING!!"<<endl; return;}
@@ -818,7 +818,7 @@ bool Plotter::fillHisto()
         }
 
         //Rescaling to the data luminosity
-        double LumiWeight = CalcLumiWeight(dataset[i]);
+        double LumiWeight = CalcLumiWeight(dataset.at(i));
         ApplyFlatWeights(hist, LumiWeight);
 
 //         //Apply any other flat weight (still to do: define the weights somewhere else)
@@ -958,14 +958,14 @@ void Plotter::write(TString Channel, TString Systematic) // do scaling, stacking
     gSystem->mkdir("preunfolded/"+Systematic+"/"+Channel, true);
 
 
-    for(unsigned int i=0; i<hists.size() ; i++){ // prepare histos and leg
-    if(legends[i] != "Data"){
+    for(unsigned int i=0; i<hists.size() ; ++i){ // prepare histos and leg
+    if(legends.at(i) != "Data"){
         //      drawhists[i]->Scale(12.1/5.1);
 
         if(XAxisbins.size()>1){//only distributions we want to unfold will have a binning vector
-            if(legends[i] == "t#bar{t} Signal"){
-                TString ftemp = dataset[i];
-                if(init==false){
+            if(legends.at(i) == "t#bar{t} Signal"){
+                TString ftemp = dataset.at(i);
+                if (!init) {
                     aRespHist = fileReader->GetClone<TH2>(ftemp, "GenReco"+newname);
                     aGenHist = fileReader->GetClone<TH1D>(ftemp, "VisGen"+newname);
                     //Rebin(bins,"aTtBgrHist",Xbins);
@@ -983,27 +983,27 @@ void Plotter::write(TString Channel, TString Systematic) // do scaling, stacking
                     }
                 }
             }
-            //cout<<"Legend: "<<legends[i]<<endl;
-            if(legends[i] == "t#bar{t} Signal"){
+            //cout<<"Legend: "<<legends.at(i)<<endl;
+            if(legends.at(i) == "t#bar{t} Signal"){
                 signalHist = i; //What is happening for the combined channel?? only 1 integer value??
                 aRecHist = drawhists[i]->Rebin(bins,"aRecHist",Xbins); //What happens in the combined channel? Are the 3 channels summed up?? NO!!
-                //cout<<"Added "<<legends[i]<<" to aRecHist"<<endl;
-            }else if(legends[i] == "t#bar{t} Other"){//IMPORTANT: TTbar Other are added to the ttbarbackground histogram AND the Background Hist gram
+                //cout<<"Added "<<legends.at(i)<<" to aRecHist"<<endl;
+            }else if(legends.at(i) == "t#bar{t} Other"){//IMPORTANT: TTbar Other are added to the ttbarbackground histogram AND the Background Hist gram
                 if(aTtBgrHist == NULL){//check to see if this has been created
                     aTtBgrHist = drawhists[i]->Rebin(bins,"aTtBgrHist",Xbins);
-                    //cout<<"Created "<<legends[i]<<" to aTtBgrHist"<<endl;
+                    //cout<<"Created "<<legends.at(i)<<" to aTtBgrHist"<<endl;
                 }else{
                     aTtBgrHist->Add(drawhists[i]->Rebin(bins,"aTtBgrHist",Xbins));
-                    //cout<<"Added "<<legends[i]<<" to aTtBgrHist"<<endl;
+                    //cout<<"Added "<<legends.at(i)<<" to aTtBgrHist"<<endl;
                 }
                 if(aBgrHist == NULL){
                     aBgrHist = drawhists[i]->Rebin(bins,"aBgrHist",Xbins);
-                    //cout<<"Created "<<legends[i]<<" to aBgrHist"<<endl;
+                    //cout<<"Created "<<legends.at(i)<<" to aBgrHist"<<endl;
                 }else{
                     aBgrHist->Add(drawhists[i]->Rebin(bins,"aBgrHist",Xbins));
-                    //cout<<"Added "<<legends[i]<<" to aBgrHist"<<endl;
+                    //cout<<"Added "<<legends.at(i)<<" to aBgrHist"<<endl;
                 }
-            }else if((legends[i] == DYEntry)){
+            }else if((legends.at(i) == DYEntry)){
                 if (channelType!=2) drawhists[i]->Scale(DYScale[channelType]);
 
                 //Here we take into account the systematic shifts needed for DY systematic because it only modifies the nominal dataset
@@ -1015,10 +1015,10 @@ void Plotter::write(TString Channel, TString Systematic) // do scaling, stacking
                 }
                 if(aBgrHist == NULL){
                     aBgrHist = drawhists[i]->Rebin(bins,"aBgrHist",Xbins);
-                    //cout<<"Created "<<legends[i]<<" to aBgrHist"<<endl;
+                    //cout<<"Created "<<legends.at(i)<<" to aBgrHist"<<endl;
                 }else{
                     aBgrHist->Add(drawhists[i]->Rebin(bins,"aBgrHist",Xbins));
-                    //cout<<"Added "<<legends[i]<<" to aBgrHist"<<endl;
+                    //cout<<"Added "<<legends.at(i)<<" to aBgrHist"<<endl;
                 }
             }else{
 
@@ -1032,44 +1032,44 @@ void Plotter::write(TString Channel, TString Systematic) // do scaling, stacking
 
                 if (!aBgrHist){
                     aBgrHist = drawhists[i]->Rebin(bins,"aBgrHist",Xbins);
-                    //cout<<"Created "<<legends[i]<<" to aBgrHist"<<endl;
+                    //cout<<"Created "<<legends.at(i)<<" to aBgrHist"<<endl;
                 }else{
                     aBgrHist->Add(drawhists[i]->Rebin(bins,"aBgrHist",Xbins));
-                    //cout<<"Added "<<legends[i]<<" to aBgrHist"<<endl;
+                    //cout<<"Added "<<legends.at(i)<<" to aBgrHist"<<endl;
                     //cout<<"integral: "<<aBgrHist->Integral()<<endl;
                 }
             }
         }
 
         if(i > 1){
-            if(legends[i] != legends[i-1]){
+            if(legends.at(i) != legends[i-1]){
                 legchange = i; 
-                if((legends[i] == DYEntry)&& DYScale[channelType] != 1) leg->AddEntry(drawhists[i], legends[i],"f");
-                else leg->AddEntry(drawhists[i], legends[i] ,"f");
+                if((legends.at(i) == DYEntry)&& DYScale[channelType] != 1) leg->AddEntry(drawhists[i], legends.at(i),"f");
+                else leg->AddEntry(drawhists[i], legends.at(i) ,"f");
             }else{
                 drawhists[legchange]->Add(drawhists[i]);
             }
         }
 
         if(i!=(hists.size()-1)){
-            if(legends[i]!=legends[i+1]){
+            if(legends.at(i)!=legends[i+1]){
                 drawhists[i]->SetLineColor(1);
             }
         }else{
             drawhists[i]->SetLineColor(1);
         }
-        if(legends[i] != legends[i-1]){
+        if(legends.at(i) != legends[i-1]){
             drawhists[i]->SetLineColor(1);
             stack->Add(drawhists[i]); 
         }
     }
     else{
-        if(i==0) leg->AddEntry(drawhists[i], legends[i] ,"pe");
+        if(i==0) leg->AddEntry(drawhists[i], legends.at(i) ,"pe");
         if(i>0){
-            if(legends[i] != legends[i-1]){
-                leg->AddEntry(drawhists[i], legends[i] ,"pe");
+            if(legends.at(i) != legends[i-1]){
+                leg->AddEntry(drawhists[i], legends.at(i) ,"pe");
             }
-            if(legends[i] == legends[0]){
+            if(legends.at(i) == legends[0]){
                 drawhists[0]->Add(drawhists[i]);
             }
         }
@@ -1098,17 +1098,27 @@ void Plotter::write(TString Channel, TString Systematic) // do scaling, stacking
     if(name.Contains("HypjetMultiXSec")){
 
         double InclusiveXsectionWrite[4], InclusiveXsectionStatErrorWrite[4];
-        CalcXSec(dataset, InclusiveXsectionWrite, InclusiveXsectionStatErrorWrite, "","");
+        
+//         cout<<"*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*"<<endl;
+//         cout<<"Channel    = "<<Channel<<endl;
+//         cout<<"Systematic = "<<Systematic<<endl;
+//         cout<<"*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*"<<endl;
+        
+        CalcXSec(dataset, InclusiveXsectionWrite, InclusiveXsectionStatErrorWrite, Systematic,"");
 
         cout<<"&&&&&&&&&&&%%%%%%%%%%^^^^^^^^^^^^"<<endl;
         cout<<"&&&&&&&&&&&%%%%%%%%%%^^^^^^^^^^^^"<<endl;
-        cout<<"&&&&&&&&&&&%%%%%%%%%%^^^^^^^^^^^^"<<endl;
-        cout<<"Look ma! I calculated an inclusive cross-section! It is "<<InclusiveXsectionWrite[channelType]<<endl;
+        cout<<"Look ma! I calculated an inclusive cross-section!!"<<endl;
+        cout<<"Systematic: "<<Systematic<<"   Channel: "<<Channel<<endl;
+        cout<<"It is "<<InclusiveXsectionWrite[channelType]<<endl;
         cout<<"With a stat uncertainty of: "<<InclusiveXsectionStatErrorWrite[channelType]<<endl;
 
         ofstream InclusiveXSecResult("preunfolded/"+Systematic+"/"+Channel+"/InclusiveXSection.txt");  
         InclusiveXSecResult<<"InclusiveXSection: "<<InclusiveXsectionWrite[channelType]<<" StatError: "<<InclusiveXsectionStatErrorWrite[channelType]<<endl;
         InclusiveXSecResult.close();
+        
+        MakeTable();
+        if(channelType==3) PlotXSec();
     }
 
 
@@ -1116,37 +1126,18 @@ void Plotter::write(TString Channel, TString Systematic) // do scaling, stacking
     TH1D* stacksum = (TH1D*) l->At(0)->Clone();
 
     for (int i = 1; i < l->GetEntries(); ++i) { stacksum->Add((TH1D*)l->At(i));}
-    //  f0->Close();
-    //stat uncertainty::make a function 
+    
     TH1D* syshist =0;
     syshist = (TH1D*)stacksum->Clone();
-//     double lumierr = 0.045; 
     for(Int_t i=0; i<=syshist->GetNbinsX(); ++i){
-
         Double_t binc = 0;
         binc += stacksum->GetBinContent(i);
         syshist->SetBinContent(i, binc);
-/*        // calculate uncertainty: lumi uncertainty
-         Double_t binerr2 = binc*binc*lumierr*lumierr;
-         Double_t topunc = 0; // uncertainty on top xsec
-
-        //Kidonakis
-         double topxsecErr2 = 2.2*2.2 + 4.4*4.4 + 5.5*5.5; //topxsecErr2 = lumiErr*lumiErr + topxsecScaleErr*topxsecScaleErr + topxsecPDFErr*topxsecPDFErr
-
-         double topRelUnc =  TMath::Sqrt(topxsecErr2)/topxsec;
-        //    topunc += drawhists[signalHist]->GetBinContent(i)*topRelUnc;
-        // binerr2 += (topunc*topunc);
-        // syshist->SetLineColor(1);
-        // syshist->SetBinError(i, TMath::Sqrt(binerr2));
-*/
     }
 
     if(logY)c->SetLogy();
-
     syshist->SetFillStyle(3004);
     syshist->SetFillColor(kBlack);
-
-    //leg->AddEntry( syshist, "Uncertainty", "f" );
 
     drawhists[0]->SetMinimum(ymin);
 
@@ -1191,7 +1182,7 @@ void Plotter::write(TString Channel, TString Systematic) // do scaling, stacking
     DrawCMSLabels(2, 8);
     DrawDecayChLabel(channelLabel[channelType]);
     leg->Draw("SAME");
-    //drawRatio(drawhists[0], stacksum, 0.75, 1.5, *gStyle);
+    drawRatio(drawhists[0], stacksum, 0.5, 1.7);
 
     // Create Directory for Output Plots 
     gSystem->mkdir(outpathPlots+"/"+subfolderChannel+"/"+Systematic, true);
@@ -1209,7 +1200,7 @@ void Plotter::setStyle(TH1 *hist, unsigned int i, bool isControlPlot)
     hist->SetLineColor(colors[i]);
     hist->SetLineWidth(1);
 
-    if(legends[i] == "Data"){
+    if(legends.at(i) == "Data"){
         hist->SetFillColor(0);
         hist->SetMarkerStyle(20);
         hist->SetMarkerSize(1.);
@@ -1234,138 +1225,174 @@ void Plotter::setStyle(TH1 *hist, unsigned int i, bool isControlPlot)
 
 void Plotter::PlotXSec(){
 
-  TH1::AddDirectory(kFALSE);
-  
-  //CalcXSec(dataset, InclusiveXsection, InclusiveXsectionStatError, "","");
+    TH1::AddDirectory(kFALSE);
 
-  //Here we'll just pull the values from the txt file like it was done for the diff case.
+    TString channel_array[] = {"ee","mumu","emu","combined"};
+    TString sys_array[] = {"MATCH", "MASS", "SCALE", "BTAG_ETA_", "BTAG_PT_", "TRIG_", "BG_", "DY_", "PU_", "JER", "JES"};//For the time being uintil all systematics are finalished
+    vector<TString> vec_systematic (sys_array, sys_array + sizeof(sys_array)/sizeof(sys_array[0]));
+    vector<TString> vec_channel (channel_array, channel_array + sizeof(channel_array)/sizeof(channel_array[0]));
+    
+    double InclusiveXsectionPlot[4], InclusiveXsectionStatErrorPlot[4], InclusiveXsectionSysErrorPlot[4], InclusiveXsectionTotalErrorPlot[4];
+//     double InclusiveXsectionSysteticErrorBySyst[vec_channel.size()];
+    for (int j=0; j<(int)vec_channel.size(); j++){
 
-  for(int i =0; i<15; i++){
-    //    syst_square += InclusiveXsectionSysErrorBySyst[channelType][i]*InclusiveXsectionSysErrorBySyst[channelType][i];
-  }
-  //  InclusiveXsectionSysError[channelType] = sqrt(syst_square);
-  //cout<<"&^&^&^&^&^&^^&^&^ InclusiveXsectionSysError[channelType]: "<<InclusiveXsectionSysError[channelType]<<endl;
+        ifstream SysResultsList("Plots/Nominal/"+vec_channel.at(j)+"/InclXSec.txt");
+        TString DUMMY;
+        SysResultsList>>DUMMY>>DUMMY>>DUMMY>>DUMMY>>DUMMY>>InclusiveXsectionPlot[j]>>DUMMY>>InclusiveXsectionStatErrorPlot[j];
+        SysResultsList.close();
+        
+        //Print out in screen the numerical values
+        cout<<"\n********************************************************************************"<<endl;
+        cout<<"Inclusive XSection Numerical Results for channel "<<vec_channel.at(j)<<endl;
+        cout<<"Nominal XSection= "<<InclusiveXsectionPlot[j]<<" Stat.Error(%%)= "<<InclusiveXsectionStatErrorPlot[j]<<endl;
+        cout<<"Relative systematic (%%) error in Inclusive XSection:"<<endl;
+        
+        double syst_square_for_channel=0.0;
+        
+        for (int i=0; i<(int) vec_systematic.size(); i++){
+            
+            ifstream SysUP("Plots/"+vec_systematic.at(i)+"UP/"+vec_channel.at(j)+"/InclXSec.txt");
+            ifstream SysDOWN("Plots/"+vec_systematic.at(i)+"DOWN/"+vec_channel.at(j)+"/InclXSec.txt");
+            
+            double VarUp, VarDown, StatErrUp, StatErrDown;
+            
+            SysUP>>DUMMY>>DUMMY>>DUMMY>>DUMMY>>DUMMY>>VarUp>>DUMMY>>StatErrUp;
+            SysDOWN>>DUMMY>>DUMMY>>DUMMY>>DUMMY>>DUMMY>>VarDown>>DUMMY>>StatErrDown;
+            SysUP.close();
+            SysDOWN.close();
 
-  double InclusiveXsectionStatErrorPlot[4], InclusiveXsectionSysErrorPlot[4], InclusiveXsectionPlot[4], InclusiveXsectionTotalErrorPlot[4];;
+            //systematic error in %
+            double sys_err=(TMath::Abs(InclusiveXsectionPlot[j]-VarUp)+TMath::Abs(InclusiveXsectionPlot[j]-VarDown))*0.5/InclusiveXsectionPlot[j];
+            if(vec_systematic.at(i).Contains("MASS")) {sys_err = sys_err/12;}
+            syst_square_for_channel+=sys_err*sys_err;
+            cout<<vec_systematic.at(i)<<"(%): "<<sys_err*100<<endl;
+        }
+        cout<<"BranchingRatio(%): 1.5"<<endl;
+        cout<<"Luminosity (%): 4.5"<<endl;
+        //Total Systematic error = systematic_error + BR_Error * BR_Error + Lumi_Err * Lumi_Err
+        InclusiveXsectionSysErrorPlot[j]=TMath::Sqrt(syst_square_for_channel + 0.015 * 0.015 + 0.045 * 0.045);
+    }
 
-  if(channelType==3){
+    
+    
+    // measured results with statistical error
+    Double_t mx[]   = {      0.50,       1.50,       2.50,       3.50};
+    Double_t mexl[] = {      0.00,       0.00,       0.00,       0.00};
+    Double_t mexh[] = {      0.00,       0.00,       0.00,       0.00};
 
-     // measured results with statistical error
-   Double_t mx[]   = {      0.50,       1.50,       2.50,       3.50};
-   Double_t mexl[] = {      0.00,       0.00,       0.00,       0.00};
-   Double_t mexh[] = {      0.00,       0.00,       0.00,       0.00};
+    TGraphAsymmErrors *mplot = new TGraphAsymmErrors(4, mx, InclusiveXsectionPlot, mexl, mexh,InclusiveXsectionStatErrorPlot, InclusiveXsectionStatErrorPlot);
+    mplot->SetMarkerStyle(20);
+    mplot->GetYaxis()->SetNoExponent(kTRUE);
+    mplot->SetMarkerColor(kBlack);
+    mplot->SetMarkerSize(1.5);
+    mplot->SetLineColor(kBlack);
 
-   TGraphAsymmErrors *mplot = new TGraphAsymmErrors(4, mx, InclusiveXsectionPlot, mexl, mexh,InclusiveXsectionStatErrorPlot, InclusiveXsectionStatErrorPlot);
-   mplot->SetMarkerStyle(20);
-   mplot->SetMarkerColor(kBlack);
-   mplot->SetMarkerSize(1.5);
-   mplot->SetLineColor(kBlack);
-   
-   for(int i=0; i<4; i++){
-     InclusiveXsectionTotalErrorPlot[i] = sqrt(InclusiveXsectionStatErrorPlot[i]*InclusiveXsectionStatErrorPlot[i] +InclusiveXsectionPlot[i]*InclusiveXsectionSysErrorPlot[i]*InclusiveXsectionPlot[i]*InclusiveXsectionSysErrorPlot[i]);
-   }
+    for(int i=0; i<(int)vec_channel.size(); i++){
+        InclusiveXsectionTotalErrorPlot[i] = sqrt(InclusiveXsectionStatErrorPlot[i]*InclusiveXsectionStatErrorPlot[i] +InclusiveXsectionPlot[i]*InclusiveXsectionSysErrorPlot[i]*InclusiveXsectionPlot[i]*InclusiveXsectionSysErrorPlot[i]);
+    }
 
-   TGraphAsymmErrors *mplotwithsys = new TGraphAsymmErrors(4, mx, InclusiveXsectionPlot, mexl, mexh,InclusiveXsectionTotalErrorPlot, InclusiveXsectionTotalErrorPlot);
-   mplotwithsys->SetMarkerStyle(20);
-   mplotwithsys->SetMarkerColor(kBlack);
-   mplotwithsys->SetMarkerSize(1.5);
-   mplotwithsys->SetLineColor(kBlack);
+    TGraphAsymmErrors *mplotwithsys = new TGraphAsymmErrors(4, mx, InclusiveXsectionPlot, mexl, mexh,InclusiveXsectionTotalErrorPlot, InclusiveXsectionTotalErrorPlot);
+    mplotwithsys->SetMarkerStyle(20);
+    mplotwithsys->SetMarkerColor(kBlack);
+    mplotwithsys->SetMarkerSize(1.5);
+    mplotwithsys->SetLineColor(kBlack);
 
-   // mstw
-   Double_t mstwmean = 157.5;
-   Double_t mstwx[]   = {    -0.5,     0.5,	1.5,	 2.5,	  3.5,     4.5};
-   Double_t mstwy[]   = {mstwmean,mstwmean,mstwmean,mstwmean,mstwmean,mstwmean};
-   Double_t mstwexl[] = {      .4,	.4,	 .5,	  .5,	   .5,      .5};
-   Double_t mstwexh[] = {      .5,	.5,	 .5,	  .5,	   .4,      .4};
-   Double_t mstweyl[] = {    24.4,    24.4,    24.4,	24.4,	 24.4,    24.4};
-   Double_t mstweyh[] = {    23.2,    23.2,    23.2,	23.2,	 23.2,    23.2};
+    // kidonakis
+    Double_t kidonmean = 234;
+    Double_t kidonx[]   = {    -0.5,     0.5,   1.5,     2.5,     3.5,     4.5};
+    Double_t kidony[]   = {kidonmean,kidonmean,kidonmean,kidonmean,kidonmean,kidonmean};
+    Double_t kidonexl[] = {      .4,    .4,      .5,      .5,      .5,      .5};
+    Double_t kidonexh[] = {      .5,    .5,      .5,      .5,      .4,      .4};
+    Double_t kidoneyl[] = {    15.6,    15.6,    15.6,  15.6,    15.6,    15.6};
+    Double_t kidoneyh[] = {    13.9,    13.9,    13.9,  13.9,    13.9,    13.9};
 
-   TGraphAsymmErrors *mstwplot = new TGraphAsymmErrors(6, mstwx, mstwy, mstwexl, mstwexh, mstweyl, mstweyh);
-   mstwplot->SetLineColor(kGreen+1);
-   mstwplot->SetLineWidth(4);
-   mstwplot->SetFillColor(kGreen+1);
-   mstwplot->SetFillStyle(3004);
+    TGraphAsymmErrors *kidonplot = new TGraphAsymmErrors(6, kidonx, kidony, kidonexl, kidonexh, kidoneyl, kidoneyh);
+    kidonplot->SetLineColor(kGreen+1);
+    kidonplot->SetLineWidth(4);
+    kidonplot->SetFillColor(kGreen+1);
+    kidonplot->SetFillStyle(3004);
 
-   // herapdf
-   Double_t heramean = 144.156;
-   Double_t herapdfx[]   = {	-0.5,	  0.5,     1.5,     2.5,     3.5,     4.5};
-   Double_t herapdfy[]   = {heramean,heramean,heramean,heramean,heramean,heramean};
-   Double_t herapdfexl[] = {	  .4,	   .4,      .5,      .5,      .5,      .5};
-   Double_t herapdfexh[] = {	  .5,	   .5,      .5,      .5,      .4,      .4};
-   Double_t herapdfeyl[] = {  13.849,  13.849,  13.849,  13.849,  13.849,  13.849};
-   Double_t herapdfeyh[] = {   5.475,	5.475,   5.475,   5.475,   5.475,   5.475};
+    // mcfm
+    Double_t mcfmmean = 225.197;
+    Double_t mcfmx[]   = {      -0.5,     0.5,     1.5,     2.5,     3.5,     4.5};
+    Double_t mcfmy[]   = {mcfmmean,mcfmmean,mcfmmean,mcfmmean,mcfmmean,mcfmmean};
+    Double_t mcfmexl[] = {        .4,      .4,      .5,      .5,      .5,      .5};
+    Double_t mcfmexh[] = {        .5,      .5,      .5,      .5,      .4,      .4};
+    Double_t mcfmeyl[] = {  0.0,  0.0,  0.0,  0.0,  0.0,  0.0};
+    Double_t mcfmeyh[] = {   0.0, 0.0,  0.0,  0.0,  0.0,  0.0};
 
-   TGraphAsymmErrors *herapdfplot = new TGraphAsymmErrors(6, herapdfx, herapdfy, herapdfexl, herapdfexh, herapdfeyl, herapdfeyh);
-   herapdfplot->SetLineColor(kBlue+1);
-   herapdfplot->SetLineWidth(4);
-   herapdfplot->SetFillColor(kBlue+1);
-   herapdfplot->SetFillStyle(3005);
+    TGraphAsymmErrors *mcfmplot = new TGraphAsymmErrors(6, mcfmx, mcfmy, mcfmexl, mcfmexh, mcfmeyl, mcfmeyh);
+    mcfmplot->SetLineColor(kBlue+1);
+    mcfmplot->SetLineWidth(4);
+    mcfmplot->SetFillColor(kBlue+1);
+    mcfmplot->SetFillStyle(3005);
 
-   TH1F* framehist = new TH1F("framehist","",4,0.,4.);
-   framehist->SetMinimum(0);
-   framehist->SetMaximum(310);
-   framehist->GetXaxis()->SetTickLength(0);
-   framehist->GetXaxis()->SetBinLabel(1,"");
-   framehist->GetXaxis()->SetBinLabel(2,"");
-   framehist->GetXaxis()->SetBinLabel(3,"");
-   framehist->GetYaxis()->SetTitle("#sigma [pb]");
-   framehist->GetYaxis()->CenterTitle(kTRUE);
+    TH1F* framehist = new TH1F("framehist","",4,0.,4.);
+    framehist->SetMinimum(100);
+    framehist->SetMaximum(380);
+    framehist->GetXaxis()->SetTickLength(0);
+    framehist->GetXaxis()->SetBinLabel(1,"");
+    framehist->GetXaxis()->SetBinLabel(2,"");
+    framehist->GetXaxis()->SetBinLabel(3,"");
+    framehist->GetYaxis()->SetTitle("#sigma [pb]");
+    framehist->GetYaxis()->CenterTitle(kTRUE);
+    framehist->GetYaxis()->SetNoExponent(kTRUE);
 
-   TPaveText* box1 = new TPaveText(0.25,0.33,0.33,0.43,"NDC");
-   box1->SetFillColor(10);
-   box1->SetTextSize(0.04);
-   box1->AddText("ee");
+    TPaveText* box1 = new TPaveText(0.25,0.20,0.33,0.30,"NDC");
+    box1->SetFillColor(10);
+    box1->SetTextSize(0.04);
+    box1->AddText("ee");
 
-   TPaveText* box2 = new TPaveText(0.44,0.33,0.52,0.43,"NDC");
-   box2->SetFillColor(10);
-   box2->SetTextSize(0.04);
-   box2->AddText("#mu#mu");
+    TPaveText* box2 = new TPaveText(0.44,0.20,0.52,0.30,"NDC");
+    box2->SetFillColor(10);
+    box2->SetTextSize(0.04);
+    box2->AddText("#mu#mu");
 
-   TPaveText* box3 = new TPaveText(0.62,0.33,0.72,0.43,"NDC");
-   box3->SetFillColor(10);
-   box3->SetTextSize(0.04);
-   box3->AddText("e#mu");
+    TPaveText* box3 = new TPaveText(0.62,0.20,0.72,0.30,"NDC");
+    box3->SetFillColor(10);
+    box3->SetTextSize(0.04);
+    box3->AddText("e#mu");
 
-   TPaveText* box4 = new TPaveText(0.82,0.33,0.90,0.43,"NDC");
-   box4->SetFillColor(10);
-   box4->SetTextSize(0.04);
-   box4->AddText("combined");
+    TPaveText* box4 = new TPaveText(0.82,0.20,0.90,0.30,"NDC");
+    box4->SetFillColor(10);
+    box4->SetTextSize(0.04);
+    box4->AddText("combined");
 
-   TLegend* leg = getNewLegend(); // new TLegend( 0.56, 0.18, 0.89, 0.33 );
-   leg->SetBorderSize( 0 );
-   leg->SetFillColor( 0 );
-   leg->SetTextFont(62);
-   leg->SetTextSize(0.03);
-   leg->AddEntry( mplot,       "Measurements",            "p"  );
-   leg->AddEntry( mstwplot,    "MCFM #otimes MSTW08",     "lf" );
-   leg->AddEntry( herapdfplot, "MCFM #otimes HERAPDF1.0", "lf" );
+    TLegend* leg =  new TLegend( 0.56, 0.65, 0.89, 0.85);
+    leg->SetBorderSize( 0 );
+    leg->SetFillColor( 0 );
+    leg->SetTextFont(62);
+    leg->SetTextSize(0.03);
+    leg->AddEntry( mplot,       "Measurements",            "p"  );
+    leg->AddEntry( mcfmplot, "MCFM #otimes CTQE66M", "lf" );
+    leg->AddEntry( kidonplot,    "Kidonakis #otimes MSTW2008 NNLO",     "lf" );
 
-   TCanvas* c = new TCanvas("plot", "plot", 1200, 800);
-   framehist->Draw();
-   herapdfplot->Draw("C,2,SAME");
-   mstwplot->Draw("C,2,SAME");
-   gStyle->SetEndErrorSize(8);
-   mplot->Draw("p,SAME");
-   mplotwithsys->Draw("p,SAME,Z");
-   leg ->Draw("SAME");
-   box1->Draw("SAME");
-   box2->Draw("SAME");
-   box3->Draw("SAME");
-   box4->Draw("SAME");
+    TCanvas* c = new TCanvas("plot", "plot", 1200, 800);
+    framehist->Draw();
+    mcfmplot->Draw("C,2,SAME");
+    kidonplot->Draw("C,2,SAME");
+    gStyle->SetEndErrorSize(8);
+    mplot->Draw("p,SAME");
+    mplotwithsys->Draw("p,SAME,Z");
+    leg ->Draw("SAME");
+
+    box1->Draw("SAME");
+    box2->Draw("SAME");
+    box3->Draw("SAME");
+    box4->Draw("SAME");
    gSystem->mkdir(outpathPlots+subfolderChannel+subfolderSpecial, true);
-   c->Print(outpathPlots+subfolderChannel+subfolderSpecial+"/"+"InclusiveXSec.eps");
-   c->Print(outpathPlots+subfolderChannel+subfolderSpecial+"/"+"InclusiveXSec.C");
-   c->Clear();
-   delete c;
+    c->Print(outpathPlots+subfolderChannel+subfolderSpecial+"/"+"InclusiveXSec.eps");
+    c->Print(outpathPlots+subfolderChannel+subfolderSpecial+"/"+"InclusiveXSec.C");
+    c->Clear();
+    delete c;
 
-   cout<<"!!!!!!!!!!!!!!!!!!!!ee Cross Section: "<<InclusiveXsectionPlot[0]<<" +/- "<<InclusiveXsectionStatErrorPlot[0]<<"(stat) +/- "<<InclusiveXsectionPlot[0]*InclusiveXsectionSysErrorPlot[0]<<"(sys)"<<endl;
-   cout<<"!!!!!!!!!!!!!!!!!!!!mumu Cross Section: "<<InclusiveXsectionPlot[1]<<" +/- "<<InclusiveXsectionStatErrorPlot[1]<<"(stat) +/- "<<InclusiveXsectionPlot[0]*InclusiveXsectionSysErrorPlot[1]<<"(sys)"<<endl;
-   cout<<"!!!!!!!!!!!!!!!!!!!!emu Cross Section: "<<InclusiveXsectionPlot[2]<<" +/- "<<InclusiveXsectionStatErrorPlot[2]<<"(stat) +/- "<<InclusiveXsectionPlot[0]*InclusiveXsectionSysErrorPlot[2]<<"(sys)"<<endl;
-   cout<<"!!!!!!!!!!!!!!!!!!!!Combined Cross Section: "<<InclusiveXsectionPlot[3]<<" +/- "<<InclusiveXsectionStatErrorPlot[3]<<"(stat) +/- "<<InclusiveXsectionPlot[0]*InclusiveXsectionSysErrorPlot[3]<<"(sys)"<<endl;
+    cout<<"!!!!!!!!!!!!!!!!!!!!ee Cross Section: "<<InclusiveXsectionPlot[0]<<" +/- "<<InclusiveXsectionStatErrorPlot[0]<<"(stat) +/- "<<InclusiveXsectionPlot[0]*InclusiveXsectionSysErrorPlot[0]<<"(sys)"<<endl;
+    cout<<"!!!!!!!!!!!!!!!!!!!!mumu Cross Section: "<<InclusiveXsectionPlot[1]<<" +/- "<<InclusiveXsectionStatErrorPlot[1]<<"(stat) +/- "<<InclusiveXsectionPlot[0]*InclusiveXsectionSysErrorPlot[1]<<"(sys)"<<endl;
+    cout<<"!!!!!!!!!!!!!!!!!!!!emu Cross Section: "<<InclusiveXsectionPlot[2]<<" +/- "<<InclusiveXsectionStatErrorPlot[2]<<"(stat) +/- "<<InclusiveXsectionPlot[0]*InclusiveXsectionSysErrorPlot[2]<<"(sys)"<<endl;
+    cout<<"!!!!!!!!!!!!!!!!!!!!Combined Cross Section: "<<InclusiveXsectionPlot[3]<<" +/- "<<InclusiveXsectionStatErrorPlot[3]<<"(stat) +/- "<<InclusiveXsectionPlot[0]*InclusiveXsectionSysErrorPlot[3]<<"(sys)"<<endl;
 
-
-  }
 }
+
 
 void Plotter::MakeTable(){
 
@@ -1376,27 +1403,35 @@ void Plotter::MakeTable(){
     TH1D *numhists9[hists.size()];
 
     for(unsigned int i=0; i<dataset.size(); i++){
-    TFile *ftemp = TFile::Open(dataset[i]);
-    TH1D *temp_hist5 = fileReader->GetClone<TH1D>(dataset[i], "step5");
-    numhists5[i]=temp_hist5;
-    TH1D *temp_hist6 = fileReader->GetClone<TH1D>(dataset[i], "step6");
-    numhists6[i]=temp_hist6;
-    TH1D *temp_hist7 = fileReader->GetClone<TH1D>(dataset[i], "step7");
-    numhists7[i]=temp_hist7;
-    TH1D *temp_hist8 = fileReader->GetClone<TH1D>(dataset[i], "step8");
-    numhists8[i]=temp_hist8;
-    TH1D *temp_hist9 = fileReader->GetClone<TH1D>(dataset[i], "step9");
-    numhists9[i]=temp_hist9;
-    delete ftemp;
+
+        TH1D *temp_hist5 = fileReader->GetClone<TH1D>(dataset[i], "step5");
+        TH1D *temp_hist6 = fileReader->GetClone<TH1D>(dataset[i], "step6");
+        TH1D *temp_hist7 = fileReader->GetClone<TH1D>(dataset[i], "step7");
+        TH1D *temp_hist8 = fileReader->GetClone<TH1D>(dataset[i], "step8");
+        TH1D *temp_hist9 = fileReader->GetClone<TH1D>(dataset[i], "step9");
+        
+        double LumiWeight = CalcLumiWeight(dataset.at(i));
+        ApplyFlatWeights(temp_hist5, LumiWeight);
+        ApplyFlatWeights(temp_hist6, LumiWeight);
+        ApplyFlatWeights(temp_hist7, LumiWeight);
+        ApplyFlatWeights(temp_hist8, LumiWeight);
+        ApplyFlatWeights(temp_hist9, LumiWeight);
+
+        numhists5[i]=temp_hist5;
+        numhists6[i]=temp_hist6;
+        numhists7[i]=temp_hist7;
+        numhists8[i]=temp_hist8;
+        numhists9[i]=temp_hist9;
+
     }
 
     for(unsigned int i=0; i<hists.size() ; i++){ // prepare histos and leg
-        if((legends[i] == DYEntry) && channelType!=2){
+        if((legends.at(i) == DYEntry) && channelType!=2){
             //numhists5[i]->Scale(DYScale[channelType]);//DYscale not applied in step5 and 6?
             //numhists6[i]->Scale(DYScale[channelType]);
-            numhists7[i]->Scale(DYScale[channelType]);
-            numhists8[i]->Scale(DYScale[channelType]);
-            numhists9[i]->Scale(DYScale[channelType]);
+            numhists7[i]->Scale(DYScale.at(channelType));
+            numhists8[i]->Scale(DYScale.at(channelType));
+            numhists9[i]->Scale(DYScale.at(channelType));
         }
     }
 
@@ -1411,7 +1446,7 @@ void Plotter::MakeTable(){
     ofstream EventFile6;
     ofstream EventFile7;
     ofstream EventFile8;
-    ofstream EventFile9; 
+    ofstream EventFile9;
     string EventFilestring = outpathPlots.Data();
     EventFilestring.append(subfolderChannel.Data());
     EventFilestring.append(subfolderSpecial.Data());
@@ -1420,7 +1455,7 @@ void Plotter::MakeTable(){
     string EventFilestring6;
     string EventFilestring7;
     string EventFilestring8;
-    string EventFilestring9; 
+    string EventFilestring9;
     EventFilestring5 =EventFilestring;EventFilestring5.append("/Events5.txt");
     EventFilestring6 =EventFilestring;EventFilestring6.append("/Events6.txt");
     EventFilestring7 =EventFilestring;EventFilestring7.append("/Events7.txt");
@@ -1436,49 +1471,50 @@ void Plotter::MakeTable(){
     double bg_num7 = 0;
     double bg_num8 = 0;
     double bg_num9 = 0;
-    for(unsigned int i=0; i<hists.size() ; i++){ 
-    tmp_num5+=numhists5[i]->Integral();
-    tmp_num6+=numhists6[i]->Integral();
-    tmp_num7+=numhists7[i]->Integral();
-    tmp_num8+=numhists8[i]->Integral();
-    tmp_num9+=numhists9[i]->Integral();
 
-    if(i==(hists.size()-1)){
-        EventFile5<<legends[i]<<": "<<tmp_num5<<endl;
-        EventFile6<<legends[i]<<": "<<tmp_num6<<endl;
-        EventFile7<<legends[i]<<": "<<tmp_num7<<endl;
-        EventFile8<<legends[i]<<": "<<tmp_num8<<endl;
-        EventFile9<<legends[i]<<": "<<tmp_num9<<endl;
-        bg_num5+=tmp_num5;
-        bg_num6+=tmp_num6;
-        bg_num7+=tmp_num7;
-        bg_num8+=tmp_num8;
-        bg_num9+=tmp_num9;
-        tmp_num5=0;
-        tmp_num6=0;
-        tmp_num7=0;
-        tmp_num8=0;
-        tmp_num9=0;
-    }else if(legends[i]!=legends[i+1]){
-        EventFile5<<legends[i]<<": "<<tmp_num5<<endl;
-        EventFile6<<legends[i]<<": "<<tmp_num6<<endl;
-        EventFile7<<legends[i]<<": "<<tmp_num7<<endl;
-        EventFile8<<legends[i]<<": "<<tmp_num8<<endl;
-        EventFile9<<legends[i]<<": "<<tmp_num9<<endl;
-        if(legends[i]!="Data"){
-        bg_num5+=tmp_num5;
-        bg_num6+=tmp_num6;
-        bg_num7+=tmp_num7;
-        bg_num8+=tmp_num8;
+    for(unsigned int i=0; i<hists.size() ; i++){
+        tmp_num5+=numhists5[i]->Integral();
+        tmp_num6+=numhists6[i]->Integral();
+        tmp_num7+=numhists7[i]->Integral();
+        tmp_num8+=numhists8[i]->Integral();
+        tmp_num9+=numhists9[i]->Integral();
+
+        if(i==(hists.size()-1)){
+            EventFile5<<legends.at(i)<<": "<<tmp_num5<<endl;
+            EventFile6<<legends.at(i)<<": "<<tmp_num6<<endl;
+            EventFile7<<legends.at(i)<<": "<<tmp_num7<<endl;
+            EventFile8<<legends.at(i)<<": "<<tmp_num8<<endl;
+            EventFile9<<legends.at(i)<<": "<<tmp_num9<<endl;
+            bg_num5+=tmp_num5;
+            bg_num6+=tmp_num6;
+            bg_num7+=tmp_num7;
+            bg_num8+=tmp_num8;
             bg_num9+=tmp_num9;
+            tmp_num5=0;
+            tmp_num6=0;
+            tmp_num7=0;
+            tmp_num8=0;
+            tmp_num9=0;
         }
-        tmp_num5=0;
-        tmp_num6=0;
-        tmp_num7=0;
-        tmp_num8=0;
-        tmp_num9=0;
-    }
-
+        else if(legends.at(i)!=legends.at(i+1)){
+            EventFile5<<legends.at(i)<<": "<<tmp_num5<<endl;
+            EventFile6<<legends.at(i)<<": "<<tmp_num6<<endl;
+            EventFile7<<legends.at(i)<<": "<<tmp_num7<<endl;
+            EventFile8<<legends.at(i)<<": "<<tmp_num8<<endl;
+            EventFile9<<legends.at(i)<<": "<<tmp_num9<<endl;
+            if(legends.at(i)!="Data"){
+                bg_num5+=tmp_num5;
+                bg_num6+=tmp_num6;
+                bg_num7+=tmp_num7;
+                bg_num8+=tmp_num8;
+                bg_num9+=tmp_num9;
+            }
+            tmp_num5=0;
+            tmp_num6=0;
+            tmp_num7=0;
+            tmp_num8=0;
+            tmp_num9=0;
+        }
     }
     EventFile5<<"Total background: "<<bg_num5<<endl;
     EventFile5.close();
@@ -1490,142 +1526,196 @@ void Plotter::MakeTable(){
     EventFile8.close();
     EventFile9<<"Total background: "<<bg_num9<<endl;
     EventFile9.close();
+    cout<<"\n\nEvent yields saved in "<<EventFilestring5.c_str()<<"\n"<<endl;
 }
 
 double Plotter::CalcXSec(std::vector<TString> datasetVec, double InclusiveXsectionVec[4],double InclusiveXsectionStatErrorVec[4], TString Systematic, TString Shift){
 
-  double BranchingFraction[4]={0.01166, 0.01166, 0.02332, 0.04666};//[ee, mumu, emu, combined] not including tau
+    double BranchingFraction[4]={0.01166, 0.01166, 0.02332, 0.04666};//[ee, mumu, emu, combined] not including tau
 
-  TH1D *numhists[hists.size()];
-  double numbers[4]={0., 0., 0., 0.};//[0]=data, [1]=Signal, [2]Signal(only lumi & PU weights), [3]background (non-ttbar)
-//   double TTbarBGnum =0;
+    TH1D *numhists[hists.size()];
+    double numbers[4]={0., 0., 0., 0.};//[0]=data, [1]=Signal, [2]Signal(only lumi & PU weights), [3]background (non-ttbar)
+//     double TTbarBGnum =0;
 
-  for(unsigned int i=0; i<datasetVec.size(); i++){
-    TFile *ftemp = TFile::Open(datasetVec[i]);
-    TH1D *hist = fileReader->GetClone<TH1D>(datasetVec[i], "step9");   
+    if (Systematic.Contains("UP"))  { Shift="Up";}
+    if (Systematic.Contains("DOWN")){ Shift="Down";}
 
-    double LumiWeight = CalcLumiWeight(datasetVec[i]);
-    cout << "LumiWeight for " << dataset[i] << " = " << LumiWeight << endl;
-    ApplyFlatWeights(hist, LumiWeight);
-    
-    // Apply Scale Factor for MC@NLO
-    ApplyMCATNLOWeight(hist, Systematic, Shift,  datasetVec[i]); 
-    
-      
-    numhists[i]=hist;
-    delete ftemp;
-  }
- 
-  for(unsigned int i=0; i<hists.size() ; i++){ // prepare histos and leg 
-    if(legends[i] == "Data"){
-      numbers[0]+=numhists[i]->Integral();
+    for(unsigned int i=0; i<datasetVec.size(); i++){
+        TH1D *hist = fileReader->GetClone<TH1D>(datasetVec[i], "step9");   
+
+        double LumiWeight = CalcLumiWeight(datasetVec.at(i));
+        ApplyFlatWeights(hist, LumiWeight);
+
+        // Apply Scale Factor for MC@NLO
+        ApplyMCATNLOWeight(hist, Systematic, Shift,  datasetVec.at(i));
+
+        numhists[i]=hist;
     }
-    else if(legends[i] == "t#bar{t} Signal"){ 
-      TFile *ftemp2 = TFile::Open(datasetVec[i]);  
-      TH1D *NoPUPlot = (TH1D*)ftemp2->Get("step9")->Clone(); 
-    
-      // Apply Scale Factor for MC@NLO
-      ApplyMCATNLOWeight(NoPUPlot, Systematic, Shift,  datasetVec[i]);  
-      
-      numbers[1]+=NoPUPlot->Integral(); 
-      delete ftemp2;
-       
-      TFile *ftemp = TFile::Open(datasetVec[i]);   
-      TH1D *GenPlot = fileReader->GetClone<TH1D>(datasetVec[i], "GenAll");  
-      
-      // Apply Scale Factor for MC@NLO
-      ApplyMCATNLOWeight(GenPlot, Systematic, Shift,  datasetVec[i]); 
-      
-      numbers[2]+=GenPlot->Integral();  
-      delete ftemp; 
-      
-    }  else if(legends[i] == "t#bar{t} Other"){
 
-      numbers[3]+=numhists[i]->Integral();
-      
-    } else {      
-      if((legends[i] == DYEntry) && channelType!=2){
-        numhists[i]->Scale(DYScale[channelType]);
-      }
-      if((legends[i] == DYEntry) && Systematic == "DY_" && Shift == "Up"){
-        numhists[i]->Scale(1.3);
-      }
-      if((legends[i] == DYEntry) && Systematic == "DY_" && Shift == "Down"){
-        numhists[i]->Scale(0.7);
-      }
-      if(Systematic == "BG_" && Shift=="Up" && legends[i]!= "t#bar{t} Other" && legends[i] != DYEntry){
-        numhists[i]->Scale(1.3);
-      }
-      if(Systematic == "BG_" && Shift=="Down" && legends[i]!= "t#bar{t} Other" && legends[i] != DYEntry){
-            numhists[i]->Scale(0.7);
-      }
-      numbers[3]+=numhists[i]->Integral();
+    for(unsigned int i=0; i<hists.size() ; i++){ // prepare histos and leg 
+        if(legends.at(i) == "Data"){
+            numbers[0]+=numhists[i]->Integral();
+        }
+        else if(legends.at(i) == "t#bar{t} Signal"){
+            TH1D *NoPUPlot = fileReader->GetClone<TH1D>(datasetVec.at(i), "step9");
+            
+            double LumiWeight = CalcLumiWeight(datasetVec.at(i));
+            ApplyFlatWeights(NoPUPlot, LumiWeight);
+            
+            // Apply Scale Factor for MC@NLO
+            ApplyMCATNLOWeight(NoPUPlot, Systematic, Shift,  datasetVec.at(i));
+            
+            numbers[1]+=NoPUPlot->Integral(); 
+            
+            TH1D *GenPlot = fileReader->GetClone<TH1D>(datasetVec.at(i), "GenAll");
+            ApplyFlatWeights(GenPlot, LumiWeight);
+
+            // Apply Scale Factor for MC@NLO
+            ApplyMCATNLOWeight(GenPlot, Systematic, Shift,  datasetVec.at(i));
+
+            numbers[2]+=GenPlot->Integral();
+
+        }
+        else if(legends.at(i) == "t#bar{t} Other"){
+            numbers[3]+=numhists[i]->Integral();
+        }
+        else {
+            if((legends.at(i) == DYEntry) && channelType!=2){
+                numhists[i]->Scale(DYScale[channelType]);
+            }
+            if((legends.at(i) == DYEntry) && Systematic.Contains("DY_") && Shift == "Up"){
+                numhists[i]->Scale(1.3);
+            }
+            if((legends.at(i) == DYEntry) && Systematic.Contains("DY_") && Shift == "Down"){
+                numhists[i]->Scale(0.7);
+            }
+            if(Systematic.Contains("BG_") && Shift=="Up" && legends.at(i)!= "t#bar{t} Other" && legends.at(i) != DYEntry){
+                numhists[i]->Scale(1.3);
+            }
+            if(Systematic.Contains("BG_") && Shift=="Down" && legends.at(i)!= "t#bar{t} Other" && legends.at(i) != DYEntry){
+                numhists[i]->Scale(0.7);
+            }
+            numbers[3]+=numhists[i]->Integral();
+        }
     }
-  }
 
-  ////////////////////////////Make output for tables
+    ////////////////////////////Make output for tables
 
-  double tmp_num = 0;
+    double tmp_num = 0;
 
 //   double signalFraction = 0; 
-  
+
 //   signalFraction = numbers[1]/(numbers[1]+TTbarBGnum); // is 1 right now, since TTbarBGnum is 0
 
-  ofstream EventFile;  
-  string EventFilestring = outpathPlots.Data();
-  EventFilestring.append(subfolderChannel.Data());
-  EventFilestring.append(subfolderSpecial.Data());  
-  EventFilestring.append("/Events.txt");
-  EventFile.open(EventFilestring.c_str());
-  double bg_num = 0;
-  for(unsigned int i=0; i<hists.size() ; i++){ 
+    ofstream EventFile, XSecFile;
+    string EventFilestring = outpathPlots.Data();
+    EventFilestring.append("/");
+    EventFilestring.append(Systematic.Data());
+    gSystem->MakeDirectory(EventFilestring.c_str());
+    EventFilestring.append(subfolderChannel.Data());
+    gSystem->MakeDirectory(EventFilestring.c_str());
+    EventFilestring.append(subfolderSpecial.Data());
+    gSystem->MakeDirectory(EventFilestring.c_str());
+    string XSecFileString = EventFilestring;
+    EventFilestring.append("/Events.txt");
+    XSecFileString.append("/InclXSec.txt");// File to store the Inclusive XSection and stat error to be reused later to make the plots.
+    EventFile.open(EventFilestring.c_str());
+    XSecFile.open(XSecFileString.c_str());
+
+    double bg_num = 0;
+    for(unsigned int i=0; i<hists.size() ; i++){ 
     tmp_num+=numhists[i]->Integral();
 
     if(i==(hists.size()-1)){
-      EventFile<<legends[i]<<": "<<tmp_num<<endl;
-      bg_num+=tmp_num;
-      tmp_num=0;
-    }else if(legends[i]!=legends[i+1]){
-      EventFile<<legends[i]<<": "<<tmp_num<<endl;
-      if(legends[i]!="Data")bg_num+=tmp_num;
-      tmp_num=0;
+        EventFile<<legends.at(i)<<": "<<tmp_num<<endl;
+        bg_num+=tmp_num;
+        tmp_num=0;
+    }
+    else if(legends.at(i)!=legends[i+1]){
+        EventFile<<legends.at(i)<<": "<<tmp_num<<endl;
+        if(legends.at(i)!="Data")bg_num+=tmp_num;
+        tmp_num=0;
     }
 
-  }
-  EventFile<<"Total background: "<<bg_num<<endl;
-  EventFile.close();
- 
-  double xsec = ((numbers[0]-numbers[3]))/((numbers[1]/numbers[2])*BranchingFraction[channelType]*lumi);
-  double xsecstaterror = TMath::Sqrt(numbers[0])/((numbers[1]/numbers[2])*BranchingFraction[channelType]*lumi);
+    }
+    EventFile<<"Total MCs: "<<bg_num<<endl;
+    EventFile<<"\nDataEvents= "<<numbers[0]<<endl;
+    EventFile<<"SignalReco= "<<numbers[1]<<endl;
+    EventFile<<"SignalGen = "<<numbers[2]<<endl;
+    EventFile<<"Background= "<<numbers[3]<<endl;
+    EventFile<<"Efficiency= "<<(numbers[1]/numbers[2])<<endl;
+    EventFile<<"BrancRatio= "<<BranchingFraction[channelType]<<endl;
 
-  if(Systematic == "HAD") { 
-    cout<<"numbers[0] (All data)     : "<<numbers[0]<<endl;
-    cout<<"numbers[1] (Rec Level MC) : "<<numbers[1]<<endl;
-    cout<<"numbers[2] (Gen Level MC) : "<<numbers[2]<<endl;
-    cout<<"numbers[3] (Background)   : "<<numbers[3]<<endl;
-    cout<<"Global Efficiency: "<<(numbers[1]/numbers[2])<<endl;
-  }
-  if(channelType!=3){
-    InclusiveXsectionVec[channelType] = xsec;
-    InclusiveXsectionStatErrorVec[channelType] = xsecstaterror;
-  }else{
-    InclusiveXsectionVec[channelType] =( InclusiveXsectionVec[0]/(InclusiveXsectionStatErrorVec[0]*InclusiveXsectionStatErrorVec[0])
-				                        +InclusiveXsectionVec[1]/(InclusiveXsectionStatErrorVec[1]*InclusiveXsectionStatErrorVec[1])			
-		   		                        +InclusiveXsectionVec[2]/(InclusiveXsectionStatErrorVec[2]*InclusiveXsectionStatErrorVec[2]) )/
-				                         ( 1/(InclusiveXsectionStatErrorVec[0]*InclusiveXsectionStatErrorVec[0])
-				                        +  1/(InclusiveXsectionStatErrorVec[1]*InclusiveXsectionStatErrorVec[1])			
-				                        +  1/(InclusiveXsectionStatErrorVec[2]*InclusiveXsectionStatErrorVec[2])   );			
+    double xsec = ((numbers[0]-numbers[3]))/((numbers[1]/numbers[2])*BranchingFraction[channelType]*lumi);
+    double xsecstaterror = TMath::Sqrt(numbers[0])/((numbers[1]/numbers[2])*BranchingFraction[channelType]*lumi);
 
-    InclusiveXsectionStatErrorVec[channelType] =1/(TMath::Sqrt(
-                                      (1/(InclusiveXsectionStatErrorVec[0]*InclusiveXsectionStatErrorVec[0]))
-							         +(1/(InclusiveXsectionStatErrorVec[1]*InclusiveXsectionStatErrorVec[1]))			
-    				                 +(1/(InclusiveXsectionStatErrorVec[2]*InclusiveXsectionStatErrorVec[2]))      ));	 
-  } 
-  return xsec;
+    if(channelType!=3){
+        InclusiveXsectionVec[channelType] = xsec;
+        InclusiveXsectionStatErrorVec[channelType] = xsecstaterror;
+    }
+    else{
+        
+        TString eefilename="Plots/"+Systematic+"/ee/InclXSec.txt";
+        TString mumufilename="Plots/"+Systematic+"/mumu/InclXSec.txt";
+        TString emufilename="Plots/"+Systematic+"/emu/InclXSec.txt";
+//         TString mumuErrfilename="Plots/"+Systematic+"/mumu/InclXSec.txt";
+//         TString eeErrfilename="Plots/"+Systematic+"/ee/InclXSec.txt";
+//         TString emuErrfilename="Plots/"+Systematic+"/emu/InclXSec.txt";
+        
+        //check the existence of the file
+        if(gSystem->AccessPathName(eefilename) || gSystem->AccessPathName(emufilename) || gSystem->AccessPathName(mumufilename)
+//            || gSystem->AccessPathName(eeErrfilename) || gSystem->AccessPathName(emuErrfilename) || gSystem->AccessPathName(mumuErrfilename)){
+        ){
+            cout<<"WARNING (in CalcDiffSystematics)!!"<<endl;
+            cout<<"One of the input files you use for the combined XSection measurement doesn't exist!! Exiting!!"<<endl;
+            return 0;
+        }
+        
+        ifstream ResultsEE(eefilename);
+        ifstream ResultsEMu(emufilename);
+        ifstream ResultsMuMu(mumufilename);
+//         ifstream SystErrEE(eeErrfilename);
+//         ifstream SystErrEMu(emuErrfilename);
+//         ifstream SystErrMuMu(mumuErrfilename);
+
+        TString Dummy="";
+
+        ResultsEE>>Dummy>>Dummy>>Dummy>>Dummy>>Dummy>>InclusiveXsectionVec[0]>>Dummy>>InclusiveXsectionStatErrorVec[0];
+        ResultsMuMu>>Dummy>>Dummy>>Dummy>>Dummy>>Dummy>>InclusiveXsectionVec[1]>>Dummy>>InclusiveXsectionStatErrorVec[2];
+        ResultsEMu>>Dummy>>Dummy>>Dummy>>Dummy>>Dummy>>InclusiveXsectionVec[2]>>Dummy>>InclusiveXsectionStatErrorVec[1];
+//         SystErrEE>>Dummy>>Dummy>>Dummy>>Dummy>>Dummy>perChannelDiffXSecSystError[0];
+//         SystErrMuMu>>Dummy>>Dummy>>Dummy>>Dummy>>Dummy>>perChannelDiffXSecSystError[1];
+//         SystErrEMu>>Dummy>>Dummy>>Dummy>>Dummy>>Dummy>>perChannelDiffXSecSystError[2];
+        ResultsEE.close(); ResultsEMu.close(); ResultsMuMu.close();
+        //SystErrEE.close(); SystErrEMu.close(); SystErrMuMu.close();
+        
+        
+        
+        InclusiveXsectionVec[channelType] =( InclusiveXsectionVec[0]/(InclusiveXsectionStatErrorVec[0]*InclusiveXsectionStatErrorVec[0])
+                                            +InclusiveXsectionVec[1]/(InclusiveXsectionStatErrorVec[1]*InclusiveXsectionStatErrorVec[1])
+                                            +InclusiveXsectionVec[2]/(InclusiveXsectionStatErrorVec[2]*InclusiveXsectionStatErrorVec[2]) 
+                                            )/
+                                            ( 1/(InclusiveXsectionStatErrorVec[0]*InclusiveXsectionStatErrorVec[0])
+                                            + 1/(InclusiveXsectionStatErrorVec[1]*InclusiveXsectionStatErrorVec[1])
+                                            + 1/(InclusiveXsectionStatErrorVec[2]*InclusiveXsectionStatErrorVec[2])
+                                            );
+
+        InclusiveXsectionStatErrorVec[channelType] =1/(TMath::Sqrt(
+                                            (1/(InclusiveXsectionStatErrorVec[0]*InclusiveXsectionStatErrorVec[0]))
+                                            +(1/(InclusiveXsectionStatErrorVec[1]*InclusiveXsectionStatErrorVec[1]))
+                                            +(1/(InclusiveXsectionStatErrorVec[2]*InclusiveXsectionStatErrorVec[2]))
+                                                                    ));
+    }
+    EventFile<<"XSection  = "<<InclusiveXsectionVec[channelType]<<endl;
+    EventFile<<"XSecStaErr= "<<InclusiveXsectionStatErrorVec[channelType]<<endl;
+    EventFile.close();
+    XSecFile<<"Systematic: "<<Systematic<<" Channel: "<<subfolderChannel<<" InclXSection: "<<InclusiveXsectionVec[channelType]<<" AbsStatError: "<<InclusiveXsectionStatErrorVec[channelType]<<endl;
+    XSecFile.close();
+    cout<<"Inclusive XSection information saved in: "<<XSecFileString.c_str()<<endl;
+    return xsec;
 }
-void Plotter::CalcDiffXSec(TString Channel, TString Systematic){
 
-    
+void Plotter::CalcDiffXSec(TString Channel, TString Systematic){
     cout<<"\n\n Preparing to calculate the central value of DiffXSection in channel '"<<Channel<<"' for systematic '"<<Systematic<<"'"<<endl;
     
     double Xbins[XAxisbins.size()];
@@ -1633,30 +1723,17 @@ void Plotter::CalcDiffXSec(TString Channel, TString Systematic){
     for(unsigned int i = 0; i<XAxisbins.size();i++){Xbins[i]=XAxisbins[i];}
     double GenSignalSum[XAxisbinCenters.size()];
 
-    // Getting the histogram
-    TH1* theDataHist = NULL;
-    TH1* theBgrHist = NULL;
-    TH1* theTtBgrHist = NULL;
-    TH1* theRecHist = NULL;
-    //    TH1* theGenHist = GenPlot;
-    //TH1* theRespHist = genReco2d;
-    TH1* theGenHist = NULL; 
-    TH1* theRespHist = NULL;
-
-
     TString ftemp = "preunfolded/"+Systematic+"/"+Channel+"/"+name+"_UnfoldingHistos.root";
-    theDataHist =  fileReader->GetClone<TH1D>(ftemp, "aDataHist");
-    theBgrHist =  fileReader->GetClone<TH1D>(ftemp, "aBgrHist");
-    theTtBgrHist =  fileReader->GetClone<TH1D>(ftemp, "aTtBgrHist");
-    theRecHist =  fileReader->GetClone<TH1D>(ftemp, "aRecHist");
-    theGenHist =  fileReader->GetClone<TH1D>(ftemp, "aGenHist");
-    theRespHist =  fileReader->GetClone<TH2D>(ftemp, "aRespHist");
-    //  aDataHist = drawhists[0]
+    TH1* theDataHist =  fileReader->GetClone<TH1D>(ftemp, "aDataHist");
+    TH1* theBgrHist =  fileReader->GetClone<TH1D>(ftemp, "aBgrHist");
+    TH1* theTtBgrHist =  fileReader->GetClone<TH1D>(ftemp, "aTtBgrHist");
+    TH1* theRecHist =  fileReader->GetClone<TH1D>(ftemp, "aRecHist");
+    TH1* theGenHist =  fileReader->GetClone<TH1D>(ftemp, "aGenHist");
+    TH1* theRespHist =  fileReader->GetClone<TH2D>(ftemp, "aRespHist");
 
     for (Int_t bin=0; bin<bins; ++bin) {//poor for loop placement, but needed because genplot is the sum of all signal histograms
         GenSignalSum[bin] = theGenHist->Rebin(bins,"aDataHist",Xbins)->GetBinContent(bin+1);
     }
-
 
     double GenDiffXSecVec[4][bins];
     double DiffXSecVec[4][bins];
@@ -1906,37 +1983,37 @@ void Plotter::PlotDiffXSec(TString Channel){
     for(unsigned int i=0; i<hists.size() ; i++){ // prepare histos and leg
         setStyle(varhists[i], i);
         varhistsPlotting[i]=(TH1*)varhists[i]->Clone();
-        if(legends[i] != "Data"){
-            if((legends[i] == DYEntry) && channelType!=2){
+        if(legends.at(i) != "Data"){
+            if((legends.at(i) == DYEntry) && channelType!=2){
                 varhists[i]->Scale(DYScale[channelType]);
                 varhistsPlotting[i]->Scale(DYScale[channelType]);
             }
 
             if(i!=(hists.size()-1)){
-                if(legends[i]!=legends[i+1]){
-                //cout<<legends[i]<<endl;
+                if(legends.at(i)!=legends[i+1]){
+                //cout<<legends.at(i)<<endl;
                 varhistsPlotting[i]->SetLineColor(1);
                 }
             }else{
                 varhistsPlotting[i]->SetLineColor(1);
             }
             
-            if(legends[i] != legends[i-1]){
+            if(legends.at(i) != legends[i-1]){
                 varhistsPlotting[i]->SetLineColor(1);
                 stack->Add(varhistsPlotting[i]);
             }
             if(i > 1){
-                if(legends[i] != legends[i-1]){
+                if(legends.at(i) != legends[i-1]){
                     legchange = i;
-                    if( (legends[i] == DYEntry) && DYScale[channelType]!= 1){
-                        leg->AddEntry(varhistsPlotting[i], legends[i], "f");
+                    if( (legends.at(i) == DYEntry) && DYScale[channelType]!= 1){
+                        leg->AddEntry(varhistsPlotting[i], legends.at(i), "f");
                     }
-                    else leg->AddEntry(varhistsPlotting[i], legends[i] ,"f");
+                    else leg->AddEntry(varhistsPlotting[i], legends.at(i) ,"f");
                 }
                 else{varhistsPlotting[legchange]->Add(varhistsPlotting[i]);}
             }
         }
-        else{ if(i==0) leg->AddEntry(varhistsPlotting[i], legends[i] ,"pe");}
+        else{ if(i==0) leg->AddEntry(varhistsPlotting[i], legends.at(i) ,"pe");}
     }
 
     ///////////////////////////////////
@@ -2213,7 +2290,7 @@ void Plotter::PlotDiffXSec(TString Channel){
 
                 systtemp->SetBinContent(bin+1,(DiffXSecSysErrorbySysPlot[bin][systs]*DiffXSecSysErrorbySysPlot[bin][systs]));
                 if(bin==0){
-                    fprintf(systfile, vec_systematic.at(systs)+" ");
+                    fprintf(systfile, "%s", (vec_systematic.at(systs)+" ").Data());
                 }
                 fprintf(systfile, "%2.5f ", TMath::Sqrt(systtemp->GetBinContent(bin+1))*100);
                 if(bin>0 && bin<bins-1){//Exclude the 2 side bins
@@ -2605,6 +2682,34 @@ void Plotter::PlotDiffXSec(TString Channel){
     delete c;
     gStyle->SetEndErrorSize(0);
     
+//     //IVAN Menuda mierda de codigo que ha hecho Tyler
+//     //Get from TGraphAssymErrors the results and save them in a LaTeX format file
+//     
+//     double number_of_points=tga_DiffXSecPlot->GetN();
+    // open file.
+    // Iterate over the bins, get the central value and statistical from tga_DiffXSecPlot
+    // Iterate over the bins, get the TOTAL error from tga_DiffXSecPlotwithSys
+    // iterate over the bins, get the syst error=sqrt(total*total/stat*stat) only if total>static
+    //save into the file and close it
+    
+    cout<<"*************************************************************************************************\n"<<endl;
+    cout<<"Variable: "<<name<<"   Channel: "<<channelLabel.at(channelType)<<endl;
+    cout<<"BinCenter & LowXbinEdge  &  HighXbinEdge  &   DiffXSec  &  StatError(%%)  & SystError(%%)  & TotalError(%%) \\\\"<<endl;
+    cout<<"\\hline"<<endl;
+    for(int i=0; i<(int)tga_DiffXSecPlot->GetN(); i++){
+        double DiffXSec=tga_DiffXSecPlot->GetY()[i];
+        double RelStatErr=0, RelSysErr=0, RelTotErr=0;
+        if(DiffXSec!=0.0){
+            RelStatErr = 100*(tga_DiffXSecPlot->GetErrorY(i))/DiffXSec;
+            RelTotErr  = 100*(tga_DiffXSecPlotwithSys->GetErrorY(i))/DiffXSec;
+            if(RelTotErr>=RelStatErr) RelSysErr = TMath::Sqrt(RelTotErr*RelTotErr - RelStatErr*RelStatErr);
+        }
+        cout<<"$"<<setprecision(3)<<binCenters[i]<<"$ & $"<<XAxisbins.at(i)<<"$ to $"<<setprecision(3)<<XAxisbins.at(i+1)<<"$   &  ";
+        cout<<setprecision(5)<<DiffXSec<<"  &   "<<setprecision(3)<<RelStatErr<<" &    "<<setprecision(3)<<RelSysErr<<" &    ";
+        cout<<setprecision(3)<<RelTotErr<<" \\\\"<<endl;
+    }
+    cout<<"\n*************************************************************************************************"<<endl;
+    
     TCanvas * c1 = new TCanvas("DiffXS","DiffXS");
     TList* l = stack->GetHists();
     TH1D* stacksum = (TH1D*) l->At(0)->Clone();
@@ -2612,7 +2717,7 @@ void Plotter::PlotDiffXSec(TString Channel){
       stacksum->Add((TH1D*)l->At(i));
     } 
     for(unsigned int i=1; i<hists.size() ; i++){ // sum all data plots to first histogram
-      if(legends[i] == legends[0]){
+      if(legends.at(i) == legends[0]){
 	varhists[0]->Add(varhists[i]);
       }
     }
@@ -3014,25 +3119,12 @@ double Plotter::CalcLumiWeight(const TString& WhichSample){
         if(XSection <= 0.){
             cout<<"Sample XSection is <0. Can't calculate luminosity weight!! returning"<<endl;
             return 0;
-        };
+        }
         
         //From 'filename' get the number of weighted (MC weights) event processed.
-        TFile *f = TFile::Open(WhichSample);
-        if(!f || f->IsZombie()){
-            cout<<"The file you requested is not valid"<<endl;
-            return 0;
-        };
-        TH1 *h_NrOfEvts = dynamic_cast<TH1*>(f->Get("weightedEvents"));
-        if(!h_NrOfEvts){
-            cout<<"The histogram you requested is not valid"<<endl;
-            return 0;
-        };
+        const TH1 *h_NrOfEvts = fileReader->Get<TH1>(WhichSample, "weightedEvents");
         double NrOfEvts = h_NrOfEvts->GetBinContent(1);
-       
         lumiWeight = lumi*XSection/NrOfEvts;
-
-        f->Close();
-        h_NrOfEvts->Delete();
     }
     
     if (lumiWeight == 0) {
@@ -3050,8 +3142,8 @@ double Plotter::SampleXSection(const TString& filename){
     //  AN-12/194    AN-12/228
     
     if(filename.Contains("run"))              {return 1;}
-    else if(filename.Contains("ttbar"))       {return 213.192;}//225.197;}
-    else if(filename.Contains("single"))      {return 22.2;}
+    else if(filename.Contains("ttbar"))       {return 238.1;}
+    else if(filename.Contains("single"))      {return 11.1;}
     else if(filename.Contains("ww"))          {return 54.838;}
     else if(filename.Contains("wz"))          {return 33.21;}
     else if(filename.Contains("zz"))          {return 17.654;}

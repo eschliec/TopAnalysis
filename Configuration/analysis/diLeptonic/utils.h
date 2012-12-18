@@ -3,6 +3,7 @@
 
 #include "classes.h"
 #include <map>
+#include <TH1.h>
 #include <TString.h>
 #include <TFile.h>
 #include <TStyle.h>
@@ -15,6 +16,14 @@ void LVtod4(const LV lv, double *d);
 
 // convert double to string (smart number of digits)
 std::string d2s(double d);
+
+void drawRatio(const TH1* histNumerator, 
+               const TH1* histDenominator,
+               const Double_t ratioMin, 
+               const Double_t ratioMax, 
+               const TStyle& myStyle = *gStyle, 
+               int verbose=0, 
+               const std::vector<double> err=std::vector<double>(0));
 
 void setHHStyle(TStyle& HHStyle);
 

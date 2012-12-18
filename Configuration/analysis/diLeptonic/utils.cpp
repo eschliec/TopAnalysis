@@ -2,6 +2,8 @@
 #include <cmath>
 #include <string>
 #include <iostream>
+#include <TPad.h>
+#include <TF1.h>
 #include <stdlib.h>
 #include <TPaveText.h>
 
@@ -25,6 +27,142 @@ std::string d2s(double d) {
         return std::string(result);
     }
 }
+
+void drawRatio(const TH1* histNumerator, const TH1* histDenominator, 
+               const Double_t ratioMin, const Double_t ratioMax, 
+               const TStyle &myStyle, int verbose, const std::vector<double> err)
+{
+    // this function draws a pad with the ratio of 'histNumerator' and 'histDenominator'
+    // the range of the ratio is 'ratioMin' to 'ratioMax'
+    // to the systematic variation "sys" of the enumerator "systematicVariation"
+    // per default only the gaussian error of the 'histNumerator' is considered:
+    // (error(bin i) = sqrt(histNumerator->GetBinContent(i))/histDenominator->GetBinContent(i))
+    // if 'err_' is present and its size equals the number of bins in the histos,
+    // its valus are considered as error for the ratio
+    // NOTE: x Axis is transferred from histDenominator to the bottom of the canvas
+    // modified quantities: none
+    // used functions: none
+    // used enumerators: none
+
+    // check that histos have the same binning
+    if(histNumerator->GetNbinsX()!=histDenominator->GetNbinsX()){
+        std::cout << "error when calling drawRatio - histos have different number of bins" << std::endl;
+        return;
+    }
+    if(verbose>1){
+        std::cout << "building ratio plot of " << histNumerator->GetName();
+        std::cout << " and " << histDenominator->GetName() << std::endl;
+    }
+    // create ratio
+    TH1* ratio = (TH1*)histNumerator->Clone();
+    ratio->Divide(histDenominator);
+    // calculate error for ratio
+    // a) from err_
+    if(err.size()==(unsigned int)histNumerator->GetNbinsX()){
+        if(verbose>0) std::cout << "ratio error from vector" << std::endl;
+        for(int bin=1; bin<=histNumerator->GetNbinsX(); bin++){
+            ratio->SetBinError(bin, err[bin-1]);
+        }
+    }
+    else{
+        // b) default: only gaussian error of histNumerator
+        if(verbose>0) std::cout << "ratio error from statistical error of " << histNumerator->GetName() << " only" << std::endl;
+        for(int bin=1; bin<=histNumerator->GetNbinsX(); bin++){
+            ratio->SetBinError(bin, sqrt(histNumerator->GetBinContent(bin))/histDenominator->GetBinContent(bin));
+        }
+    }
+    // get some values from old pad
+    //Int_t    logx = gPad->GetLogx();
+    //Double_t left = gPad->GetLeftMargin();
+    //Double_t right = gPad->GetRightMargin();
+
+    Int_t    logx  = myStyle.GetOptLogx();
+    Double_t left  = myStyle.GetPadLeftMargin();
+    Double_t right = myStyle.GetPadRightMargin();
+
+    // y:x size ratio for canvas
+    double canvAsym = 4./3.;
+    // ratio size of pad with plot and pad with ratio
+    double ratioSize = 0.36;
+    // change old pad
+    gPad->SetBottomMargin(ratioSize);
+    gPad->SetRightMargin(right);
+    gPad->SetLeftMargin(left);
+    gPad->SetBorderMode(0);
+    gPad->SetBorderSize(0);
+    gPad->SetFillColor(10);
+    // create new pad for ratio plot
+    TPad *rPad;
+    rPad = new TPad("rPad","",0,0,1,ratioSize+0.001);
+#ifdef DILEPTON_MACRO
+    rPad->SetFillColor(10);
+#else
+    rPad->SetFillStyle(0);
+    rPad->SetFillColor(0);
+#endif
+    rPad->SetBorderSize(0);
+    rPad->SetBorderMode(0);
+    rPad->Draw();
+    rPad->cd();
+    rPad->SetLogy(0);
+    rPad->SetLogx(logx);
+    rPad->SetTicky(1);
+    // configure ratio plot
+    double scaleFactor = 1./(canvAsym*ratioSize);
+    ratio->SetStats(kFALSE);
+    ratio->SetTitle("");
+    ratio->SetMaximum(ratioMax);
+    ratio->SetMinimum(ratioMin);
+    ratio->SetLineWidth(1);
+    // configure axis of ratio plot
+    ratio->GetXaxis()->SetTitleSize(histNumerator->GetXaxis()->GetTitleSize()*scaleFactor*1.3);
+    ratio->GetXaxis()->SetTitleOffset(histNumerator->GetXaxis()->GetTitleOffset()*0.9);
+    ratio->GetXaxis()->SetLabelSize(histNumerator->GetXaxis()->GetLabelSize()*scaleFactor*1.4);
+    ratio->GetXaxis()->SetTitle(histNumerator->GetXaxis()->GetTitle());
+    ratio->GetXaxis()->SetNdivisions(histNumerator->GetNdivisions());
+    ratio->GetYaxis()->CenterTitle();
+    ratio->GetYaxis()->SetTitle("#frac{N_{data}}{N_{MC}}");
+    ratio->GetYaxis()->SetTitleSize(histNumerator->GetYaxis()->GetTitleSize()*scaleFactor);
+    ratio->GetYaxis()->SetTitleOffset(histNumerator->GetYaxis()->GetTitleOffset()/scaleFactor);
+    ratio->GetYaxis()->SetLabelSize(histNumerator->GetYaxis()->GetLabelSize()*scaleFactor);
+    ratio->GetYaxis()->SetLabelOffset(histNumerator->GetYaxis()->GetLabelOffset()*3.3);
+    ratio->GetYaxis()->SetTickLength(0.03);
+    ratio->GetYaxis()->SetNdivisions(505);
+    ratio->GetXaxis()->SetRange(histNumerator->GetXaxis()->GetFirst(), histNumerator->GetXaxis()->GetLast());
+    // delete axis of initial plot
+    histNumerator->GetXaxis()->SetLabelSize(0);
+    histNumerator->GetXaxis()->SetTitleSize(0);
+    // draw ratio plot
+    ratio->DrawClone("p e X0");
+    ratio->SetMarkerSize(1.2);
+    ratio->DrawClone("p e X0 same");
+    rPad->SetTopMargin(0.0);
+    rPad->SetBottomMargin(0.15*scaleFactor);
+    rPad->SetRightMargin(right);
+    gPad->SetLeftMargin(left);
+    gPad->RedrawAxis();
+    // draw grid
+    //rPad->SetGrid(1,1);
+
+    // draw a horizontal lines on a given histogram
+    // a) at 1
+    Double_t xmin = ratio->GetXaxis()->GetXmin();
+    Double_t xmax = ratio->GetXaxis()->GetXmax();
+    TString height = ""; height += 1;
+    TF1 *f = new TF1("f", height, xmin, xmax);
+    f->SetLineStyle(1);
+    f->SetLineWidth(1);
+    f->SetLineColor(kBlack);
+    f->Draw("L same");
+    // b) at upper end of ratio pad
+    TString height2 = ""; height2 += ratioMax;
+    TF1 *f2 = new TF1("f2", height2, xmin, xmax);
+    f2->SetLineStyle(1);
+    f2->SetLineWidth(1);
+    f2->SetLineColor(kBlack);
+    f2->Draw("L same");
+}
+
 
 void setHHStyle(TStyle& HHStyle)
 {

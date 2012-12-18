@@ -1,11 +1,11 @@
-ROOTLIBS=`root-config --ldflags --libs`
+ROOTLIBS=`root-config --ldflags --libs` -Wl,--no-as-needed
 COMPFLAGS=`root-config --cflags` -Wall -Wextra -O2 -g -std=c++0x -DSTANDALONE_COMPILE
 
 
 all: load_Analysis Histo
 
 load_Analysis: dict.o Analysis.o load_Analysis.o PUReweighter.o utils.o HistoListReader.o
-	g++ $(ROOTLIBS) -lGenVector -lProof $^ -o $@
+	g++ $^ -o $@ $(ROOTLIBS) -lGenVector
 
 load_Analysis.o: load_Analysis.C
 	g++ $(COMPFLAGS) -c -o load_Analysis.o $^
@@ -47,7 +47,7 @@ plotterclass.o: plotterclass.cpp plotterclass.h utils.o
 	g++ $(COMPFLAGS) -c -o plotterclass.o plotterclass.cpp
 
 Histo: Histo.o plotterclass.o HistoListReader.o utils.o DilepSVDFunctions.o TopSVDFunctions.o TopSVDUnfold.o BaseSVDUnfold.o
-	g++ $(ROOTLIBS) -o Histo Histo.o plotterclass.o HistoListReader.o utils.o DilepSVDFunctions.o TopSVDFunctions.o TopSVDUnfold.o BaseSVDUnfold.o
+	g++ -o Histo Histo.o plotterclass.o HistoListReader.o utils.o DilepSVDFunctions.o TopSVDFunctions.o TopSVDUnfold.o BaseSVDUnfold.o $(ROOTLIBS)
 	
 
 .PHONY: clean

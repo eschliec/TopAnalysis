@@ -13,7 +13,7 @@ Implementation:
 //
 // Original Author:  Jan Kieseler,,,DESY
 //         Created:  Thu Aug 11 16:37:05 CEST 2011
-// $Id: NTupleWriter.cc,v 1.30.2.2 2012/11/21 18:40:37 wbehrenh Exp $
+// $Id: NTupleWriter.cc,v 1.30.2.3 2012/12/14 04:22:38 tdorland Exp $
 //
 //
 
@@ -95,7 +95,6 @@ private:
     void clearVariables();
     int getTriggerBits ( const edm::Event& iEvent, const edm::Handle< edm::TriggerResults >& trigResults );
     int getTriggerBits (const std::vector< std::string > &trigName );
-    int getJetType ( const pat::Jet *jet );
 
     void AssignLeptonAndTau ( const reco::GenParticle* lepton, LV &GenLepton, int &pdgid, LV &GenTau );
     bool isTau( const reco::GenParticle* lepton);
@@ -635,7 +634,7 @@ NTupleWriter::analyze ( const edm::Event& iEvent, const edm::EventSetup& iSetup 
     {
         Vjet.push_back ( ajet->polarP4() );
         if (! iEvent.isRealData()) {
-            VjetType.push_back( getJetType( &(*ajet) ) ); // I hate this &(* ... ) CMSSW design
+            VjetType.push_back( ajet->partonFlavour() );
             if (ajet->genJet()) {
                 VgenJet.push_back(ajet->genJet()->polarP4());
             } else {
@@ -699,13 +698,6 @@ NTupleWriter::analyze ( const edm::Event& iEvent, const edm::EventSetup& iSetup 
     Ntuple->Fill();
 }
 
-
-int NTupleWriter::getJetType( const pat::Jet *jet ) 
-{
-    if      (jet->partonFlavour() == 5 || jet->partonFlavour() == -5) return 2;
-    else if (jet->partonFlavour() == 4 || jet->partonFlavour() == -4) return 1;
-    else return 0;
-}
 
 int NTupleWriter::getTriggerBits (const edm::Event &iEvent, const edm::Handle< edm::TriggerResults > &trigResults )
 {

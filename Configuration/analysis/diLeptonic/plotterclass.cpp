@@ -41,10 +41,10 @@ void Plotter::UnfoldingOptions(bool doSVD)
   doSystematics = true;
   drawNLOCurves = true; // boolean to draw/not-draw extra theory curves in the Diff.XSection plots
 
-  drawMadSpinCorr  = true;
+  drawMadSpinCorr  = false;
   drawMCATNLO      = false;
   drawKidonakis    = false;
-  drawPOWHEG       = true;
+  drawPOWHEG       = false;
 
 }
 
@@ -1182,7 +1182,7 @@ void Plotter::write(TString Channel, TString Systematic) // do scaling, stacking
     setex2->Draw();
     drawhists[0]->Draw("same,e1");
 
-    DrawCMSLabels(2, 8);
+    DrawCMSLabels(1, 8);
     DrawDecayChLabel(channelLabel[channelType]);
     leg->Draw("SAME");
     drawRatio(drawhists[0], stacksum, 0.5, 1.7);
@@ -1929,6 +1929,9 @@ void Plotter::CalcDiffXSec(TString Channel, TString Systematic){
 
 void Plotter::PlotDiffXSec(TString Channel){
 
+    setDataSet(Channel,"Nominal");
+    if (!fillHisto()) return;
+
     if(Channel=="ee"){channelType=0;}
     if(Channel=="mumu"){channelType=1;}
     if(Channel=="emu"){channelType=2;}
@@ -2129,18 +2132,17 @@ void Plotter::PlotDiffXSec(TString Channel){
     cESP->Clear();
     delete cESP;
 //     double efficiencies[XAxisbinCenters.size()];
-
     init = false;
 
     for (unsigned int hist =0; hist<hists.size(); hist++){
         if(legends[hist] == "Data"){
             for (Int_t bin=0; bin<bins; ++bin) {//poor for loop placement, but needed because genplot is the sum of all signal histograms
                 DataSum[bin]+=varhists[hist]->GetBinContent(bin+1);
-            }
+	    }
         }
         else if((legends[hist] == "t#bar{t} Signal")&&init==false){
-        signalHist=hist;
-        init=true;
+	  signalHist=hist;
+          init=true;
             for (Int_t bin=0; bin<bins; ++bin) {//poor for loop placement, but needed because genplot is the sum of all signal histograms
 //                 efficiencies[bin] = (RecoPlot->GetBinContent(bin+1)) / (GenPlot->GetBinContent(bin+1));
                 GenSignalSum[bin] += GenPlot->GetBinContent(bin+1);
@@ -2153,14 +2155,14 @@ void Plotter::PlotDiffXSec(TString Channel){
             }
         }
     }
-
     double totalDataSum = 0;
     double GenDiffXSecPlot[XAxisbinCenters.size()];
     for (Int_t bin=0; bin<bins; ++bin) {
         totalDataSum+=DataSum[bin];
     }
 
-    TH1 *h_DiffXSec    = (TH1D*)varhists[0]->Clone();   h_DiffXSec->Reset();
+    TH1 *h_DiffXSec    = (TH1D*)varhists[0]->Clone();   
+    h_DiffXSec->Reset();
     TH1 *h_GenDiffXSec = (TH1D*)varhists[0]->Clone();   h_GenDiffXSec->Reset();
 
     //The systematic array is filled in the order in which the Stack is filled
@@ -2647,7 +2649,7 @@ void Plotter::PlotDiffXSec(TString Channel){
 */
     h_GenDiffXSec->Draw("SAME"); //### 150512 ###
 
-    DrawCMSLabels(2, 8);
+    DrawCMSLabels(1, 8);
     
     DrawDecayChLabel(channelLabel[channelType]);
     
@@ -2780,7 +2782,7 @@ void Plotter::PlotDiffXSec(TString Channel){
     setex2->Draw();*/
     varhists[0]->Draw("same, e1"); //############
     //varhists[0]->Draw("same, e"); 
-    DrawCMSLabels(2, 8);
+    DrawCMSLabels(1, 8);
     DrawDecayChLabel(channelLabel[channelType]);    
     leg->Draw("SAME");
     gPad->RedrawAxis();

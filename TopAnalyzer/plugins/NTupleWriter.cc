@@ -13,7 +13,7 @@ Implementation:
 //
 // Original Author:  Jan Kieseler,,,DESY
 //         Created:  Thu Aug 11 16:37:05 CEST 2011
-// $Id: NTupleWriter.cc,v 1.30.2.3 2012/12/14 04:22:38 tdorland Exp $
+// $Id: NTupleWriter.cc,v 1.30.2.4 2012/12/18 09:51:03 wbehrenh Exp $
 //
 //
 
@@ -190,6 +190,7 @@ private:
     std::vector<LV> VgenJet;
     std::vector<LV> Vjet;
     std::vector<int> VjetType;
+    std::vector<int> VjetPartonFlavour;
     std::vector<double> VjetBTagTCHE;
     std::vector<double> VjetBTagTCHP;
     std::vector<double> VjetBTagJetProbability;
@@ -214,7 +215,7 @@ private:
     int vertMulti;
     int vertMultiTrue;
 
-    const LV dummy;
+    const LV nullP4;
 };
 
 //
@@ -232,7 +233,7 @@ void NTupleWriter::AssignLeptonAndTau ( const reco::GenParticle* lepton, LV& Gen
         GenTau = lepton->polarP4();
         finalLepton = getTauDaughter(lepton);
     } else {
-        GenTau = dummy;
+        GenTau = nullP4;
         finalLepton = lepton;
     }
     GenLepton = finalLepton->polarP4();
@@ -289,7 +290,7 @@ NTupleWriter::NTupleWriter ( const edm::ParameterSet& iConfig ) :
     decayMode_ ( iConfig.getParameter<edm::InputTag> ( "decayMode" ) ),
 
     
-    dummy(0, 0, 0, 0)
+    nullP4(0, 0, 0, 0)
 {
   
     //WARNING: The trigger map can be used either for a specific version, e.g. Trig_v6
@@ -426,7 +427,8 @@ NTupleWriter::analyze ( const edm::Event& iEvent, const edm::EventSetup& iSetup 
             GenTop = genEvt->top()->polarP4(); GenAntiTop = genEvt->topBar()->polarP4();
             AssignLeptonAndTau(genEvt->lepton(), GenLepton, GenLeptonPdgId, GenTau);
             AssignLeptonAndTau(genEvt->leptonBar(), GenAntiLepton, GenAntiLeptonPdgId, GenAntiTau);
-            GenB = genEvt->b()->polarP4(); GenAntiB = genEvt->bBar()->polarP4();
+            if (genEvt->b()) GenB = genEvt->b()->polarP4(); else GenB = nullP4;
+            if (genEvt->bBar()) GenAntiB = genEvt->bBar()->polarP4(); else GenAntiB = nullP4;
             GenNeutrino = genEvt->neutrino()->polarP4(); GenAntiNeutrino = genEvt->neutrinoBar()->polarP4();
             GenWPlus = genEvt->wPlus()->polarP4(); GenWMinus = genEvt->wMinus()->polarP4();
 
@@ -508,14 +510,14 @@ NTupleWriter::analyze ( const edm::Event& iEvent, const edm::EventSetup& iSetup 
         else
         {
             std::cerr << "Error: no gen event?!\n";
-            GenTop = dummy; GenAntiTop = dummy;
-            GenLepton = dummy; GenAntiLepton = dummy;
-            GenTau = dummy; GenAntiTau = dummy;
+            GenTop = nullP4; GenAntiTop = nullP4;
+            GenLepton = nullP4; GenAntiLepton = nullP4;
+            GenTau = nullP4; GenAntiTau = nullP4;
             GenLeptonPdgId = 0; GenAntiLeptonPdgId = 0;
-            GenB = dummy; GenAntiB = dummy;
-            GenNeutrino = dummy; GenAntiNeutrino = dummy;
-            GenWMinus = dummy; GenWPlus = dummy;
-            GenMET = dummy;
+            GenB = nullP4; GenAntiB = nullP4;
+            GenNeutrino = nullP4; GenAntiNeutrino = nullP4;
+            GenWMinus = nullP4; GenWPlus = nullP4;
+            GenMET = nullP4;
         }
 
         //put more true info
@@ -630,15 +632,22 @@ NTupleWriter::analyze ( const edm::Event& iEvent, const edm::EventSetup& iSetup 
     edm::Handle<edm::View< pat::Jet > > jets;
     iEvent.getByLabel ( jets_, jets );
 
-    for ( edm::View<pat::Jet>::const_iterator ajet  = jets->begin() ; ajet != jets->end(); ajet++ )
+    for ( edm::View<pat::Jet>::const_iterator ajet  = jets->begin() ; ajet != jets->end(); ++ajet )
     {
         Vjet.push_back ( ajet->polarP4() );
         if (! iEvent.isRealData()) {
-            VjetType.push_back( ajet->partonFlavour() );
+            VjetPartonFlavour.push_back( ajet->partonFlavour() );
+            
+            //remove this in the future
+            int pf = abs(ajet->partonFlavour());
+            if (pf == 5) pf = 2; else if (pf == 4) pf = 1; else pf = 0;
+            VjetType.push_back(pf);
+            //end of remove this in the future
+            
             if (ajet->genJet()) {
                 VgenJet.push_back(ajet->genJet()->polarP4());
             } else {
-                VgenJet.push_back(dummy);
+                VgenJet.push_back(nullP4);
             }
         }
         VjetBTagTCHE.push_back ( ajet->bDiscriminator ( "trackCountingHighEffBJetTags" ) );
@@ -786,6 +795,7 @@ NTupleWriter::beginJob()
     Ntuple->Branch ( "pdfWeights", &VPdfWeights);
     Ntuple->Branch ( "allGenJets", VLVstr, &VallGenJets);
     Ntuple->Branch ( "jetType", &VjetType );
+    Ntuple->Branch ( "jetPartonFlavour", &VjetPartonFlavour);
     Ntuple->Branch ( "genJet", VLVstr, &VgenJet);
 
     /////////////met properties///////////
@@ -924,6 +934,7 @@ void NTupleWriter::clearVariables()
     /////////jets///////////
     Vjet.clear();
     VjetType.clear();
+    VjetPartonFlavour.clear();
     VjetBTagTCHE.clear();
     VjetBTagTCHP.clear();
     VjetBTagSSVHE.clear();

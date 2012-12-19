@@ -7,7 +7,6 @@ import os
 ####################################################################
 # global job options
 
-MAXEVENTS = -1
 REPORTEVERY = 1000
 WANTSUMMARY = True
 
@@ -661,7 +660,6 @@ process.scrapingFilter = cms.EDFilter( "FilterOutScraping"
                                                  )
 
 
-
 process.p = cms.Path(
     process.goodOfflinePrimaryVertices *
     getattr(process,'patPF2PATSequence'+pfpostfix) *
@@ -744,3 +742,17 @@ else:
         
 process.load("TopAnalysis.TopUtils.SignalCatcher_cfi")
 
+# see https://twiki.cern.ch/twiki/bin/view/CMSPublic/SWGuideCandidateModules#ParticleTreeDrawer_Utility
+#process.load("SimGeneral.HepPDTESSource.pythiapdt_cfi")
+#process.printTree = cms.EDAnalyzer("ParticleTreeDrawer",
+#                                   src = cms.InputTag("genParticles"),                                                                 
+#             #                      printP4 = cms.untracked.bool(False),
+#             #                      printPtEtaPhi = cms.untracked.bool(False),
+#             #                      printVertex = cms.untracked.bool(False),
+#             #                      printStatus = cms.untracked.bool(False),
+#             #                      printIndex = cms.untracked.bool(False),
+#             #                      status = cms.untracked.vint32( 3 )
+#                                   )
+#process.p = cms.Path(process.printTree)
+#process.pNtuple = cms.Path()
+#

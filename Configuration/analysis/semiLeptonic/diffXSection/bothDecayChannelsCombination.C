@@ -633,7 +633,7 @@ void bothDecayChannelsCombination(double luminosity=4967.5, bool save=true, unsi
 	  }
 	  //}
 	  // draw errorband
-	  if (DrawMCAtNLOPlot2&&errorbands) DrawTheoryCurve(errorBandFilename, plotNameMCAtNLO, normalize, smoothFactor, rebinFactor, constMcatnloColor, 5, rangeLow, rangeHigh, errorBandFilename, errorRebinFactor, errorSmoothFactor, verbose-1, true, false, "mcatnlo", smoothcurves2, LV);
+	  if (DrawMCAtNLOPlot2&&errorbands) DrawTheoryCurve(errorBandFilename, plotNameMCAtNLO, normalize, smoothFactor, rebinFactor, constMcatnloColor, constMCatNloStyle, rangeLow, rangeHigh, errorBandFilename, errorRebinFactor, errorSmoothFactor, verbose-1, true, false, "mcatnlo", smoothcurves2, LV);
 	  // draw central curve
 	  if (DrawMCAtNLOPlot2) DrawTheoryCurve(filename, plotNameMCAtNLO2, normalize, smoothFactor, rebinFactor, constMcatnloColor, 5, rangeLow, rangeHigh, false, errorRebinFactor, errorSmoothFactor, verbose-1, false, false, "mcatnlo", smoothcurves2, LV);
 	  
@@ -688,8 +688,14 @@ void bothDecayChannelsCombination(double luminosity=4967.5, bool save=true, unsi
 		//newPlotNNLOHisto->SetName(plotname+"nnlo"); 
 		newPlotNNLOHisto->SetLineColor(constNnloColor);
 		newPlotNNLOHisto->SetLineWidth(2);
+		newPlotNNLOHisto->SetLineStyle(constNnloStyle);
 		newPlotNNLOHisto->SetMarkerStyle(7);
 		newPlotNNLOHisto->SetMarkerColor(constNnloColor);
+		if(xSecVariables_[i].Contains("ttbarMassNorm")){
+		  newPlotNNLOHisto->SetLineColor(constNnloColor2);
+		  newPlotNNLOHisto->SetMarkerColor(constNnloColor2);
+		  newPlotNNLOHisto->SetLineStyle(constNnloStyle2);
+		}
 		newPlotNNLOHisto->Draw("][ SAME");
 	      }
 	      //if(newPlotNNLOGraph){
@@ -903,8 +909,10 @@ void bothDecayChannelsCombination(double luminosity=4967.5, bool save=true, unsi
 	      nnlocurve =(TH1F*)combicanvas->GetPrimitive("ttbarMassnnlo"); 
 	    }
 	    if(nnlocurve){
-	      leg->AddEntry(nnlocurve, "Approx. NNLO", "L");
-	      //std::cout << "found!" << std::endl;
+	      if (xSecVariables_[i].Contains("ttbarMassNorm" )) leg->AddEntry(nnlocurve, "NLO+NNLL", "L");
+	      else if (xSecVariables_[i].Contains("topPtNorm")||xSecVariables_[i].Contains("topYNorm" )){
+		leg->AddEntry(nnlocurve, "Approx. NNLO", "L");
+	      }
 	    }
 	  }
 

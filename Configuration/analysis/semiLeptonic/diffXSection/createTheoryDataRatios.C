@@ -127,8 +127,8 @@ TCanvas* getRatio(TString plotName, int verbose, TString outputFile){
   
   // create ratio canvas
   std::vector<TCanvas*> plotCanvas_;
-  double max= plotName.Contains("ttbarMass") ? 2.9 : 1.7;
-  double min= plotName.Contains("ttbarMass") ? 0 : 0.3;
+  double max= 1.7;
+  double min= 0.3;
   plotCanvas_.push_back(drawFinalResultRatio(data, min, max, myStyle, 0, hist_, (TCanvas*)(canvas->Clone())));
   plotCanvas_[0]->Draw();
   plotCanvas_[0]->Update();
@@ -138,7 +138,7 @@ TCanvas* getRatio(TString plotName, int verbose, TString outputFile){
   return plotCanvas_[0];
 }
 
-void createTheoryDataRatios(bool extrapolate=false, bool hadron=true, int verbose=0){
+void createTheoryDataRatios(bool extrapolate=true, bool hadron=false, int verbose=0){
 
   // list all variables you want to create a ratio for
   std::vector<TString> xSecVariables_;

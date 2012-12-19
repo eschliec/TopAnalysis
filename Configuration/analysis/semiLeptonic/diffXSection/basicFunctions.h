@@ -103,12 +103,15 @@ namespace semileptonic {
   const unsigned int constMadgraphColor = kRed;
   const unsigned int constMcatnloColor  = kBlue;
   const unsigned int constPowhegColor   = kGreen+1;
-  const unsigned int constNnloColor     = kOrange-3;
+  const unsigned int constNnloColor     = kOrange+4;
+  const unsigned int constNnloColor2    = kMagenta+2;
 
   // Line style for theory curves
 
   const unsigned int constPowhegStyle  = 7;
-  const unsigned int constNnloStyle    = 5;
+  const unsigned int constMCatNloStyle = 5;
+  const unsigned int constNnloStyle    = 2;
+  const unsigned int constNnloStyle2   = 1;
 
   // Marker style
 
@@ -2193,9 +2196,27 @@ namespace semileptonic {
     // used enumerators: none
     if(theo.Contains("mcatnlo")||theo.Contains("MC@NLO")||theo.Contains("mc@nlo")||theo.Contains("McAtNlo")||theo.Contains("Mc@Nlo")) return constMcatnloColor; 
     if(theo.Contains("powheg" )||theo.Contains("Powheg")||theo.Contains("POWHEG")||theo.Contains("PowHeg")) return constPowhegColor; 
-    if(theo.Contains("nnlo"   )||theo.Contains("kidonakis")) return constNnloColor;
+    if(theo.Contains("nnlo")){
+      if(theo.Contains("ahrens")||theo.Contains("ttbarMass")) return constNnloColor2;
+      return constNnloColor;
+    }
     if(theo.Contains("data")) return kBlack;
     return constMadgraphColor;
+  }
+
+  unsigned int theoryLineStyle(TString theo="madgraph"){
+    // this function returns the default linestyle for a given theory specified by "theo"
+    // modified quantities: none
+    // used functions: none
+    // used enumerators: none
+    if(theo.Contains("mcatnlo")||theo.Contains("MC@NLO")||theo.Contains("mc@nlo")||theo.Contains("McAtNlo")||theo.Contains("Mc@Nlo")) return constMCatNloStyle; 
+    if(theo.Contains("powheg" )||theo.Contains("Powheg")||theo.Contains("POWHEG")||theo.Contains("PowHeg")) return constPowhegStyle; 
+    if(theo.Contains("nnlo")){
+      if(theo.Contains("ahrens")||theo.Contains("ttbarMass")) return constNnloColor2;
+      return constNnloStyle;
+    }
+    if(theo.Contains("data")) return 1;
+    return 1; // MadGraph
   }
 
   TString xSecLabelName(TString variable="", bool noUnit=false){
@@ -2370,7 +2391,7 @@ namespace semileptonic {
 	ratio_[nTheory]->SetFillColor(color-4);
 	ratio_[nTheory]->SetFillStyle(0);
 	ratio_[nTheory]->SetMarkerSize(0.2);
-	ratio_[nTheory]->SetLineStyle(histDenominatorTheory_[nTheory]->GetLineStyle());
+	ratio_[nTheory]->SetLineStyle(theoryLineStyle((TString)histDenominatorTheory_[nTheory]->GetName()));
 	// configure axis of ratio_[nTheory] plot
 	ratio_[nTheory]->GetXaxis()->SetTitleSize(histDenominatorTheory_[nTheory]->GetXaxis()->GetTitleSize()*scaleFactor*1.3);
 	ratio_[nTheory]->GetXaxis()->SetTitleOffset(histDenominatorTheory_[nTheory]->GetXaxis()->GetTitleOffset()*0.9);

@@ -2817,7 +2817,6 @@ TH1* Plotter::GetNloCurve(const char *particle, const char *quantity, const char
   TH1* hist;
   
   TFile* file = 0;
-  
   if(strcmp(generator, "Powheg")==0){file = TFile::Open("selectionRoot/Nominal/emu/ttbarsignalplustau_powheg.root","READ");}
   else if(strcmp(generator, "MCatNLO")==0){file = TFile::Open("MCatNLO_status3_v20120729.root","READ");}
   else if(strcmp(generator, "MCNLOup")==0){file = TFile::Open("MCatNLO_Uncert_Up_status3_v20120729.root","READ");}
@@ -2850,77 +2849,40 @@ TH1* Plotter::GetNloCurve(const char *particle, const char *quantity, const char
 
 TH1* Plotter::GetNloCurve(TString NewName, TString Generator){
 
-    TH1::AddDirectory(kFALSE);
+    TString filename;
+    if (Generator == "MCATNLO") {
+        filename = "_ttbarsignalplustau_mcatnlo.root";
+    } else if (Generator == "POWHEG") {
+        filename = "_ttbarsignalplustau_powheg.root";
+    } else if (Generator == "SPINCORR") {
+        filename = "_ttbarsignalplustau_FullLeptMadgraphWithSpinCorrelation.root";
+    }
+    
+    const static std::vector<TString> channelName {"ee", "mumu", "emu"};
+    std::vector<TString> files;
+    assert(channelType >= 0); 
+    assert(channelType <= 3);
+    for (int i = 0; i <= 2; ++i) {
+        if (channelType == i || channelType == 3) {
+            files.push_back("selectionRoot/"+Generator+"/"+channelName.at(i)+"/"+channelName.at(i) + filename);
+            cout << "Getting NLO curve from: " << files.at(files.size()-1) << endl;
+        }
+    }
+    
     TString histname("VisGen"+NewName);
-    
-    TH1* hist;
-    
-    TFile* file = 0;
-    TFile* file1 = 0;
-    TFile* file2 = 0;
-
-        
-    if(Generator=="MCATNLO"){
-        if(channelType == 0)file = TFile::Open("selectionRoot/"+Generator+"/ee/ttbarsignalplustau_mcatnlo.root","READ");
-        else if(channelType == 1)file = TFile::Open("selectionRoot/"+Generator+"/mumu/ttbarsignalplustau_mcatnlo.root","READ");
-        else if(channelType == 2)file = TFile::Open("selectionRoot/"+Generator+"/emu/ttbarsignalplustau_mcatnlo.root","READ");
-        else {
-            file = TFile::Open("selectionRoot/"+Generator+"/emu/ttbarsignalplustau_mcatnlo.root","READ");
-            file1 = TFile::Open("selectionRoot/"+Generator+"/ee/ttbarsignalplustau_mcatnlo.root","READ");
-            file2 = TFile::Open("selectionRoot/"+Generator+"/mumu/ttbarsignalplustau_mcatnlo.root","READ");
+    TH1* hist = fileReader->GetClone<TH1>(files.at(0), histname);
+    for (size_t i = 1; i < files.size(); ++i) {
+        hist->Add(fileReader->Get<TH1>(files.at(i), histname));
+    }
+    if (!NewName.Contains("Lead") 
+        && (NewName.Contains("Lepton") || NewName.Contains("Top") || NewName.Contains("BJet")))
+    {
+        //loop over anti-particle histograms and add them
+        TString antiName("VisGenAnti"+NewName);
+        for (const auto& file : files) {
+            hist->Add(fileReader->Get<TH1>(file, antiName));
         }
     }
-    else if(Generator="POWHEG"){
-        if(channelType == 0)file = TFile::Open("selectionRoot/"+Generator+"/ee/ee_ttbarsignalplustau_powheg.root","READ");
-        else if(channelType == 1)file = TFile::Open("selectionRoot/"+Generator+"/mumu/mumu_ttbarsignalplustau_powheg.root","READ");
-        else if(channelType == 2)file = TFile::Open("selectionRoot/"+Generator+"/emu/emu_ttbarsignalplustau_powheg.root","READ");
-        else {
-            file = TFile::Open("selectionRoot/"+Generator+"/emu/emu_ttbarsignalplustau_powheg.root","READ");
-            file1 = TFile::Open("selectionRoot/"+Generator+"/ee/ee_ttbarsignalplustau_powheg.root","READ");
-            file2 = TFile::Open("selectionRoot/"+Generator+"/mumu/mumu_ttbarsignalplustau_powheg.root","READ");
-        }
-    }
-    else{
-        if(channelType == 0)file = TFile::Open("selectionRoot/"+Generator+"/ee/ee_ttbarsignalplustau_ttbarsignalplustau_FullLeptMadgraphWithSpinCorrelation.root","READ");
-        else if(channelType == 1)file = TFile::Open("selectionRoot/"+Generator+"/mumu/mumu_ttbarsignalplustau_ttbarsignalplustau_FullLeptMadgraphWithSpinCorrelation.root","READ");
-        else if(channelType == 2)file = TFile::Open("selectionRoot/"+Generator+"/emu/emu_ttbarsignalplustau_ttbarsignalplustau_FullLeptMadgraphWithSpinCorrelation.root","READ");
-        else {
-            file = TFile::Open("selectionRoot/"+Generator+"/emu/emu_ttbarsignalplustau_ttbarsignalplustau_FullLeptMadgraphWithSpinCorrelation.root","READ");
-            file1 = TFile::Open("selectionRoot/"+Generator+"/ee/ee_ttbarsignalplustau_ttbarsignalplustau_FullLeptMadgraphWithSpinCorrelation.root","READ");
-            file2 = TFile::Open("selectionRoot/"+Generator+"/mumu/mumu_ttbarsignalplustau_ttbarsignalplustau_FullLeptMadgraphWithSpinCorrelation.root","READ");
-        }
-
-    }
-
-    if (file && !file->IsZombie()) {
-        if (channelType<3)hist=(TH1*)file->Get("VisGen"+NewName)->Clone();
-        else {
-        hist=(TH1*)file->Get("VisGen"+NewName)->Clone();
-        hist->Add((TH1*)file1->Get("VisGen"+NewName)->Clone());
-        hist->Add((TH1*)file2->Get("VisGen"+NewName)->Clone());
-        }
-        if(!NewName.Contains("Lead") && (NewName.Contains("Lepton")||NewName.Contains("Top")||NewName.Contains("BJet"))){
-            if(channelType<3)hist->Add((TH1*)file->Get("VisGenAnti"+NewName)->Clone());
-            else{
-                hist->Add((TH1*)file->Get("VisGenAnti"+NewName)->Clone());
-                hist->Add((TH1*)file1->Get("VisGenAnti"+NewName)->Clone());
-                hist->Add((TH1*)file2->Get("VisGenAnti"+NewName)->Clone());
-            }
-        }
-        if(!hist){
-            std::cerr << "WARNING in GetNloCurve: input histogram '" << histname << "' could not been opened! Returning dummy!" << endl;
-            hist = new TH1D();
-            return hist;
-        }
-
-        TH1D* rethist = (TH1D*)hist->Clone();
-
-        return rethist;
-    }
-    
-    std::cerr << "WARNING in GetNloCurve: input file could not been opened! Returning dummy!" << endl;
-    hist = new TH1D();
-    delete file;  delete file1;  delete file2;
     return hist;
 }
 

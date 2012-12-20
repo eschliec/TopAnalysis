@@ -194,8 +194,8 @@ class Analysis : public TSelector
     
     TH1 *h_NJetMatching;
 
-    TH1 *Looseh1, *Allh1, *Zh1, *TTh1, *h_GenAll, *h_jetMulti,
-         *h_jetMulti_diLep, *h_BjetMulti,*h_jetMultiXSec,*h_jetMultiAll, 
+    TH1 *Looseh1, *Allh1, *Zh1, *TTh1, *h_GenAll, *h_jetMulti, *h_jetMulti_noBTag,
+      *h_jetMulti_diLep, *h_BjetMulti, *h_BjetMulti_noBTag,*h_jetMultiXSec,*h_jetMultiAll, 
          *h_jetMultiNoPU, *h_jetMultiVisTop, *h_VisGenAll, *h_diLepMassFull, 
          *h_diLepMassFull_fullSel;
 

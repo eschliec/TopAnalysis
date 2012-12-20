@@ -105,9 +105,11 @@ void Analysis::SlaveBegin ( TTree * )
     h_jetMultiXSec = store(new TH1D ( "HypjetMultiXSec", "Jet Multiplicity (for cross-section)", 10, -0.5, 9.5 ));
     h_jetMulti = store(new TH1D ( "HypjetMulti", "Jet Multiplicity", 10, -0.5, 9.5 ));
     h_jetMulti_diLep = store(new TH1D ( "HypjetMulti_diLep", "Jet Multiplicity (after dilepton)", 10, -0.5, 9.5 ));
+    h_jetMulti_noBTag = store(new TH1D ( "HypjetMulti_noBTag", "Jet Multiplicity (after dilepton before btag)", 10, -0.5, 9.5 ));
     h_jetMultiNoPU = store(new TH1D ( "HypjetMultiNoPU", "Jet Multiplicity (No Pileup or lumi weight)", 10, -0.5, 9.5 ));
 //     h_jetMultiVisTop = store(new TH1D ( "HypjetMultiVisTop", "Jet Multiplicity for Visible Top (No Pileup or lumi Weight)", 10, -0.5, 9.5 ));
     h_BjetMulti = store(new TH1D ( "HypBjetMulti", "B-Jet Multiplicity", 10, -0.5, 9.5 ));
+    h_BjetMulti_noBTag = store(new TH1D ( "HypBjetMulti_noBTag", "B-Jet Multiplicity before B-Tag requirement", 10, -0.5, 9.5 ));
 
     h_HypTTBarRapidity = store(new TH1D ( "HypTTBarRapidity", "Rapidity of TTbar System (HYP)", 100, -5, 5 ));
     h_HypTTBarpT = store(new TH1D ( "HypTTBarpT", "pT of TTbar System (HYP)", 500, 0, 500 ));
@@ -914,7 +916,7 @@ Bool_t Analysis::Process ( Long64_t entry )
     
     //===CUT===
     //with at least 12 GeV invariant mass
-    if (dilepton.M() < 12) return kTRUE;
+    if (dilepton.M() < 20) return kTRUE;
     
     // find l+ and l-
     LV leptonPlus;
@@ -949,7 +951,7 @@ Bool_t Analysis::Process ( Long64_t entry )
     // Fill loose dilepton mass histogram before any jet cuts
     bool isZregion = dilepton.M() > 76 && dilepton.M() < 106;
     bool hasJets = jets->size() > 1 && jets->at(1).Pt() > JETPTCUT;
-    bool hasMetOrEmu = channel == "emu" || met->Pt() > 30;
+    bool hasMetOrEmu = channel == "emu" || met->Pt() > 40;
     bool hasBtag = BJetIndex.size() > 0;
     double weightKinFit = 1;
     double weightBtagSF = -1; //trick: initialize to -1 to avoid calculation of the btagSF twice
@@ -974,16 +976,47 @@ Bool_t Analysis::Process ( Long64_t entry )
     h_LeptonEta_diLep->Fill(leptonMinus.Eta(), weight);
     h_AntiLeptonEta_diLep->Fill(leptonPlus.Eta(), weight);
     
+
     //=== CUT ===
     //Require at least two jets > 30 GeV (check for > 30 needed because we might have 20 GeV jets in our NTuple)
     if (! hasJets) return kTRUE;
     h_step6->Fill(1, weight);
     
+    //loop over both leptons
+    for (auto i : {LeadLeptonNumber, NLeadLeptonNumber}) {
+        if ( lepType->at(i) == LEP_TYPE_ELECTRON ) {
+            h_ElectronpT->Fill(leptons->at(i).Pt(), weight);
+            h_ElectronEta->Fill(leptons->at(i).Eta(), weight);
+        }
+        if ( lepType->at(i) == LEP_TYPE_MUON ) {
+            h_MuonpT->Fill(leptons->at(i).Pt(), weight);
+            h_MuonEta->Fill(leptons->at(i).Eta(), weight);
+        }
+    }
+
     //=== CUT ===
     //Require MET > 30 GeV in non-emu channels
     if (!hasMetOrEmu) return kTRUE;
     h_step7->Fill(1, weight);
  
+    h_LeptonpT->Fill(leptonMinus.Pt(), weight);
+    h_AntiLeptonpT->Fill(leptonPlus.Pt(), weight);
+    h_LeptonEta->Fill(leptonMinus.Eta(), weight);
+    h_AntiLeptonEta->Fill(leptonPlus.Eta(), weight);
+
+    h_MET->Fill(met->Pt(), weight);
+
+    h_jetMulti_noBTag->Fill(jets->size(), weight);
+    h_BjetMulti_noBTag->Fill(BJetIndex.size(), weight);
+
+    double jetHT = getJetHT(*jets, JETPTCUT);
+    h_jetHT->Fill(jetHT, weight);
+
+    for ( size_t i = 0; i < 2; ++i ) {
+        h_jetpT->Fill(jets->at(i).Pt(), weight);
+    }
+
+
     //=== CUT ===
     //Require at least one b tagged jet
     if (!hasBtag) return kTRUE;
@@ -997,30 +1030,6 @@ Bool_t Analysis::Process ( Long64_t entry )
     h_jetMulti->Fill(jets->size(), weight);
     
     //for HT, count only >= 30 GeV jets
-    double jetHT = getJetHT(*jets, JETPTCUT);
-    h_jetHT->Fill(jetHT, weight);
-    for ( size_t i = 0; i < 2; ++i ) {
-        h_jetpT->Fill(jets->at(i).Pt(), weight);
-    }
-
-    h_LeptonpT->Fill(leptonMinus.Pt(), weight);
-    h_AntiLeptonpT->Fill(leptonPlus.Pt(), weight);
-    h_LeptonEta->Fill(leptonMinus.Eta(), weight);
-    h_AntiLeptonEta->Fill(leptonPlus.Eta(), weight);
-
-    h_MET->Fill(met->Pt(), weight);
-
-    //loop over both leptons
-    for (auto i : {LeadLeptonNumber, NLeadLeptonNumber}) {
-        if ( lepType->at(i) == LEP_TYPE_ELECTRON ) {
-            h_ElectronpT->Fill(leptons->at(i).Pt(), weight);
-            h_ElectronEta->Fill(leptons->at(i).Eta(), weight);
-        }
-        if ( lepType->at(i) == LEP_TYPE_MUON ) {
-            h_MuonpT->Fill(leptons->at(i).Pt(), weight);
-            h_MuonEta->Fill(leptons->at(i).Eta(), weight);
-        }
-    }
 
     //=== CUT ===
     //Require at least one solution for the kinematic event reconstruction

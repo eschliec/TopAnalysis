@@ -82,6 +82,7 @@ public:
     T* GetClone(const char* filename, const char* histoname, bool allowNonexisting = false) {
         T* result;
         Get(filename, histoname, result, allowNonexisting);
+        if (!result && allowNonexisting) return nullptr;
         return static_cast<T*>(result->Clone());
     }
 };

@@ -361,7 +361,10 @@ TObject *RootFileReader::GetObj(const char * filename, const char * histoname, b
         file = TFile::Open(filename);
         if (!file) {
             if (allowNonexisting) return nullptr;
-            std::cerr << "The file " << filename << " does not exist, thus cannot get histogram " << histoname << std::endl;
+            std::cerr << "\n\n******************* ERROR ******************* ERROR ******************* ERROR *******************\n\n"
+                      << "The file " << filename << " does not exist, thus cannot get histogram " << histoname 
+                      << "\n\n******************* ERROR ******************* ERROR ******************* ERROR *******************\n"
+                      << std::endl;
             exit(1);
         }
         fileOrder.push_back(filename);

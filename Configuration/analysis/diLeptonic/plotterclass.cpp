@@ -2856,6 +2856,9 @@ TH1* Plotter::GetNloCurve(TString NewName, TString Generator){
         filename = "_ttbarsignalplustau_powheg.root";
     } else if (Generator == "SPINCORR") {
         filename = "_ttbarsignalplustau_FullLeptMadgraphWithSpinCorrelation.root";
+    } else {
+        std::cerr << "Unknown Generator!\n";
+        std::exit(2);
     }
     
     const static std::vector<TString> channelName {"ee", "mumu", "emu"};

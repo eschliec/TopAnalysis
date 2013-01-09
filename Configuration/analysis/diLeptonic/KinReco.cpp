@@ -386,6 +386,8 @@ GetKinSolutions(const LV& leptonMinus, const LV& leptonPlus,
                     if (sol.weight > weightBest) {
                         weightBest = sol.weight;
                         best = sol;
+                        best.jetB_index = ib;
+                        best.jetBbar_index = ibbar;
                     }
                  }
             }

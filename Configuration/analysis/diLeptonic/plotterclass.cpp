@@ -1918,7 +1918,7 @@ void Plotter::CalcDiffXSec(TString Channel, TString Systematic){
     ResultsFilestringLatex.append(name);
     ResultsFilestringLatex.append("ResultsLaTeX.txt");
     ResultsLateX.open(ResultsFilestringLatex.c_str());
-    ResultsLateX<<"Bin Center & Bin & 1/#sigma d#sigma/dX & stat(\%) & syst(\%) & total(\%)"<<endl;
+    ResultsLateX<<"Bin Center & Bin & 1/#sigma d#sigma/dX & stat(%) & syst(%) & total(%)"<<endl;
     for (Int_t bin=0; bin<bins; bin++){//condense matrices to arrays for plotting
         //cout<<"XAxisbinCenters[bin]: "<<XAxisbinCenters[bin]<<" bin: "<<Xbins[bin]<<" to "<<Xbins[bin+1]<<" DiffXsec: "<<DiffXSecVec[channelType][bin]<<" StatError: "<<DiffXSecStatErrorVec[channelType][bin]<<" GenDiffXsec: "<<GenDiffXSecVec[channelType][bin]<<endl;
         ResultsFile<<"XAxisbinCenters[bin]: "<<XAxisbinCenters[bin]<<" bin: "<<Xbins[bin]<<" to "<<Xbins[bin+1]<<" DiffXsec: "<<DiffXSecVec[channelType][bin]<<" StatError: "<<DiffXSecStatErrorVec[channelType][bin]<<" GenDiffXsec: "<<GenDiffXSecVec[channelType][bin]<<endl;
@@ -2251,7 +2251,7 @@ void Plotter::PlotDiffXSec(TString Channel){
     ResultsFilestringLatex.append(newname);
     ResultsFilestringLatex.append("ResultsLaTeXAfter.txt");
     ResultsLateX.open(ResultsFilestringLatex.c_str());
-    ResultsLateX<<"Bin Center & Bin & 1/#sigma d#sigma/dX & stat(\%) & syst(\%) & total(\%)"<<endl;
+    ResultsLateX<<"Bin Center & Bin & 1/#sigma d#sigma/dX & stat(%) & syst(%) & total(%)"<<endl;
 
     for (Int_t bin=0; bin<bins; bin++){
       ResultsFile<<"XAxisbinCenters[bin]: "<<XAxisbinCenters[bin]<<" bin: "<<Xbins[bin]<<" to "<<Xbins[bin+1]<<" DiffXsec: "<<DiffXSecPlot[bin]<<" StatError(percent): "<<DiffXSecStatErrorPlot[bin]/DiffXSecPlot[bin]<<" SysError: "<<DiffXSecSysErrorPlot[bin]<<" TotalError: "<<DiffXSecTotalErrorPlot[bin]/DiffXSecPlot[bin]<<" GenDiffXSec: "<<GenDiffXSecPlot[bin]<<endl;

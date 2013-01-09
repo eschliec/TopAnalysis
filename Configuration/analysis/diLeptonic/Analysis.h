@@ -1,6 +1,14 @@
 #ifndef Analysis_h
 #define Analysis_h
 
+#include <vector>
+#include <map>
+#include <utility>
+#include <iostream>
+#include <fstream>
+#include <memory>
+#include <sstream>
+
 #include <TROOT.h>
 #include <TChain.h>
 #include <TFile.h>
@@ -8,25 +16,19 @@
 #include <TH1.h>
 #include <TH2.h>
 #include <TF1.h>
-#include <vector>
-#include <map>
-#include <utility>
-#include <iostream>
-#include <fstream>
-#include "TCanvas.h"
-#include "TLegend.h"
-#include "TSystem.h"
-#include "TExec.h"
-#include "TStyle.h"
-#include "TMath.h"
-#include "TROOT.h"
-#include <sstream>
-#include "TGraphAsymmErrors.h"
+#include <TCanvas.h>
+#include <TLegend.h>
+#include <TSystem.h>
+#include <TExec.h>
+#include <TStyle.h>
+#include <TMath.h>
+#include <TROOT.h>
+#include <TGraphAsymmErrors.h>
+
 #include "classes.h"
 #include "PUReweighter.h"
 
-class HistoListReader;
-using namespace std;
+using namespace std; //yes, shouldnt be in the header...
 
 class Analysis : public TSelector
 {
@@ -229,10 +231,13 @@ class Analysis : public TSelector
     TH1 *h_AntiLeptonpT_diLep, *h_AntiLeptonEta_diLep;
 
     TH1 *h_HypAntiToppT, *h_HypAntiTopEta, *h_HypAntiTopMass,*h_HypAntiTopRapidity;
-    TH1 *h_HypToppT, *h_HypTopEta,*h_HypTopMass, *h_HypTopRapidity ;
+    TH1 *h_HypToppT, *h_HypTopEta,*h_HypTopMass, *h_HypTopRapidity;
     
-    TH1* h_HypTopptSonnenschein;
-
+    TH1 *h_HypNeutrinopT, *h_HypAntiNeutrinopT;
+    TH1 *h_RecoNeutrinopT, *h_RecoAntiNeutrinopT;
+    TH1 *h_VisGenNeutrinopT, *h_VisGenAntiNeutrinopT;
+    TH2 *h_GenRecoNeutrinopT, *h_GenRecoAntiNeutrinopT;
+    
     TH1 *h_HypAntiBJetpT, *h_HypAntiBJetEta, *h_HypAntiBJetRapidity;
     TH1 *h_HypBJetpT, *h_HypBJetEta, *h_HypBJetRapidity;
 
@@ -365,6 +370,7 @@ class Analysis : public TSelector
     // weight: event weight
     void FillBinnedControlPlot(TH1* h_differential, double binvalue, 
                                TH1 *h_control, double value, double weight);
+    
         
 public:
     Analysis ( TTree * = 0 ) : runViaTau {0}, pureweighter {nullptr} {};

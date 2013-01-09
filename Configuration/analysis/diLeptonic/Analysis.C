@@ -8,6 +8,7 @@
 #include <fstream>
 #include <iostream>
 #include <cstdio>
+#include <cstdlib>
 #include <TMath.h>
 #include <TSystem.h>
 #include <Math/VectorUtil.h>
@@ -16,13 +17,9 @@
 #include <cmath>
 #include <TString.h>
 #include <limits>
+#include <iomanip>
 #include "utils.h"
-
-// #define run_sonnenschein
-#ifdef run_sonnenschein
-#include "haryo/interface/DileptonAnalyticalSolver.h"
-#include "haryo/src/DileptonAnalyticalSolver.cc"
-#endif
+#include "KinReco.h"
 
 using namespace std;
 using ROOT::Math::VectorUtil::DeltaPhi;
@@ -183,8 +180,6 @@ void Analysis::SlaveBegin ( TTree * )
     h_HypTopMass = store(new TH1D ( "HypTopMass", "Top Mass", 80, 0, 400 ));
     h_HypTopRapidity = store(new TH1D ( "HypTopRapidity", "Top Rapidity", 100, -5, 5 ));
     
-    h_HypTopptSonnenschein = store(new TH1D ( "HypToppTSonnenschein", "Top pT", 400, 0, 400 ));
-
     h_HypAntiToppT = store(new TH1D ( "HypAntiToppT", "AntiTop pT", 400, 0, 400 ));
     h_HypAntiTopEta = store(new TH1D ( "HypAntiTopEta", "AntiTop pT", 100, -5, 5 ));
     h_HypAntiTopMass = store(new TH1D ( "HypAntiTopMass", "AntiTop Mass", 80, 0, 400 ));
@@ -289,6 +284,17 @@ void Analysis::SlaveBegin ( TTree * )
     h_VisGenHT = store(new TH1D("VisGenHT", "HT (VisGEN)", 800, 0, 800));
     h_RecoHT = store(new TH1D("RecoHT", "Reconstructed HT", 800, 0, 800));
     h_HypHT = store(new TH1D("HypHT", "HT", 800, 0, 800));
+    
+    h_GenRecoNeutrinopT = store(new TH2D("GenRecoNeutrinopT", "Gen/Reco nu pt", 80, 0, 400, 80, 0, 400));
+    h_VisGenNeutrinopT = store(new TH1D("VisGenNeutrinopT", "Nu pT (VisGEN)", 80, 0, 400));
+    h_RecoNeutrinopT = store(new TH1D("RecoNeutrinopT", "reco nu pT", 80, 0, 400));
+    h_HypNeutrinopT = store(new TH1D("HypNeutrinopT", "hyp nu pT", 80, 0, 400));
+    
+    h_GenRecoAntiNeutrinopT = store(new TH2D("GenRecoAntiNeutrinopT", "Gen/Reco nubar pt", 80, 0, 400, 80, 0, 400));
+    h_VisGenAntiNeutrinopT = store(new TH1D("VisGenAntiNeutrinopT", "Nubar pT (VisGEN)", 80, 0, 400));
+    h_RecoAntiNeutrinopT = store(new TH1D("RecoAntiNeutrinopT", "reco nubar pT", 80, 0, 400));
+    h_HypAntiNeutrinopT = store(new TH1D("HypAntiNeutrinopT", "hyp nubar pT", 80, 0, 400));
+    
     
     h_GenRecoTTBarRapidity = store(new TH2D ( "GenRecoTTBarRapidity", "Rapidity of TTbar System (HYP)", 100, -5, 5, 100, -5, 5 ));
     h_GenRecoTTBarpT = store(new TH2D ( "GenRecoTTBarpT", "pT of TTbar System (HYP)", 500, 0, 500, 500, 0, 500 ));
@@ -882,6 +888,9 @@ Bool_t Analysis::Process ( Long64_t entry )
         h_VisGenTopEta->Fill(GenTop->Eta(), trueLevelWeight );
         h_VisGenAntiTopEta->Fill(GenAntiTop->Eta(), trueLevelWeight );
         
+        h_VisGenNeutrinopT->Fill(GenNeutrino->Pt(), trueLevelWeight);
+        h_VisGenAntiNeutrinopT->Fill(GenAntiNeutrino->Pt(), trueLevelWeight);
+        
         //Begin: Fill histograms with Leading pT and 2nd Leading pT: Top
         orderLVByPt(LeadGenTop, NLeadGenTop, *GenTop, *GenAntiTop);
         h_VisGenToppTLead->Fill(LeadGenTop.Pt(), trueLevelWeight);
@@ -1076,6 +1085,9 @@ Bool_t Analysis::Process ( Long64_t entry )
     
     h_RecoMet->Fill(met->Pt(), recoWeight);
     h_RecoHT->Fill(jetHT, recoWeight);
+    
+    h_RecoNeutrinopT->Fill(HypNeutrino->at(solutionIndex).Pt(), recoWeight);
+    h_RecoAntiNeutrinopT->Fill(HypAntiNeutrino->at(solutionIndex).Pt(), recoWeight);
 
     h_RecoBJetpT->Fill(HypBJet->at(solutionIndex).Pt(), recoWeight);
     h_RecoAntiBJetpT->Fill(HypAntiBJet->at(solutionIndex).Pt(), recoWeight);
@@ -1187,6 +1199,9 @@ Bool_t Analysis::Process ( Long64_t entry )
     h_HypTopRapidity->Fill(HypTop->at(solutionIndex).Rapidity(), weight);
     h_HypAntiTopRapidity->Fill(HypAntiTop->at(solutionIndex).Rapidity(), weight);
     
+    h_HypNeutrinopT->Fill(HypNeutrino->at(solutionIndex).Pt(), weight);
+    h_HypAntiNeutrinopT->Fill(HypAntiNeutrino->at(solutionIndex).Pt(), weight);
+    
     h_HypTopEta->Fill(HypTop->at(solutionIndex).Eta(), weight);
     h_HypAntiTopEta->Fill(HypAntiTop->at(solutionIndex).Eta(), weight);
     h_HypBJetEta->Fill(HypBJet->at(solutionIndex).Eta(), weight);
@@ -1243,41 +1258,54 @@ Bool_t Analysis::Process ( Long64_t entry )
 //             HypTop->at(solutionIndex).Pt(), HypTop->at(solutionIndex).Eta(),
 //             HypAntiTop->at(solutionIndex).Pt(), HypAntiTop->at(solutionIndex).Eta());
 
-#ifdef run_sonnenschein
-    auto solver = llsolver::DileptonAnalyticalSolver();
-    
-    double lp[4], lm[4], b[4], bb[4];
-    double ETmiss[2], nu[4], nub[4];
-    std::vector<double> pnux, pnuy, pnuz, pnubx, pnuby, pnubz;
-    std::vector<double> pnuychi2, pnunubzchi2, pnuyzchi2, cd_diff;
-    int cubic_single_root_cmplx;
-    
-    LVtod4(leptonPlus, lp);
-    LVtod4(leptonMinus, lm);
-    LVtod4(HypBJet->at(solutionIndex), b);
-    LVtod4(HypAntiBJet->at(solutionIndex), bb);
-
-    ETmiss[0] = met->Px();
-    ETmiss[1] = met->Py();
     
     
-if (HypTop->size()) {    
-    cout << "GenMet/RecoMet" << *GenMet << " / " << *met << endl;
-    printf("true level  x=%.2f, y=%.2f\n", GenNeutrino->Px(), GenNeutrino->Py());    
-    printf("OLAANALYSIS x=%.2f, y=%.2f\n", HypNeutrino->at(solutionIndex).Px(), HypNeutrino->at(solutionIndex).Py());
-
-    solver.solve(ETmiss, b, bb, lp, lm, 80.4, 80.4, 172.5, 172.5, 0, 0,
-                 &pnux, &pnuy, &pnuz, &pnubx, &pnuby, &pnubz, &cd_diff, cubic_single_root_cmplx);
-    for (size_t i=0; i<pnux.size(); ++i) {
-        std::cout << "SONNENSCHEI x=" << pnux[i] << " y=" << pnuy[i]<< std::endl;
-     
-        h_HypTopptSonnenschein->Fill((), weight);
-    }
-    //exit(100);
-    cout<<endl;
-}
-
-#endif
+//     auto sols = GetKinSolutions(leptonMinus, leptonPlus, jets, jetBTagCSV, met);
+// //     cout << "solutionindex = " << solutionIndex << " " << sols.size() << " " << HypNeutrino->size() << "\n";
+//     if (sols.size()) {
+//         const auto& top = sols[0].top;
+//         h_HypToppT2->Fill(top.Pt(), weight);
+//         h_HypTopEta2->Fill(top.Eta(), weight);
+//         h_HypTopMass2->Fill(top.M(), weight);
+//         h_HypTopRapidity2->Fill(top.Rapidity(), weight);
+//         if (GenTop)
+//         h_GenRecoToppTNEW->Fill(top.Pt(), GenTop->Pt(), weight );
+//     }
+    
+//     if (sols.size() == HypNeutrino->size()) {
+//         const auto& top = sols.at(solutionIndex).top;
+// //         h_HypToppT2->Fill(top.Pt(), weight);
+// //         h_HypTopEta2->Fill(top.Eta(), weight);
+// //         h_HypTopMass2->Fill(top.M(), weight);
+// //         h_HypTopRapidity2->Fill(top.Rapidity(), weight);
+// //         if (GenTop)
+// //         h_GenRecoToppTNEW->Fill(top.Pt(), GenTop->Pt(), weight );
+// 
+//         cout << "pt / eta / phi / M\n";
+//         cout << "nu / top / topbar / ttbar\n" << setprecision(2) << fixed;
+//         for (size_t i = 0; i < HypNeutrino->size(); ++i) {
+//             std::cout << "OLD: " << HypNeutrino->at(i) << " " 
+//                       << HypTop->at(i) << " " << HypAntiTop->at(i) << " " << HypTop->at(i) + HypAntiTop->at(i)
+//                       << endl;
+//             auto sol = sols.at(i);
+//             std::cout << "NEW: " << TLVtoLV(sol.neutrino) << " "
+//                       << TLVtoLV(sol.top) << " " << TLVtoLV(sol.topBar) << " " << TLVtoLV(sol.ttbar)
+//                       << endl;
+//         }
+//         
+// //         if (sols.size() == HypNeutrino->size()) {
+// //             for (size_t i = 0; i < sols.size(); ++i) {
+// //                 std::cout << "OLD - NEW: nu = " << (HypNeutrino->at(i) - TLVtoLV(sols.at(i)->neutrino)) << endl;
+// //             }
+// //         }
+// //         cout << "B old = " << HypBJet->at(0) << " B new = " << jets->at(sols[0]->jetB_index) <<  endl;
+//     }
+//     
+//     static int count = 0;
+//     
+//     std::cout << std::endl;
+//     if (++count == 2) exit(1);
+    
 
     //=== CUT ===
     //Following histograms only filled for the signal sample
@@ -1313,6 +1341,8 @@ if (HypTop->size()) {
     h_GenRecoAntiToppT->Fill(HypAntiTop->at(solutionIndex).Pt(), GenAntiTop->Pt(), weight );
     h_GenRecoMet->Fill(met->Pt(), GenMet->Pt(), weight);
     h_GenRecoHT->Fill(jetHT, genHT, weight);
+    h_GenRecoNeutrinopT->Fill(HypNeutrino->at(solutionIndex).Pt(), GenNeutrino->Pt(), weight);
+    h_GenRecoAntiNeutrinopT->Fill(HypAntiNeutrino->at(solutionIndex).Pt(), GenAntiNeutrino->Pt(), weight);
 
     h_GenRecoLLBarDPhi->Fill(
         abs( DeltaPhi( HypLepton->at(solutionIndex), HypAntiLepton->at(solutionIndex) ) ), 

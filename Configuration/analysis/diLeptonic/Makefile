@@ -1,50 +1,54 @@
-ROOTLIBS=`root-config --ldflags --libs` -Wl,--no-as-needed
-COMPFLAGS=`root-config --cflags` -Wall -Wextra -O2 -g -std=c++0x -DSTANDALONE_COMPILE
+ROOTLIBS=`root-config --ldflags --libs` -Wl,--no-as-needed -lGenVector
+COMPFLAGS=`root-config --cflags` -Wall -Wextra -pedantic -Wno-vla -O2 -g -std=c++0x -DSTANDALONE_COMPILE
+#COMPFLAGS=`root-config --cflags` -Wall -Wextra -O2 -g -std=c++0x -DSTANDALONE_COMPILE
 
 
 all: load_Analysis Histo
 
-load_Analysis: dict.o Analysis.o load_Analysis.o PUReweighter.o utils.o HistoListReader.o
-	g++ $^ -o $@ $(ROOTLIBS) -lGenVector
+load_Analysis: dict.o Analysis.o load_Analysis.o PUReweighter.o utils.o HistoListReader.o KinReco.o
+	g++ -o $@ $^ $(ROOTLIBS)
 
 load_Analysis.o: load_Analysis.C
-	g++ $(COMPFLAGS) -c -o load_Analysis.o $^
+	g++ -c -o load_Analysis.o $(COMPFLAGS) $^
 
 dict.o: dict.cpp
-	g++ $(COMPFLAGS) -c -o $@ $^
+	g++ -c -o $@ $(COMPFLAGS) $^
 
 utils.o: utils.cpp utils.h
-	g++ $(COMPFLAGS) -c -o utils.o utils.cpp
+	g++ -c -o utils.o $(COMPFLAGS) utils.cpp
+
+KinReco.o: KinReco.h KinReco.cpp
+	g++ -c -o KinReco.o $(COMPFLAGS) KinReco.cpp
 
 dict.cpp: Analysis.h classes.h HistoListReader.h LinkDef.h
 	rootcint -f dict.cpp -c -p Math/LorentzVector.h $^
 
 PUReweighter.o: PUReweighter.h PUReweighter.cpp
-	g++ $(COMPFLAGS) -c -o PUReweighter.o PUReweighter.cpp
+	g++ -c -o PUReweighter.o $(COMPFLAGS) PUReweighter.cpp
 
-Analysis.o: Analysis.C Analysis.h HistoListReader.h utils.h
-	g++ $(COMPFLAGS) -c -o Analysis.o Analysis.C
+Analysis.o: Analysis.C Analysis.h HistoListReader.h utils.h KinReco.h
+	g++ -c -o Analysis.o $(COMPFLAGS) Analysis.C
 
 HistoListReader.o: HistoListReader.h HistoListReader.cpp
-	g++ $(COMPFLAGS) -c -o HistoListReader.o HistoListReader.cpp
+	g++ -c -o HistoListReader.o $(COMPFLAGS) HistoListReader.cpp
 
 Histo.o: Histo.C
-	g++ $(COMPFLAGS) -c -o Histo.o Histo.C
+	g++ -c -o Histo.o $(COMPFLAGS) Histo.C
 	
 DilepSVDFunctions.o: DilepSVDFunctions.h DilepSVDFunctions.C 
-	g++ $(COMPFLAGS) -c -o DilepSVDFunctions.o DilepSVDFunctions.C 
+	g++ -c -o DilepSVDFunctions.o $(COMPFLAGS) DilepSVDFunctions.C 
 
 TopSVDFunctions.o: ../unfolding/TopSVDFunctions.C 
-	g++ $(COMPFLAGS) -c -o TopSVDFunctions.o ../unfolding/TopSVDFunctions.C 
+	g++ -c -o TopSVDFunctions.o $(COMPFLAGS) ../unfolding/TopSVDFunctions.C 
 	
 TopSVDUnfold.o: ../unfolding/TopSVDUnfold.C
-	g++ $(COMPFLAGS) -c -o TopSVDUnfold.o ../unfolding/TopSVDUnfold.C
+	g++ -c -o TopSVDUnfold.o $(COMPFLAGS) ../unfolding/TopSVDUnfold.C
 
 BaseSVDUnfold.o: ../unfolding/BaseSVDUnfold.C
-	g++ $(COMPFLAGS) -c -o BaseSVDUnfold.o ../unfolding/BaseSVDUnfold.C
+	g++ -c -o BaseSVDUnfold.o $(COMPFLAGS) ../unfolding/BaseSVDUnfold.C
 
 plotterclass.o: plotterclass.cpp plotterclass.h utils.o
-	g++ $(COMPFLAGS) -c -o plotterclass.o plotterclass.cpp
+	g++ -c -o plotterclass.o $(COMPFLAGS) plotterclass.cpp
 
 Histo: Histo.o plotterclass.o HistoListReader.o utils.o DilepSVDFunctions.o TopSVDFunctions.o TopSVDUnfold.o BaseSVDUnfold.o
 	g++ -o Histo Histo.o plotterclass.o HistoListReader.o utils.o DilepSVDFunctions.o TopSVDFunctions.o TopSVDUnfold.o BaseSVDUnfold.o $(ROOTLIBS)

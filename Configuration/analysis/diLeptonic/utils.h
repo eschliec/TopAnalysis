@@ -3,14 +3,18 @@
 
 #include "classes.h"
 #include <map>
-#include <TH1.h>
-#include <TString.h>
-#include <TFile.h>
-#include <TStyle.h>
 #include <iostream>
 #include <type_traits>
 #include <cstdlib>
- 
+
+#include <TH1.h>
+#include <TString.h>
+#include <TStyle.h>
+#include <TLorentzVector.h>
+#include <TMath.h>
+
+class TFile;
+
 //convert LorentzVector to an array[E, px, py, pz]
 void LVtod4(const LV lv, double *d);
 
@@ -86,5 +90,15 @@ public:
         return static_cast<T*>(result->Clone());
     }
 };
+
+
+////////////////////
+
+// conversion between ROOT's TLorentzVector and 
+// our LV type (ROOT::Math::LorentzVector<ROOT::Math::PtEtaPhiM4D<double> >)
+
+const TLorentzVector LVtoTLV(const LV& lv);
+const LV TLVtoLV(const TLorentzVector& lv);
+
 
 #endif

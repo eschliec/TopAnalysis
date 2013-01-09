@@ -1,11 +1,16 @@
 #include "utils.h"
+
 #include <cmath>
 #include <string>
 #include <iostream>
+#include <stdlib.h>
+
 #include <TPad.h>
 #include <TF1.h>
-#include <stdlib.h>
 #include <TPaveText.h>
+#include <TMath.h>
+#include <TLorentzVector.h>
+#include <TFile.h>
 
 void LVtod4(const LV lv, double *d) {
     d[0] = lv.E();
@@ -399,4 +404,17 @@ RootFileReader::~RootFileReader()
 RootFileReader* RootFileReader::getInstance() {
     static RootFileReader instance;
     return &instance;
+}
+
+/////////////////////////////////////////////////////////
+
+
+const TLorentzVector LVtoTLV(const LV& lv) {
+    return TLorentzVector(lv.X(), lv.Y(), lv.Z(), lv.T());
+}
+
+const LV TLVtoLV(const TLorentzVector& lv) {
+    LV result; 
+    result.SetXYZT(lv.X(), lv.Y(), lv.Z(), lv.T());
+    return result;
 }

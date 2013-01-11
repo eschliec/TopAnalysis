@@ -79,12 +79,14 @@ private:
     ///
     int cubic(const double* c_coeff, double* c_sol) const;
     ///
-    double sqr(const double x) const {return (x*x);}
+    inline double sqr(double x) const {return x*x;}
     
     ///
-    const double mw;
+    const double mw_;
+    const double mw_sqr_;
     ///
-    const double mb;
+    const double mb_;
+    const double mb_sqr_;
     ///
     std::vector<double> nupars_;
     
@@ -107,10 +109,7 @@ private:
     double n3;
     
     ///
-    TLorentzVector LV_n, LV_n_, LV_t, LV_t_, LV_tt_t, LV_tt_t_;  
-    /// provisional
-    TLorentzVector genLV_n, genLV_n_;  
-        
+    TLorentzVector LV_n, LV_n_;
 };
 
 

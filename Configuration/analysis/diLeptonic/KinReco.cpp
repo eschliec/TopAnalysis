@@ -11,10 +11,17 @@
 
 using namespace std;
 
+const ROOT::Math::LorentzVector<ROOT::Math::PxPyPzE4D<double> > x(const TLorentzVector &tlv) {
+    ROOT::Math::LorentzVector<ROOT::Math::PxPyPzE4D<double> > res(tlv(0), tlv(1), tlv(2), tlv(3));
+    return res;
+}
+
 TtFullLepKinSolver::TtFullLepKinSolver(const std::vector<double> &nupars, 
                                        double mW, double mB) :
-    mw(mW),
-    mb(mB),
+    mw_(mW),
+    mw_sqr_(mW*mW),
+    mb_(mB),
+    mb_sqr_(mB*mB),
     nupars_(nupars)
 {
     assert(nupars.size() == 5);
@@ -37,12 +44,15 @@ TtFullLepKinSolver::getNuSolution(const TLorentzVector& LV_antilepton,
     double weightmax = -1;
     double q_coeff[5], q_sol[4];
     FindCoeff(LV_antilepton, LV_lepton, LV_b, LV_bbar, mt, mt, LV_met, q_coeff);
+//     cout << "  --> called FindCoeff(" << q_coeff[0] << "," << q_coeff[1]<< "," << q_coeff[2] << "," << q_coeff[3] << "," << q_coeff[4] << ")\n";
     int NSol = quartic(q_coeff, q_sol);
     
     //loop on all solutions
     for (int isol = 0; isol < NSol; isol++) {
         NeutrinoRec(q_sol[isol]);
         double weight = WeightSolfromShape();
+//         std::cout << "  --> neutrino/nubar = " << x(LV_n) << x(LV_n_) << " weight = " << weight << "\n";
+
         if (weight > weightmax) {
             weightmax = weight;
             maxLV_neutrino = LV_n;
@@ -73,11 +83,10 @@ TtFullLepKinSolver::FindCoeff(const TLorentzVector& al,
 
   C = met.Px();
   D = met.Py();
-
   // right side of first two linear equations - missing pT
   
-  E = (sqr(mt)-sqr(mw)-sqr(mb))/(2*b_al.E())-sqr(mw)/(2*al.E())-al.E()+al.Px()*b_al.Px()/b_al.E()+al.Py()*b_al.Py()/b_al.E()+al.Pz()*b_al.Pz()/b_al.E();
-  F = (sqr(mat)-sqr(mw)-sqr(mb))/(2*b_l.E())-sqr(mw)/(2*l.E())-l.E()+l.Px()*b_l.Px()/b_l.E()+l.Py()*b_l.Py()/b_l.E()+l.Pz()*b_l.Pz()/b_l.E();
+  E = (sqr(mt)-mw_sqr_-mb_sqr_)/(2*b_al.E())-mw_sqr_/(2*al.E())-al.E()+al.Px()*b_al.Px()/b_al.E()+al.Py()*b_al.Py()/b_al.E()+al.Pz()*b_al.Pz()/b_al.E();
+  F = (sqr(mat)-mw_sqr_-mb_sqr_)/(2*b_l.E())-mw_sqr_/(2*l.E())-l.E()+l.Px()*b_l.Px()/b_l.E()+l.Py()*b_l.Py()/b_l.E()+l.Pz()*b_l.Pz()/b_l.E();
   
   m1 = al.Px()/al.E()-b_al.Px()/b_al.E();
   m2 = al.Py()/al.E()-b_al.Py()/b_al.E();
@@ -86,29 +95,32 @@ TtFullLepKinSolver::FindCoeff(const TLorentzVector& al,
   n1 = l.Px()/l.E()-b_l.Px()/b_l.E();
   n2 = l.Py()/l.E()-b_l.Py()/b_l.E();
   n3 = l.Pz()/l.E()-b_l.Pz()/b_l.E();
+  double n3_sqr = sqr(n3);
   
   pom = E-m1*C-m2*D;
-  apom1 = sqr(al.Px())-sqr(al.E());
-  apom2 = sqr(al.Py())-sqr(al.E());
-  apom3 = sqr(al.Pz())-sqr(al.E());
+  double alE2 = sqr(al.E());
+  apom1 = sqr(al.Px())-alE2;
+  apom2 = sqr(al.Py())-alE2;
+  apom3 = sqr(al.Pz())-alE2;
   
-  k11 = 1/sqr(al.E())*(pow(mw,4)/4+sqr(C)*apom1+sqr(D)*apom2+apom3*sqr(pom)/sqr(m3)+sqr(mw)*(al.Px()*C+al.Py()*D+al.Pz()*pom/m3)+2*al.Px()*al.Py()*C*D+2*al.Px()*al.Pz()*C*pom/m3+2*al.Py()*al.Pz()*D*pom/m3);
-  k21 = 1/sqr(al.E())*(-2*C*m3*n3*apom1+2*apom3*n3*m1*pom/m3-sqr(mw)*m3*n3*al.Px()+sqr(mw)*m1*n3*al.Pz()-2*al.Px()*al.Py()*D*m3*n3+2*al.Px()*al.Pz()*C*m1*n3-2*al.Px()*al.Pz()*n3*pom+2*al.Py()*al.Pz()*D*m1*n3);
-  k31 = 1/sqr(al.E())*(-2*D*m3*n3*apom2+2*apom3*n3*m2*pom/m3-sqr(mw)*m3*n3*al.Py()+sqr(mw)*m2*n3*al.Pz()-2*al.Px()*al.Py()*C*m3*n3+2*al.Px()*al.Pz()*C*m2*n3-2*al.Py()*al.Pz()*n3*pom+2*al.Py()*al.Pz()*D*m2*n3);
-  k41 = 1/sqr(al.E())*(2*apom3*m1*m2*sqr(n3)+2*al.Px()*al.Py()*sqr(m3)*sqr(n3)-2*al.Px()*al.Pz()*m2*m3*sqr(n3)-2*al.Py()*al.Pz()*m1*m3*sqr(n3));
-  k51 = 1/sqr(al.E())*(apom1*sqr(m3)*sqr(n3)+apom3*sqr(m1)*sqr(n3)-2*al.Px()*al.Pz()*m1*m3*sqr(n3));
-  k61 = 1/sqr(al.E())*(apom2*sqr(m3)*sqr(n3)+apom3*sqr(m2)*sqr(n3)-2*al.Py()*al.Pz()*m2*m3*sqr(n3));
+  k11 = 1/alE2*(sqr(mw_sqr_)/4+sqr(C)*apom1+sqr(D)*apom2+apom3*sqr(pom)/sqr(m3)+mw_sqr_*(al.Px()*C+al.Py()*D+al.Pz()*pom/m3)+2*al.Px()*al.Py()*C*D+2*al.Px()*al.Pz()*C*pom/m3+2*al.Py()*al.Pz()*D*pom/m3);
+  k21 = 1/alE2*(-2*C*m3*n3*apom1+2*apom3*n3*m1*pom/m3-mw_sqr_*m3*n3*al.Px()+mw_sqr_*m1*n3*al.Pz()-2*al.Px()*al.Py()*D*m3*n3+2*al.Px()*al.Pz()*C*m1*n3-2*al.Px()*al.Pz()*n3*pom+2*al.Py()*al.Pz()*D*m1*n3);
+  k31 = 1/alE2*(-2*D*m3*n3*apom2+2*apom3*n3*m2*pom/m3-mw_sqr_*m3*n3*al.Py()+mw_sqr_*m2*n3*al.Pz()-2*al.Px()*al.Py()*C*m3*n3+2*al.Px()*al.Pz()*C*m2*n3-2*al.Py()*al.Pz()*n3*pom+2*al.Py()*al.Pz()*D*m2*n3);
+  k41 = 1/alE2*(2*apom3*m1*m2*n3_sqr+2*al.Px()*al.Py()*sqr(m3)*n3_sqr-2*al.Px()*al.Pz()*m2*m3*n3_sqr-2*al.Py()*al.Pz()*m1*m3*n3_sqr);
+  k51 = 1/alE2*(apom1*sqr(m3)*n3_sqr+apom3*sqr(m1)*n3_sqr-2*al.Px()*al.Pz()*m1*m3*n3_sqr);
+  k61 = 1/alE2*(apom2*sqr(m3)*n3_sqr+apom3*sqr(m2)*n3_sqr-2*al.Py()*al.Pz()*m2*m3*n3_sqr);
   
-  cpom1 = sqr(l.Px())-sqr(l.E());
-  cpom2 = sqr(l.Py())-sqr(l.E());
-  cpom3 = sqr(l.Pz())-sqr(l.E());
+  double lE_sqr = sqr(l.E());
+  cpom1 = sqr(l.Px())-lE_sqr;
+  cpom2 = sqr(l.Py())-lE_sqr;
+  cpom3 = sqr(l.Pz())-lE_sqr;
   
-  l11 = 1/sqr(l.E())*(pow(mw,4)/4+cpom3*sqr(F)/sqr(n3)+sqr(mw)*l.Pz()*F/n3);
-  l21 = 1/sqr(l.E())*(-2*cpom3*F*m3*n1/n3+sqr(mw)*(l.Px()*m3*n3-l.Pz()*n1*m3)+2*l.Px()*l.Pz()*F*m3);
-  l31 = 1/sqr(l.E())*(-2*cpom3*F*m3*n2/n3+sqr(mw)*(l.Py()*m3*n3-l.Pz()*n2*m3)+2*l.Py()*l.Pz()*F*m3);
-  l41 = 1/sqr(l.E())*(2*cpom3*n1*n2*sqr(m3)+2*l.Px()*l.Py()*sqr(m3)*sqr(n3)-2*l.Px()*l.Pz()*n2*n3*sqr(m3)-2*l.Py()*l.Pz()*n1*n3*sqr(m3));
-  l51 = 1/sqr(l.E())*(cpom1*sqr(m3)*sqr(n3)+cpom3*sqr(n1)*sqr(m3)-2*l.Px()*l.Pz()*n1*n3*sqr(m3));
-  l61 = 1/sqr(l.E())*(cpom2*sqr(m3)*sqr(n3)+cpom3*sqr(n2)*sqr(m3)-2*l.Py()*l.Pz()*n2*n3*sqr(m3));
+  l11 = 1/lE_sqr*(sqr(mw_sqr_)/4+cpom3*sqr(F)/n3_sqr+mw_sqr_*l.Pz()*F/n3);
+  l21 = 1/lE_sqr*(-2*cpom3*F*m3*n1/n3+mw_sqr_*(l.Px()*m3*n3-l.Pz()*n1*m3)+2*l.Px()*l.Pz()*F*m3);
+  l31 = 1/lE_sqr*(-2*cpom3*F*m3*n2/n3+mw_sqr_*(l.Py()*m3*n3-l.Pz()*n2*m3)+2*l.Py()*l.Pz()*F*m3);
+  l41 = 1/lE_sqr*(2*cpom3*n1*n2*sqr(m3)+2*l.Px()*l.Py()*sqr(m3)*n3_sqr-2*l.Px()*l.Pz()*n2*n3*sqr(m3)-2*l.Py()*l.Pz()*n1*n3*sqr(m3));
+  l51 = 1/lE_sqr*(cpom1*sqr(m3)*n3_sqr+cpom3*sqr(n1)*sqr(m3)-2*l.Px()*l.Pz()*n1*n3*sqr(m3));
+  l61 = 1/lE_sqr*(cpom2*sqr(m3)*n3_sqr+cpom3*sqr(n2)*sqr(m3)-2*l.Py()*l.Pz()*n2*n3*sqr(m3));
   
   k1 = k11*k61;
   k2 = k61*k21/k51;
@@ -144,11 +156,13 @@ TtFullLepKinSolver::FindCoeff(const TLorentzVector& al,
   // normalization of coefficients
   int moc=(int(log10(fabs(koeficienty[0])))+int(log10(fabs(koeficienty[4]))))/2;
   
-  koeficienty[0]=koeficienty[0]/TMath::Power(10,moc);
-  koeficienty[1]=koeficienty[1]/TMath::Power(10,moc);
-  koeficienty[2]=koeficienty[2]/TMath::Power(10,moc);
-  koeficienty[3]=koeficienty[3]/TMath::Power(10,moc);
-  koeficienty[4]=koeficienty[4]/TMath::Power(10,moc);
+  double normalisation = 1/TMath::Power(10,moc);
+  //transform(koeficienty, koeficienty + 5, koeficienty, [=](double old){return old*normalisation;});
+  koeficienty[0]*=normalisation;
+  koeficienty[1]*=normalisation;
+  koeficienty[2]*=normalisation;
+  koeficienty[3]*=normalisation;
+  koeficienty[4]*=normalisation;
 }
 
 void TtFullLepKinSolver::NeutrinoRec(double sol)
@@ -345,7 +359,6 @@ TtFullLepKinSolver::GetKinSolution(const TLorentzVector& leptonMinus, const TLor
     return sol;
 }
 
-
 std::vector<TtDilepEvtSolution> 
 GetKinSolutions(const LV& leptonMinus, const LV& leptonPlus, 
                 const VLV *jets, const std::vector<double> *btags, 
@@ -356,7 +369,7 @@ GetKinSolutions(const LV& leptonMinus, const LV& leptonPlus,
     static std::vector<double> nu {30.641, 57.941, 22.344, 57.533, 22.232}; //in ntuple
     //std::vector<double> nu {35., 70., 20., 75., 21.}; //in ntuple
     
-    static TtFullLepKinSolver solver(nu, 80.4, 4.8);
+    static TtFullLepKinSolver solver(nu, 80.22, 4.8);
     
     size_t max_jets = jets->size(); //run over all jets
     
@@ -377,7 +390,11 @@ GetKinSolutions(const LV& leptonMinus, const LV& leptonPlus,
             double weightBest = 0;
             
             for(double topMass = 100; topMass < 300.5; topMass += 1) 
+//             for(double topMass = 160; topMass < 180.5; topMass += 1) 
+//             double topMass = 173;
             {
+//                 std::cout << "input = " << x(leptonPlus_tlv) << x(leptonMinus_tlv) 
+//                         << x(jets_tlv.at(ib)) << x(jets_tlv.at(ibbar)) << "\n";
                  auto sol = solver.GetKinSolution(leptonMinus_tlv, leptonPlus_tlv, 
                                                   jets_tlv.at(ib), jets_tlv.at(ibbar), met_tlv, topMass);
                  if (sol.weight > 0) {

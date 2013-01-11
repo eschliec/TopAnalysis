@@ -75,3 +75,11 @@ To run the new analysis:
 
 For nominal just do: ./runNominalParallel.pl
 
+
+========
+
+Profiling the code:
+CPUPROFILE=test.prof LD_PRELOAD=/afs/desy.de/group/cms/perftool/v2.0/lib/libprofiler.so ./load_Analysis -f file
+/afs/desy.de/group/cms/perftool/v2.0/bin/pprof --pdf load_Analysis test.prof >| test.pdf
+
+

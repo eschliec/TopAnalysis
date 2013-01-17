@@ -13,7 +13,7 @@ Implementation:
 //
 // Original Author:  Jan Kieseler,,,DESY
 //         Created:  Thu Aug 11 16:37:05 CEST 2011
-// $Id: NTupleWriter.cc,v 1.30.2.4 2012/12/18 09:51:03 wbehrenh Exp $
+// $Id: NTupleWriter.cc,v 1.30.2.5 2012/12/19 12:15:22 wbehrenh Exp $
 //
 //
 
@@ -59,6 +59,7 @@ Implementation:
 #include "AnalysisDataFormats/TopObjects/interface/TtGenEvent.h"
 #include "TopQuarkAnalysis/TopSkimming/interface/TtDecayChannelSelector.h"
 #include "SimDataFormats/PileupSummaryInfo/interface/PileupSummaryInfo.h"
+#include "TopAnalysis/HiggsUtils/interface/HiggsGenEvent.h"
 
 #include "SimDataFormats/GeneratorProducts/interface/GenEventInfoProduct.h" //###############
 
@@ -107,6 +108,7 @@ private:
     edm::InputTag jets_;
     edm::InputTag met_;
     edm::InputTag vertices_, genEvent_ , FullLepEvt_, hypoKey_;
+    edm::InputTag genEventHiggs_;
     edm::InputTag genParticles_;
     edm::InputTag genJets_;
     edm::InputTag bIndex_;
@@ -119,7 +121,7 @@ private:
     edm::InputTag BHadronFromTopB_, AntiBHadronFromTopB_;
     edm::InputTag BHadronVsJet_, AntiBHadronVsJet_;
 
-    bool includeTrig_, isTtBarSample_;
+    bool includeTrig_, isTtBarSample_, isHiggsSample_;
     bool includePDFWeights_;
     bool isMC_;
     string sampleName_;
@@ -155,6 +157,10 @@ private:
     //  LV HadronGenB, HadronGenAntiB;
     LV GenWPlus, GenWMinus;
     LV GenMET;
+    
+    //True level info for Higgs and bbbar decay
+    LV GenH;
+    LV GenBFromH, GenAntiBFromH;
 
     std::vector<int>      VBHadJetIdx;
     std::vector<int>      VAntiBHadJetIdx;
@@ -236,8 +242,14 @@ void NTupleWriter::AssignLeptonAndTau ( const reco::GenParticle* lepton, LV& Gen
         GenTau = nullP4;
         finalLepton = lepton;
     }
-    GenLepton = finalLepton->polarP4();
-    pdgid = finalLepton->pdgId();
+    if(!isTau(finalLepton)){
+      GenLepton = finalLepton->polarP4();
+      pdgid = finalLepton->pdgId();
+    }
+    else{
+      GenLepton = nullP4;
+      pdgid = 0;
+    }
 }
 
 
@@ -257,6 +269,7 @@ NTupleWriter::NTupleWriter ( const edm::ParameterSet& iConfig ) :
     genEvent_ ( iConfig.getParameter<edm::InputTag> ( "src" ) ),
     FullLepEvt_ ( iConfig.getParameter<edm::InputTag> ( "FullLepEvent" ) ),
     hypoKey_ ( iConfig.getParameter<edm::InputTag> ( "hypoKey" ) ),
+    genEventHiggs_ ( iConfig.getParameter<edm::InputTag> ( "genEventHiggs" ) ),
     genParticles_( iConfig.getParameter<edm::InputTag> ( "genParticles" ) ),
 
     genJets_   (iConfig.getParameter<edm::InputTag>("genJets")),
@@ -278,6 +291,7 @@ NTupleWriter::NTupleWriter ( const edm::ParameterSet& iConfig ) :
 
     includeTrig_ ( iConfig.getParameter<bool> ( "includeTrigger" ) ),
     isTtBarSample_ ( iConfig.getParameter<bool> ( "isTtBarSample" ) ),
+    isHiggsSample_ ( iConfig.getParameter<bool> ( "isHiggsSample" ) ),
     includePDFWeights_ (iConfig.getParameter<bool>("includePDFWeights")),
     
     //used for header:
@@ -424,13 +438,16 @@ NTupleWriter::analyze ( const edm::Event& iEvent, const edm::EventSetup& iSetup 
         iEvent.getByLabel ( genEvent_, genEvt );
         if (! genEvt.failedToGet())
         {
-            GenTop = genEvt->top()->polarP4(); GenAntiTop = genEvt->topBar()->polarP4();
-            AssignLeptonAndTau(genEvt->lepton(), GenLepton, GenLeptonPdgId, GenTau);
-            AssignLeptonAndTau(genEvt->leptonBar(), GenAntiLepton, GenAntiLeptonPdgId, GenAntiTau);
-            if (genEvt->b()) GenB = genEvt->b()->polarP4(); else GenB = nullP4;
+            GenTop = genEvt->top()->polarP4();
+	    GenAntiTop = genEvt->topBar()->polarP4();
+	    if (genEvt->lepton()) AssignLeptonAndTau(genEvt->lepton(), GenLepton, GenLeptonPdgId, GenTau); else {GenLepton = nullP4; GenLeptonPdgId = 0; GenTau = nullP4;}
+	    if (genEvt->leptonBar()) AssignLeptonAndTau(genEvt->leptonBar(), GenAntiLepton, GenAntiLeptonPdgId, GenAntiTau); else {GenAntiLepton = nullP4; GenAntiLeptonPdgId = 0; GenAntiTau = nullP4;}
+	    if (genEvt->b()) GenB = genEvt->b()->polarP4(); else GenB = nullP4;
             if (genEvt->bBar()) GenAntiB = genEvt->bBar()->polarP4(); else GenAntiB = nullP4;
-            GenNeutrino = genEvt->neutrino()->polarP4(); GenAntiNeutrino = genEvt->neutrinoBar()->polarP4();
-            GenWPlus = genEvt->wPlus()->polarP4(); GenWMinus = genEvt->wMinus()->polarP4();
+            if (genEvt->neutrino()) GenNeutrino = genEvt->neutrino()->polarP4(); else GenNeutrino = nullP4;
+	    if (genEvt->neutrinoBar()) GenAntiNeutrino = genEvt->neutrinoBar()->polarP4(); else GenAntiNeutrino = nullP4;
+            if (genEvt->wPlus()) GenWPlus = genEvt->wPlus()->polarP4(); else GenWPlus = nullP4;
+	    if (genEvt->wMinus()) GenWMinus = genEvt->wMinus()->polarP4(); else GenWMinus = nullP4;
 
             edm::Handle<std::vector<reco::GenMET> > h_genMET;
             iEvent.getByLabel(genMET_, h_genMET);
@@ -519,7 +536,7 @@ NTupleWriter::analyze ( const edm::Event& iEvent, const edm::EventSetup& iSetup 
             GenWMinus = nullP4; GenWPlus = nullP4;
             GenMET = nullP4;
         }
-
+	
         //put more true info
         //         edm::Handle<std::vector<reco::GenParticle> > genParticles;
         //         iEvent.getByLabel(genParticles_, genParticles);
@@ -529,7 +546,29 @@ NTupleWriter::analyze ( const edm::Event& iEvent, const edm::EventSetup& iSetup 
         //             GenParticleStatus.push_back(p->status());
         //         }
     }
-
+    
+    
+    
+    if ( isHiggsSample_ )
+    {
+      //Generator info
+      edm::Handle<HiggsGenEvent> genEvtHiggs;
+      iEvent.getByLabel ( genEventHiggs_, genEvtHiggs );
+      if (! genEvtHiggs.failedToGet())
+      {
+        GenH = genEvtHiggs->higgs()->polarP4();
+        if(genEvtHiggs->b()) GenBFromH = genEvtHiggs->b()->polarP4(); else GenBFromH = nullP4;
+	if(genEvtHiggs->bBar()) GenAntiBFromH = genEvtHiggs->bBar()->polarP4(); else GenAntiBFromH = nullP4;
+      }  
+      else
+      {
+        std::cerr << "Error: no Higgs gen event?!\n";
+	GenH = nullP4;
+        GenBFromH = nullP4; GenAntiBFromH = nullP4;
+      }
+    }
+    
+    
     //////fill pfiso///maybe other iso??
     edm::Handle<std::vector<pat::Muon> > muons;
     iEvent.getByLabel ( muons_, muons );
@@ -771,6 +810,7 @@ NTupleWriter::beginJob()
     TObjString(systematicsName_.c_str()).Write("systematicsName");  
     TObjString(boost::lexical_cast<std::string>(isMC_).c_str()).Write("isMC");
     TObjString(boost::lexical_cast<std::string>(isTtBarSample_).c_str()).Write("isSignal");
+    TObjString(boost::lexical_cast<std::string>(isHiggsSample_).c_str()).Write("isHiggsSignal");
 
     ///////////////dilepton and lepton properties//////////
     Ntuple->Branch ( "lepton", VLVstr, &Vlep );
@@ -850,6 +890,13 @@ NTupleWriter::beginJob()
         Ntuple->Branch("BHadronVsJet", &VBHadVsJet);
         Ntuple->Branch("AntiBHadronVsJet", &VAntiBHadVsJet);
 
+    }
+
+    //Gen Info for Higgs and b quarks of decay
+    if(isHiggsSample_){
+        Ntuple->Branch("GenH", &GenH);
+	Ntuple->Branch("GenBFromH", &GenBFromH);
+	Ntuple->Branch("GenAntiBFromH", &GenAntiBFromH);
     }
 
     //Hypothesis Info

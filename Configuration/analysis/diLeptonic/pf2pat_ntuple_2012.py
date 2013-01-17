@@ -7,7 +7,7 @@ import os
 ####################################################################
 # global job options
 
-REPORTEVERY = 1000
+REPORTEVERY = 10
 WANTSUMMARY = True
 
 ####################################################################
@@ -259,6 +259,7 @@ process.TFileService = cms.Service("TFileService",
 zfilter = False
 topfilter = False
 signal = False
+higgsSignal = False
 alsoViaTau = False
 useGenCutsInTopSignal = True
 
@@ -280,7 +281,21 @@ if options.samplename == 'ttbarsignalplustau':
        
 if options.samplename == 'ttbarbg':
     topfilter = True
-       
+
+if options.samplename == 'ttbarHtobbbar':
+    topfilter = False
+    signal = True
+    viaTau = False
+    alsoViaTau = True
+    higgsSignal = True
+
+if options.samplename == 'ttbarHinclusive':
+    topfilter = False
+    signal = True
+    viaTau = False
+    alsoViaTau = True
+    higgsSignal = True
+
 if options.samplename == 'dyee1050':
     zfilter = True
     zfilterValue = 11
@@ -520,6 +535,7 @@ writeNTuple.channelName = options.mode
 writeNTuple.systematicsName = options.systematicsName
 writeNTuple.isMC = options.runOnMC
 writeNTuple.isTtBarSample = signal
+writeNTuple.isHiggsSample = higgsSignal
 writeNTuple.includePDFWeights = options.includePDFWeights
 writeNTuple.pdfWeights = "pdfWeights:cteq66"
 
@@ -635,11 +651,33 @@ if topfilter:
                 process.generatorTopFilter)
 
 else:
+    if higgsSignal:
+        if signal:
+	    process.load("TopQuarkAnalysis.TopEventProducers.sequences.ttGenEvent_cff")
+	    process.decaySubset.fillMode = "kME" # Status3, use kStable for Status2
+	    process.load("SimGeneral.HepPDTESSource.pythiapdt_cfi") # supplies PDG ID to real name resolution of MC particles, necessary for GenLevelBJetProducer
+	    process.load("TopAnalysis.TopUtils.GenLevelBJetProducer_cfi")
+            process.produceGenLevelBJets.deltaR = 5.0
+            process.produceGenLevelBJets.noBBbarResonances = True
+	    process.topsequence = cms.Sequence(
+                process.makeGenEvt *
+		process.produceGenLevelBJets)
+	else:
+            process.topsequence = cms.Sequence()    
+    else:
         process.topsequence = cms.Sequence()
 
 
+if higgsSignal:
+    process.load("TopAnalysis.HiggsUtils.sequences.higgsGenEvent_cff")
+    process.decaySubsetHiggs.fillMode = "kME" # Status3, use kStable for Status2
+    process.higgssequence = cms.Sequence(
+        process.makeGenEvtHiggs)
+else:
+    process.higgssequence = cms.Sequence()
 
-if signal:
+
+if signal or higgsSignal:
     process.ntupleInRecoSeq = cms.Sequence()
 else:
     if options.triggerStudy:
@@ -705,6 +743,7 @@ for pathname in pathnames:
         process.pdfWeights *
         process.EventsBeforeSelection *
         process.topsequence *
+	process.higgssequence *
         process.zsequence *
         process.filterTrigger
         ))

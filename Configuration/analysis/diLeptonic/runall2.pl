@@ -7,7 +7,12 @@ use Getopt::Std;
 my %arg;
 getopts('d:c:r:sj:m:f:R:x:', \%arg);
 
-unless ($arg{d} && ($arg{R} || $arg{r} || !-e $arg{d}) && $arg{c} && -f $arg{c}) {
+unless ($arg{R} || $arg{r} || !-e $arg{d}) {
+    print "********\n$arg{d} exists! - please remove it before running runall!\n" .
+        " as an alternative, you can use the -r and/or -R parameter to write into $arg{d}\n";
+    exit;
+}
+unless ($arg{d} && $arg{c} && -f $arg{c}) {
     print <<'USAGE';
 Syntax:
  $ runall.pl -d directoryName -c configFile.py [-r regexp] [-s]

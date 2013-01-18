@@ -106,25 +106,10 @@ sub prepare {
     my ($self, $NJobs, $inputSample, $outputFile, $samplename) = @_;
     $samplename ||= 'standard';
     $inputSample =~ s/\.py$//;
-    my $mode;
-    if ($outputFile =~ /^(\w{2,4})_/) {
-        $mode = $1;
-    } else {
-        die "Mode missing in outputFile!\n";
-    }
     (my $outputFileWithoutRoot = $outputFile) =~ s/\.root$//;
-    my $cmsRunCmdLine;
-    if ($inputSample =~ s/^\.\.//) {
-        $cmsRunCmdLine = "outputFile=$outputFile,".
-            "inputScript=TopAnalysis.Configuration.$inputSample,".
-            "mode=$mode,".
-            "samplename=$samplename";
-    } else {
-        $cmsRunCmdLine = "outputFile=$outputFile,".
-            "inputScript=TopAnalysis.Configuration.$inputSample,".
-            "mode=$mode,".
-            "samplename=$samplename";
-    }
+    my $cmsRunCmdLine = "outputFile=$outputFile,".
+        "inputScript=TopAnalysis.Configuration.$inputSample,".
+        "samplename=$samplename";
     $self->createConfig($inputSample, $outputFile, $cmsRunCmdLine);
     push @{$self->{commands}}, [$self->{path},
         "-m $self->{maxEventsPerJob} -d $outputFileWithoutRoot ".

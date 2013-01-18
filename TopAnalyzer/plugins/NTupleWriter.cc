@@ -134,6 +134,7 @@ private:
     std::vector<double> VlepID ; //mvaID for electrons (-1 for muon)
     std::vector<double> VlepPfIso;
     std::vector<double> VlepCombIso;
+    std::vector<double> VlepDxyVertex0;
     std::vector<int>    VlepTrigger;
 
     //True level info from FullLepGenEvent
@@ -379,6 +380,33 @@ NTupleWriter::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup )
         std::cout << zDecayModeHandle->at(0) << "\n";
     }
     
+    
+    //////////////////Trigger Stuff///////////////hltPaths_[i].c_str()
+    edm::Handle<edm::TriggerResults> trigResults;
+    iEvent.getByLabel(trigResults_, trigResults);
+    triggerBits = getTriggerBits(iEvent, trigResults);
+
+    //vertices and pu weights
+    edm::Handle<std::vector<reco::Vertex> > vertices;
+    iEvent.getByLabel(vertices_, vertices);
+    vertMulti = vertices->size();
+
+    // default values to allow for tracing errors
+    if (! iEvent.isRealData()) {
+        edm::Handle<edm::View<PileupSummaryInfo> > pPUInfo;
+        iEvent.getByLabel(inTag_PUSource, pPUInfo);
+        edm::View<PileupSummaryInfo>::const_iterator iterPU;
+        for(iterPU = pPUInfo->begin(); iterPU != pPUInfo->end(); ++iterPU)  // vector size is 3
+        {
+            if (iterPU->getBunchCrossing() == 0) { // -1: previous BX, 0: current BX,  1: next BX
+                vertMultiTrue = iterPU->getTrueNumInteractions();
+            }
+        }
+    } else {
+        vertMultiTrue = vertices->size();
+    }
+    
+    //top event
     edm::Handle<TtFullLeptonicEvent> FullLepEvt;
     iEvent.getByLabel(FullLepEvt_, FullLepEvt);
 
@@ -394,6 +422,10 @@ NTupleWriter::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup )
 
         //////////////////////////////dilepton and lepton properties/////////////////////
 
+        
+        //the ntuple now only stores maximum 1 solution: the best one
+        // - if a two btag solution is found, take it
+        // - else if one tag solution is fount, take the best one
         if (FullLepEvt->isHypoAvailable(hypoKey) && FullLepEvt->isHypoValid(hypoKey))
         {
             int best = -1;
@@ -408,7 +440,7 @@ NTupleWriter::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup )
                 if ((jet1tagged || jet2tagged) && best < 0) { best = i; }                
             }
             
-            std::cout << iEvent.eventAuxiliary().id() <<  ": choose combination #" << best << "\n";
+//             std::cout << iEvent.eventAuxiliary().id() <<  ": choose combination #" << best << "\n";
             
             //for ( size_t i=0; i<FullLepEvt->numberOfAvailableHypos (hypoKey); ++i )
             if (best >= 0) 
@@ -623,6 +655,7 @@ NTupleWriter::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup )
             VlepID.push_back(-1);
             VlepPfIso.push_back(((amuon->chargedHadronIso() +amuon->neutralHadronIso() +amuon->photonIso())/ amuon->pt()));
             VlepCombIso.push_back(( amuon->trackIso() +amuon->caloIso())/amuon->pt());
+            VlepDxyVertex0.push_back(0);
 
 
             int triggerResult = 0;
@@ -657,6 +690,8 @@ NTupleWriter::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup )
 	    }
 
 	    VlepID.push_back(idtemp);
+            const reco::GsfTrack &track = *(anelectron->gsfTrack());
+            VlepDxyVertex0.push_back(track.dxy(vertices->at(0).position()));
 
             Vlep.push_back(anelectron->polarP4());
             VlepPdgId.push_back(anelectron->pdgId());
@@ -723,32 +758,6 @@ NTupleWriter::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup )
     lumibl = iEvent.id().luminosityBlock();
     eventno = iEvent.id().event();
 
-
-    //////////////////Trigger Stuff///////////////hltPaths_[i].c_str()
-
-    edm::Handle<edm::TriggerResults> trigResults;
-    iEvent.getByLabel(trigResults_, trigResults);
-    triggerBits = getTriggerBits(iEvent, trigResults);
-
-    edm::Handle<std::vector<reco::Vertex> > vertices;
-    iEvent.getByLabel(vertices_, vertices);
-    vertMulti = vertices->size();
-
-    // default values to allow for tracing errors
-    if (! iEvent.isRealData()) {
-        edm::Handle<edm::View<PileupSummaryInfo> > pPUInfo;
-        iEvent.getByLabel(inTag_PUSource, pPUInfo);
-        edm::View<PileupSummaryInfo>::const_iterator iterPU;
-        for(iterPU = pPUInfo->begin(); iterPU != pPUInfo->end(); ++iterPU)  // vector size is 3
-        {
-            if (iterPU->getBunchCrossing() == 0) { // -1: previous BX, 0: current BX,  1: next BX
-                vertMultiTrue = iterPU->getTrueNumInteractions();
-            }
-        }
-    } else {
-        vertMultiTrue = vertices->size();
-    }
-    
     //create the PDF weights
     if (includePDFWeights_ && !iEvent.isRealData()) {
         edm::Handle<std::vector<double> > weightHandle;
@@ -831,6 +840,7 @@ NTupleWriter::beginJob()
     Ntuple->Branch("lepID", &VlepID);
     Ntuple->Branch("lepPfIso", &VlepPfIso);
     Ntuple->Branch("lepCombIso", &VlepCombIso);
+    Ntuple->Branch("lepDxyVertex0", &VlepDxyVertex0);
     Ntuple->Branch("lepTrigger", &VlepTrigger);
 
 
@@ -986,6 +996,7 @@ void NTupleWriter::clearVariables()
     VlepPdgId.clear();
     VlepPfIso.clear();
     VlepCombIso.clear();
+    VlepDxyVertex0.clear();
     VlepTrigger.clear();
 
     GenParticleP4.clear();

@@ -136,7 +136,8 @@ if options.globalTag != '':
     process.GlobalTag.globaltag = cms.string( options.globalTag )
 else:
     if options.runOnMC:
-        process.GlobalTag.globaltag = cms.string('START53_V15::All')
+        #process.GlobalTag.globaltag = cms.string('START53_V15::All')
+        process.GlobalTag.globaltag = cms.string('START53_V7G::All')
     else:
         if options.outputFile == 'emu_run2012A.root' or options.outputFile == 'ee_run2012A.root' or options.outputFile == 'mumu_run2012A.root' or options.outputFile == 'emu_run2012B.root' or options.outputFile == 'ee_run2012B.root' or options.outputFile == 'mumu_run2012B.root':
             process.GlobalTag.globaltag = cms.string('FT_53_V6_AN3::All')
@@ -158,7 +159,7 @@ from TopAnalysis.TopFilter.sequences.diLeptonTriggers_cff import *
 # setup filter
 process.load("TopAnalysis.TopFilter.filters.TriggerFilter_cfi")
 process.filterTrigger.TriggerResults = cms.InputTag('TriggerResults','','HLT')
-process.filterTrigger.printTriggers = False
+process.filterTrigger.printTriggers = True
 if options.mode == 'mumu':
     process.filterTrigger.hltPaths  = mumuTriggers
 elif options.mode == 'emu':
@@ -194,7 +195,7 @@ process.pfIsolatedElectrons.isolationCut = 0.15
 
 
 process.pfIsolatedElectrons.doDeltaBetaCorrection = True   # not really a 'deltaBeta' correction, but it serves
-process.pfIsolatedElectrons.deltaBetaFactor = -1.0
+#process.pfIsolatedElectrons.deltaBetaFactor = -1.0
 #process.pfSelectedElectrons.cut = 'gsfTrackRef.isNonnull && gsfTrackRef.trackerExpectedHitsInner.numberOfLostHits<2'
 process.pfSelectedElectrons.cut = 'gsfTrackRef.isNonnull'
 
@@ -210,7 +211,7 @@ process.selectedPatElectronsAfterScaling = selectedPatElectrons.clone(
     cut = 'pt > 20 && abs(eta) < 2.5'
 )
 
-
+process.pfIsolatedMuons.doDeltaBetaCorrection = True
 process.pfIsolatedMuons.isolationCut = 0.20
 process.pfIsolatedMuons.cut = cms.string('pt > 20'
                                          '&& abs(eta) < 2.4'

@@ -176,12 +176,12 @@ void Analysis::SlaveBegin ( TTree * )
     h_AntiLeptonEta_diLep = store(new TH1D ( "AntiLeptonEta_diLep", "Lepton Eta (after dilepton cut)", 100, -5, 5 ));
 
     h_HypToppT = store(new TH1D ( "HypToppT", "Top pT", 400, 0, 400 ));
-    h_HypTopEta = store(new TH1D ( "HypTopEta", "Top pT", 100, -5, 5 ));
+    h_HypTopEta = store(new TH1D ( "HypTopEta", "Top #eta", 100, -5, 5 ));
     h_HypTopMass = store(new TH1D ( "HypTopMass", "Top Mass", 80, 0, 400 ));
     h_HypTopRapidity = store(new TH1D ( "HypTopRapidity", "Top Rapidity", 100, -5, 5 ));
     
     h_HypAntiToppT = store(new TH1D ( "HypAntiToppT", "AntiTop pT", 400, 0, 400 ));
-    h_HypAntiTopEta = store(new TH1D ( "HypAntiTopEta", "AntiTop pT", 100, -5, 5 ));
+    h_HypAntiTopEta = store(new TH1D ( "HypAntiTopEta", "AntiTop #eta", 100, -5, 5 ));
     h_HypAntiTopMass = store(new TH1D ( "HypAntiTopMass", "AntiTop Mass", 80, 0, 400 ));
     h_HypAntiTopRapidity = store(new TH1D ( "HypAntiTopRapidity", "Top Rapidity", 100, -5, 5 ));
 
@@ -307,7 +307,7 @@ void Analysis::SlaveBegin ( TTree * )
     h_GenRecoLLBarDPhi = store(new TH2D ( "GenRecoLLBarDPhi", "Gen/Reco Matching", 100, 0., 3.2, 100, 0., 3.2 ));
     h_GenRecoLeptonantiBjetMass = store(new TH2D ( "GenRecoLeptonBjetMass", "Gen/Reco Matching", 500, 0, 1000, 500, 0, 1000 ));
     h_GenRecoAntiLeptonBjetMass = store(new TH2D ( "GenRecoAntiLeptonBjetMass", "Gen/Reco Matching", 500, 0, 1000, 500, 0, 1000 ));
-    h_GenRecoJetMult = store(new TH2D ( "GenRecoJetMult", "Gen/REco Matching", 26, -0.5, 25.5, 26, -0.5, 25.5 ));
+    h_GenRecoJetMult = store(new TH2D ( "GenRecoJetMult", "Gen/Reco Matching", 26, -0.5, 25.5, 26, -0.5, 25.5 ));
 
     h_HypLLBarDPhi = store(new TH1D ( "HypLLBarDPhi", "#Delta#phi(Lep, AntiLep) (HYP)",110, 0., 3.2 ));
     h_HypLeptonantiBjetMass = store(new TH1D ( "HypLeptonBjetMass", "Mass(Lep, AntiBJet) (HYP)", 500, 0, 1000 ));
@@ -479,10 +479,10 @@ void Analysis::SlaveBegin ( TTree * )
     
 
     //btagSF
-    const int PtMax = 17;
-    const int EtaMax = 6;
-    Double_t ptbins[PtMax+1] = {0.,30.,40.,50.,60.,70.,80.,100.,120.,160.,210.,260.,320.,400.,500.,670.,1000.,2000.};
-    Double_t etabins[EtaMax+1] = {0.0,0.5,1.0,1.5,2.0,2.4,3.0};
+    const int PtMax = 16;
+    const int EtaMax = 5;
+    Double_t ptbins[PtMax+1] = {20.,30.,40.,50.,60.,70.,80.,100.,120.,160.,210.,260.,320.,400.,500.,600.,800.};
+    Double_t etabins[EtaMax+1] = {0.0,0.5,1.0,1.5,2.0,2.4};
     h_bjets = store(new TH2D("bjets2D", "unTagged Bjets", PtMax, ptbins, EtaMax, etabins));              h_bjets->Sumw2();
     h_btaggedjets = store(new TH2D("bjetsTagged2D", "Tagged Bjets", PtMax, ptbins, EtaMax, etabins));    h_btaggedjets->Sumw2();
     h_cjets = store(new TH2D("cjets2D", "unTagged Cjets", PtMax, ptbins, EtaMax, etabins));              h_cjets->Sumw2();
@@ -1617,65 +1617,113 @@ void Analysis::Terminate()
 double Analysis::BJetSF( double pt, double eta )
 {
     //CSVL b-jet SF
-    //From BTV-11-004 and https://twiki.cern.ch/twiki/pub/CMS/BtagPOG/SFb-mujet_payload.txt
+    //From BTV-11-004 and https://twiki.cern.ch/twiki/pub/CMS/BtagPOG/SFb-mujet_payload.tptt (ICHEP 2012 prescription)
+    //From: https://twiki.cern.ch/twiki/pub/CMS/BtagPOG/SFb-pt_payload_Moriond13.tptt  (Moriond 2013 prescription)
 
     if ( abs(eta) > 2.4 ) {
-        cout<<"Jet Eta out of the selected range. Check it"<<endl;
+        cout<<"Jet Eta="<<eta<<" Out of the selected range (|eta|<2.4). Check it"<<endl;
         exit(9);
     }
-    
-    if ( pt < 30 ) pt = 30;
-    if ( pt > 670 ) pt = 670;
+    if ( pt < 30 ){
+        cout<<"Jet pT="<<pt<<" Out of the selected range (pt>30GeV). Check it"<<endl;
+        exit(9);
+    }
 
-    return 1.02658*((1.+(0.0195388*pt))/(1.+(0.0209145*pt)));
+    if ( pt < 20 ) pt = 20;
+    if ( pt > 800 ) pt = 800;
+
+    return 0.981149*((1.+(-0.000713295*pt))/(1.+(-0.000703264*pt)));
 }
 
 double Analysis::CJetSF ( double pt, double eta )
 {
     //CSVL c-jet SF
-    //From BTV-11-004 and https://twiki.cern.ch/twiki/bin/viewauth/CMS/BtagPOG#2012_Data_and_MC
-    return BJetSF( pt, eta );
+    //From BTV-11-004 and https://twiki.cern.ch/twiki/bin/viewauth/CMS/BtagPOG#2012_Data_and_MC (ICHEP 2012 prescription)
+    //From https://twiki.cern.ch/twiki/bin/viewauth/CMS/BtagPOG#2012_Data_and_MC_Moriond13_presc  (Moriond 2013 prescription)
+
+    return 2 * BJetSF( pt, eta );
 }
 
-double Analysis::LJetSF ( double pt, double eta )
+double Analysis::LJetSF ( double pt, double eta, TString typevar )
 {
-    //CSVL ligth jet mistag SF.
-    //From BTV-11-004 and https://twiki.cern.ch/twiki/pub/CMS/BtagPOG/SFlightFuncs.C
+    //CSVL ligth jet mistag SF. Includes also the SFfor  variations up and down
+    //From BTV-11-004 and https://twiki.cern.ch/twiki/pub/CMS/BtagPOG/SFlightFuncs.C (ICHEP 2012 prescription)
+    //From https://twiki.cern.ch/twiki/pub/CMS/BtagPOG/SFlightFuncs_Moriond2013.C  (Moriond 2013 prescription)
 
     double eta_abs = abs(eta);
-    if (eta_abs > 2.4) {
-        cout<<"There is a jet out of the selected ETA region. Check that!!!!!\n";
-        return 1;
+    if ( eta_abs > 2.4 ) {
+        cout<<"Jet Eta="<<eta<<" Out of the selected range (|eta|<2.4). Check it"<<endl;
+        exit(91);
     }
-    if ( pt > 670 ) {
-        return (((0.956023+(0.000825106*pt))+(-3.18828e-06*(pt*pt)))+(2.81787e-09*(pt*(pt*pt)))) * (0.979396 + 0.000205898*pt + 2.49868e-07*pt*pt);
-    } else {
+    if ( pt < 30 ){
+        cout<<"Jet pT="<<pt<<" out of the selected range. Check it"<<endl;
+        exit(91);
+    }
+
+    if ( pt > 800 && eta_abs <= 1.5 ) {
+        pt = 800;
+    }    else if (pt > 700 && eta_abs > 1.5 ) {
+        pt = 700;
+    }
+
+    if ( typevar == "central" ){
         if ( eta_abs <= 0.5 ) {
-            return (((0.994425+(-8.66392e-05*pt))+(-3.03813e-08*(pt*pt)))+(-3.52151e-10*(pt*(pt*pt)))) * (0.979396 + 0.000205898*pt + 2.49868e-07*pt*pt);
+            return ((1.04901+(0.00152181*pt))+(-3.43568e-06*(pt*pt)))+(2.17219e-09*(pt*(pt*pt)));
         } else if ( eta_abs <= 1.0 ) {
-            return (((0.998088+(6.94916e-05*pt))+(-4.82731e-07*(pt*pt)))+(1.63506e-10*(pt*(pt*pt)))) * (0.979396 + 0.000205898*pt + 2.49868e-07*pt*pt);
+            return ((0.991915+(0.00172552*pt))+(-3.92652e-06*(pt*pt)))+(2.56816e-09*(pt*(pt*pt)));
         } else if ( eta_abs <= 1.5 ) {
-            return (((1.00294+(0.000289844*pt))+(-7.9845e-07*(pt*pt)))+(5.38525e-10*(pt*(pt*pt)))) * (0.979396 + 0.000205898*pt + 2.49868e-07*pt*pt);
+            return ((0.962127+(0.00192796*pt))+(-4.53385e-06*(pt*pt)))+(3.0605e-09*(pt*(pt*pt)));
         } else {
-            return (((0.979816+(0.000138797*pt))+(-3.14503e-07*(pt*pt)))+(2.38124e-10*(pt*(pt*pt)))) * (0.979396 + 0.000205898*pt + 2.49868e-07*pt*pt);
+            return ((1.06121+(0.000332747*pt))+(-8.81201e-07*(pt*pt)))+(7.43896e-10*(pt*(pt*pt)));
         }
+    }  else if ( typevar == "up" ){
+        if ( eta_abs <= 0.5 ) {
+            return ((1.12424+(0.00201136*pt))+(-4.64021e-06*(pt*pt)))+(2.97219e-09*(pt*(pt*pt)));
+        } else if ( eta_abs <= 1.0 ) {
+            return ((1.06231+(0.00215815*pt))+(-4.9844e-06*(pt*pt)))+(3.27623e-09*(pt*(pt*pt)));
+        } else if ( eta_abs <= 1.5 ) {
+            return ((1.02883+(0.00231985*pt))+(-5.57924e-06*(pt*pt)))+(3.81235e-09*(pt*(pt*pt)));
+        } else {
+            return ((1.1388+(0.000468418*pt))+(-1.36341e-06*(pt*pt)))+(1.19256e-09*(pt*(pt*pt)));
+        }
+    } else if ( typevar == "down" ){
+        if ( eta_abs <= 0.5 ) {
+            return ((0.973773+(0.00103049*pt))+(-2.2277e-06*(pt*pt)))+(1.37208e-09*(pt*(pt*pt)));
+        } else if ( eta_abs <= 1.0 ) {
+            return ((0.921518+(0.00129098*pt))+(-2.86488e-06*(pt*pt)))+(1.86022e-09*(pt*(pt*pt)));
+        } else if ( eta_abs <= 1.5 ) {
+            return ((0.895419+(0.00153387*pt))+(-3.48409e-06*(pt*pt)))+(2.30899e-09*(pt*(pt*pt)));
+        } else {
+            return ((0.983607+(0.000196747*pt))+(-3.98327e-07*(pt*pt)))+(2.95764e-10*(pt*(pt*pt)));
+        }
+    } else {
+        cout<<"Type of variation not valid. Check it"<<endl;
+        exit(91);
     }
+
 }
 
 double Analysis::BJetSFAbsErr ( int ptbin )
 {
     //c- and l-jets errors are not necessary for the calculation and are not implemented. If needed go to https://twiki.cern.ch/twiki/bin/viewauth/CMS/BtagPOG#2012_Data_and_MC
 
-    //b-jet pt ranges {0, 30, 40, 50, 60, 70, 80, 100, 120, 160, 210, 260, 320, 400, 500, 670};
-    //this pt range matches the pTEff histogram!!
+    //b-jet pt ranges {20, 30, 40, 50, 60, 70, 80, 100, 120, 160, 210, 260, 320, 400, 500, 600, 800};
+    //this pt range MUST match the pTEff histogram!!
 
-    double SFb_error[] = {0.1388743, 0.0188743, 0.0161816, 0.0139824, 0.0152644, 0.0161226, 0.0157396, 0.0161619, 0.0168747, 0.0257175, 0.026424, 0.0264928, 0.0315127, 0.030734, 0.0438259 };
+    double SFb_error[] = { 0.0484285,  0.0126178,  0.0120027,  0.0141137, 0.0145441, 0.0131145, 0.0168479, 0.0160836, 0.0126209, 0.0136017, 0.019182, 0.0198805, 0.0386531, 0.0392831, 0.0481008, 0.0474291 };
 
-    if ( ptbin > 14 ) {
-        return 1.5 * 2 * SFb_error[14];
+    if ( ptbin > 15 ) {
+        return 2 * SFb_error[15];
+    } else if ( ptbin < 0){
+        return 2 * SFb_error[0];
     } else {
-        return 1.5 * SFb_error[ptbin];
+        return SFb_error[ptbin];
     };
+}
+
+double Analysis::CJetSFAbsErr ( int ptbin)
+{
+    return 2 * BJetSFAbsErr ( ptbin );
 }
 
 void Analysis::SetBTagFile(TString btagFile)
@@ -2043,14 +2091,28 @@ double Analysis::calculateBtagSF()
             double SF_Error=0;
             if ( partonFlavour == 5 ) { //b-quark
                 eff=bEff->GetBinContent ( ptbin, etabin );
-                SFPerJet=BJetSF( pt, eta );
+                SFPerJet = BJetSF( pt, eta );
                 SF_Error = BJetSFAbsErr ( ptbin );
             } else if ( partonFlavour == 4 ) { //c-quark
-                SFPerJet=CJetSF( pt, eta );
                 eff=cEff->GetBinContent ( ptbin, etabin );
+                SFPerJet = CJetSF( pt, eta );
+                SF_Error = CJetSFAbsErr ( ptbin );
             } else if ( partonFlavour != 0 ) { //l-quark
-                SFPerJet=LJetSF( pt, eta );
                 eff=lEff->GetBinContent ( ptbin, etabin );
+                SFPerJet = LJetSF( pt, eta, "central");
+                if ( systematic.Contains("BTAG_LJET_") ){
+                    if ( (systematic.Contains("PT_UP") && pt>btag_ptmedian) || (systematic.Contains("PT_DOWN") && pt<btag_ptmedian)
+                        || (systematic.Contains("ETA_UP") && eta>btag_etamedian) || (systematic.Contains("ETA_DOWN") && eta<btag_etamedian) ){
+                        SFPerJet = LJetSF ( pt, eta, "up");
+                    }
+                    else {
+                        SFPerJet = LJetSF ( pt, eta, "down");
+                    }
+                } else if ( systematic.Contains("BTAG_UP") ) {  //systematic variation for inclusive XSection measurement
+                    SFPerJet = LJetSF ( pt, eta, "up");
+                } else if ( systematic.Contains("BTAG_DOWN") ) {  //systematic variation for inclusive XSection measurement
+                    SFPerJet = LJetSF ( pt, eta, "down");
+                }
             } else {
                 cout<<"I found a jet in event "<<eventNumber<<" which is not b, c nor light: "<<partonFlavour<<endl;
                 return kFALSE;
@@ -2059,8 +2121,8 @@ double Analysis::calculateBtagSF()
             //calculate both numerator and denominator for per-event SF calculation
             //consider also the UP and DOWN variation for systematics calculation. Same procedure as PU
             OneMinusEff = OneMinusEff* ( 1-eff );
-            //OneMinusSEff= OneMinusSEff* ( 1-SFPerJet*eff );
             double sf = SFPerJet;
+            if ( systematic.Contains("LJET") ) { SF_Error = 0; } //For l-jet systematics set to 0 the b- and c-jet errors
             if ( systematic == "BTAG_UP" ) {
                 sf = SFPerJet + SF_Error;
             }
@@ -2078,7 +2140,7 @@ double Analysis::calculateBtagSF()
                 if ( pt>btag_ptmedian )  {
                     sf = SFPerJet + 0.5 * SF_Error;
                 } else {
-                    sf = SFPerJet - 0.5 * SF_Error;
+                    sf = SFPerJet - 0.5 * SF_Error; 
                 }
             }
             else if ( systematic == "BTAG_ETA_UP" ) {
@@ -2095,7 +2157,7 @@ double Analysis::calculateBtagSF()
                     sf = SFPerJet - 0.5 * SF_Error;
                 }
             }
-            
+
             OneMinusSEff *= 1 - eff * sf;
         }
     }

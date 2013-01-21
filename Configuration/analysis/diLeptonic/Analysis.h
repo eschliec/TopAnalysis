@@ -309,7 +309,6 @@ class Analysis : public TSelector
     double Median(TH1 *); 
     double BJetSF ( double, double );
     double CJetSF ( double, double );
-    //double LJetSF ( double, double );
     double LJetSF ( double , double , TString );
     double BJetSFAbsErr ( int );
     double CJetSFAbsErr ( int );

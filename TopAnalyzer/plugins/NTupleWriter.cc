@@ -13,7 +13,7 @@ Implementation:
 //
 // Original Author:  Jan Kieseler,,,DESY
 //         Created:  Thu Aug 11 16:37:05 CEST 2011
-// $Id: NTupleWriter.cc,v 1.30.2.5 2012/12/19 12:15:22 wbehrenh Exp $
+// $Id: NTupleWriter.cc,v 1.30.2.8 2013/01/18 19:13:10 wbehrenh Exp $
 //
 //
 
@@ -81,6 +81,7 @@ private:
     void clearVariables();
     int getTriggerBits(const edm::Event& iEvent, const edm::Handle< edm::TriggerResults >& trigResults);
     int getTriggerBits (const std::vector< std::string > &trigName);
+    int getTriggerBitsTau(const edm::Event& iEvent, const edm::Handle< edm::TriggerResults >& trigResults);
 
     void AssignLeptonAndTau(const reco::GenParticle* lepton, LV &GenLepton, int &pdgid, LV &GenTau);
     bool isTau( const reco::GenParticle* lepton);
@@ -88,6 +89,7 @@ private:
     // ----------member data ---------------------------
 
     std::map<std::string, int> triggerMap_;
+    std::map<std::string, int> triggerMapTau_;
     edm::InputTag inTag_PUSource;
     edm::InputTag elecs_, muons_;
     edm::InputTag jets_;
@@ -127,6 +129,7 @@ private:
     unsigned int lumibl;
     unsigned int eventno;
     unsigned int triggerBits;
+    unsigned int triggerBitsTau;
 
     ////////dileptons and leptons/////
     std::vector<LV>     Vlep;
@@ -327,6 +330,25 @@ NTupleWriter::NTupleWriter(const edm::ParameterSet& iConfig):
 
     //use bit 32 for general trigger to avoid false for unmatched triggers
     triggerMap_["general"] = 0x80000000;
+    
+    
+    
+    // trigger map for hadronic tau (cross) triggers, analog to trigger map above
+    //use first 8 bits for mu + tau
+    triggerMapTau_["HLT_IsoMu17_eta2p1_LooseIsoPFTau20_v*"] = 1;
+    triggerMapTau_["HLT_IsoMu18_eta2p1_LooseIsoPFTau20_v*"] = 2;
+    
+    //use bits 9 to 16 for e + tau
+    triggerMapTau_["HLT_Ele22_eta2p1_WP90Rho_LooseIsoPFTau20_v*"] = 0x100;
+    triggerMapTau_["HLT_Ele20_CaloIdVT_CaloIsoRhoT_TrkIdT_TrkIsoT_LooseIsoPFTau20_v*"] = 0x200;
+    
+    //use bits 17-24 for tau + tau + jet
+    triggerMapTau_["HLT_DoubleMediumIsoPFTau30_Trk5_eta2p1_Jet30_v*"] = 0x10000;
+    triggerMapTau_["HLT_DoubleMediumIsoPFTau30_Trk1_eta2p1_Jet30_v*"] = 0x20000;
+    triggerMapTau_["HLT_DoubleMediumIsoPFTau25_Trk5_eta2p1_Jet30_v*"] = 0x40000;
+    
+    //use bit 32 for general trigger to avoid false for unmatched triggers - is this needed?
+    //triggerMapTau_["general"] = 0x80000000;
 }
 
 
@@ -385,6 +407,7 @@ NTupleWriter::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup )
     edm::Handle<edm::TriggerResults> trigResults;
     iEvent.getByLabel(trigResults_, trigResults);
     triggerBits = getTriggerBits(iEvent, trigResults);
+    triggerBitsTau = this->getTriggerBitsTau(iEvent, trigResults);
 
     //vertices and pu weights
     edm::Handle<std::vector<reco::Vertex> > vertices;
@@ -814,6 +837,31 @@ int NTupleWriter::getTriggerBits(const std::vector< std::string > &trigName)
     return result;
 }
 
+int NTupleWriter::getTriggerBitsTau(const edm::Event &iEvent, const edm::Handle< edm::TriggerResults > &trigResults)
+{
+    int n_Triggers = trigResults->size();
+    edm::TriggerNames trigName = iEvent.triggerNames(*trigResults);
+    int result = 0;
+
+    for ( int i_Trig = 0; i_Trig<n_Triggers; ++i_Trig )
+    {
+        if ( trigResults.product()->accept(i_Trig))
+        {
+            std::string triggerName = trigName.triggerName(i_Trig);
+            std::string triggerNameWithoutVersion(triggerName);
+            while (triggerNameWithoutVersion.length() > 0
+                    && triggerNameWithoutVersion[triggerNameWithoutVersion.length()-1] >= '0'
+                    && triggerNameWithoutVersion[triggerNameWithoutVersion.length()-1] <= '9')
+            {
+                triggerNameWithoutVersion.replace(triggerNameWithoutVersion.length()-1, 1, "");
+            }
+            result |= triggerMapTau_[triggerNameWithoutVersion + "*"];
+            result |= triggerMapTau_[triggerName];
+        }
+    }
+    return result;
+}
+
 
 // ------------ method called once each job just before starting event loop  ------------
 void
@@ -867,6 +915,7 @@ NTupleWriter::beginJob()
     Ntuple->Branch("lumiBlock", &lumibl,"lumiBlock/i");
     Ntuple->Branch("eventNumber", &eventno, "eventNumber/i");
     Ntuple->Branch("triggerBits", &triggerBits, "triggerBits/i");
+    Ntuple->Branch("triggerBitsTau", &triggerBitsTau, "triggerBitsTau/i");
 
 
     ////////////triggers//////////////////
@@ -988,6 +1037,7 @@ void NTupleWriter::clearVariables()
     lumibl = 0;
     eventno = 0;
     triggerBits = 0;
+    triggerBitsTau = 0;
     recoInChannel = 0;
 
     ////////dileptons and leptons/////

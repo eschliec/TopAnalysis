@@ -576,6 +576,9 @@ if signal or higgsSignal:
     process.ntupleInRecoSeq = cms.Sequence()
 else:
     process.ntupleInRecoSeq = cms.Sequence(process.zsequence * process.writeNTuple)
+    
+
+# HCAL Noise
 
 process.load('CommonTools/RecoAlgos/HBHENoiseFilter_cfi')
 process.HBHENoiseFilter.minIsolatedNoiseSumE = cms.double(999999.)
@@ -588,6 +591,83 @@ process.scrapingFilter = cms.EDFilter( "FilterOutScraping"
                                                  , numtrack    = cms.untracked.uint32( 10 )
                                                  , thresh      = cms.untracked.double( 0.25 )
                                                  )
+
+# remove all the tau stuff
+from PhysicsTools.PatAlgos.tools.coreTools import removeSpecificPATObjects
+removeSpecificPATObjects( process
+                        , names = ['Taus', 'Photons']
+                        , outputModules = []
+                        , postfix = pfpostfix
+                        )
+## remove the full pftau sequence as it is not needed for us
+getattr(process,'patPF2PATSequence'+pfpostfix).remove(getattr(process,'pfTauPFJets08Region'+pfpostfix))
+getattr(process,'patPF2PATSequence'+pfpostfix).remove(getattr(process,'pfTauPileUpVertices'+pfpostfix))
+getattr(process,'patPF2PATSequence'+pfpostfix).remove(getattr(process,'pfTauTagInfoProducer'+pfpostfix))
+getattr(process,'patPF2PATSequence'+pfpostfix).remove(getattr(process,'pfJetsPiZeros'+pfpostfix))
+getattr(process,'patPF2PATSequence'+pfpostfix).remove(getattr(process,'pfJetsLegacyTaNCPiZeros'+pfpostfix))
+getattr(process,'patPF2PATSequence'+pfpostfix).remove(getattr(process,'pfJetsLegacyHPSPiZeros'+pfpostfix))
+getattr(process,'patPF2PATSequence'+pfpostfix).remove(getattr(process,'pfTausBase'+pfpostfix))
+getattr(process,'patPF2PATSequence'+pfpostfix).remove(getattr(process,'hpsSelectionDiscriminator'+pfpostfix))
+getattr(process,'patPF2PATSequence'+pfpostfix).remove(getattr(process,'hpsPFTauProducerSansRefs'+pfpostfix))
+getattr(process,'patPF2PATSequence'+pfpostfix).remove(getattr(process,'hpsPFTauProducer'+pfpostfix))
+getattr(process,'patPF2PATSequence'+pfpostfix).remove(getattr(process,'pfTausBaseDiscriminationByDecayModeFinding'+pfpostfix))
+getattr(process,'patPF2PATSequence'+pfpostfix).remove(getattr(process,'pfTausBaseDiscriminationByLooseCombinedIsolationDBSumPtCorr'+pfpostfix))
+getattr(process,'patPF2PATSequence'+pfpostfix).remove(getattr(process,'pfTaus'+pfpostfix))
+getattr(process,'patPF2PATSequence'+pfpostfix).remove(getattr(process,'pfNoTau'+pfpostfix))
+getattr(process,'patPF2PATSequence'+pfpostfix).remove(getattr(process,'hpsPFTauDiscriminationByDecayModeFinding'+pfpostfix))
+getattr(process,'patPF2PATSequence'+pfpostfix).remove(getattr(process,'hpsPFTauDiscriminationByVLooseChargedIsolation'+pfpostfix))
+getattr(process,'patPF2PATSequence'+pfpostfix).remove(getattr(process,'hpsPFTauDiscriminationByLooseChargedIsolation'+pfpostfix))
+getattr(process,'patPF2PATSequence'+pfpostfix).remove(getattr(process,'hpsPFTauDiscriminationByMediumChargedIsolation'+pfpostfix))
+getattr(process,'patPF2PATSequence'+pfpostfix).remove(getattr(process,'hpsPFTauDiscriminationByTightChargedIsolation'+pfpostfix))
+getattr(process,'patPF2PATSequence'+pfpostfix).remove(getattr(process,'hpsPFTauDiscriminationByVLooseIsolation'+pfpostfix))
+getattr(process,'patPF2PATSequence'+pfpostfix).remove(getattr(process,'hpsPFTauDiscriminationByLooseIsolation'+pfpostfix))
+getattr(process,'patPF2PATSequence'+pfpostfix).remove(getattr(process,'hpsPFTauDiscriminationByMediumIsolation'+pfpostfix))
+getattr(process,'patPF2PATSequence'+pfpostfix).remove(getattr(process,'hpsPFTauDiscriminationByTightIsolation'+pfpostfix))
+getattr(process,'patPF2PATSequence'+pfpostfix).remove(getattr(process,'hpsPFTauDiscriminationByVLooseIsolationDBSumPtCorr'+pfpostfix))
+getattr(process,'patPF2PATSequence'+pfpostfix).remove(getattr(process,'hpsPFTauDiscriminationByLooseIsolationDBSumPtCorr'+pfpostfix))
+getattr(process,'patPF2PATSequence'+pfpostfix).remove(getattr(process,'hpsPFTauDiscriminationByMediumIsolationDBSumPtCorr'+pfpostfix))
+getattr(process,'patPF2PATSequence'+pfpostfix).remove(getattr(process,'hpsPFTauDiscriminationByTightIsolationDBSumPtCorr'+pfpostfix))
+getattr(process,'patPF2PATSequence'+pfpostfix).remove(getattr(process,'hpsPFTauDiscriminationByRawCombinedIsolationDBSumPtCorr'+pfpostfix))
+getattr(process,'patPF2PATSequence'+pfpostfix).remove(getattr(process,'hpsPFTauDiscriminationByRawChargedIsolationDBSumPtCorr'+pfpostfix))
+getattr(process,'patPF2PATSequence'+pfpostfix).remove(getattr(process,'hpsPFTauDiscriminationByRawGammaIsolationDBSumPtCorr'+pfpostfix))
+getattr(process,'patPF2PATSequence'+pfpostfix).remove(getattr(process,'hpsPFTauDiscriminationByVLooseCombinedIsolationDBSumPtCorr'+pfpostfix))
+getattr(process,'patPF2PATSequence'+pfpostfix).remove(getattr(process,'hpsPFTauDiscriminationByLooseCombinedIsolationDBSumPtCorr'+pfpostfix))
+getattr(process,'patPF2PATSequence'+pfpostfix).remove(getattr(process,'hpsPFTauDiscriminationByMediumCombinedIsolationDBSumPtCorr'+pfpostfix))
+getattr(process,'patPF2PATSequence'+pfpostfix).remove(getattr(process,'hpsPFTauDiscriminationByTightCombinedIsolationDBSumPtCorr'+pfpostfix))
+getattr(process,'patPF2PATSequence'+pfpostfix).remove(getattr(process,'hpsPFTauDiscriminationByLooseElectronRejection'+pfpostfix))
+getattr(process,'patPF2PATSequence'+pfpostfix).remove(getattr(process,'hpsPFTauDiscriminationByMediumElectronRejection'+pfpostfix))
+getattr(process,'patPF2PATSequence'+pfpostfix).remove(getattr(process,'hpsPFTauDiscriminationByTightElectronRejection'+pfpostfix))
+getattr(process,'patPF2PATSequence'+pfpostfix).remove(getattr(process,'hpsPFTauDiscriminationByMVAElectronRejection'+pfpostfix))
+getattr(process,'patPF2PATSequence'+pfpostfix).remove(getattr(process,'hpsPFTauDiscriminationByLooseMuonRejection'+pfpostfix))
+getattr(process,'patPF2PATSequence'+pfpostfix).remove(getattr(process,'hpsPFTauDiscriminationByMediumMuonRejection'+pfpostfix))
+getattr(process,'patPF2PATSequence'+pfpostfix).remove(getattr(process,'hpsPFTauDiscriminationByTightMuonRejection'+pfpostfix))
+
+getattr(process,'patPF2PATSequence'+pfpostfix).remove(getattr(process,'tauIsoDepositPFCandidates'+pfpostfix))
+getattr(process,'patPF2PATSequence'+pfpostfix).remove(getattr(process,'tauIsoDepositPFChargedHadrons'+pfpostfix))
+getattr(process,'patPF2PATSequence'+pfpostfix).remove(getattr(process,'tauIsoDepositPFNeutralHadrons'+pfpostfix))
+getattr(process,'patPF2PATSequence'+pfpostfix).remove(getattr(process,'tauIsoDepositPFGammas'+pfpostfix))
+getattr(process,'patPF2PATSequence'+pfpostfix).remove(getattr(process,'patTaus'+pfpostfix))
+getattr(process,'patPF2PATSequence'+pfpostfix).remove(getattr(process,'selectedPatTaus'+pfpostfix))
+getattr(process,'patPF2PATSequence'+pfpostfix).remove(getattr(process,'countPatTaus'+pfpostfix))
+
+## removal of unnecessary modules
+getattr(process,'patPF2PATSequence'+pfpostfix).remove(getattr(process,'patPFParticles'+pfpostfix))
+getattr(process,'patPF2PATSequence'+pfpostfix).remove(getattr(process,'patCandidateSummary'+pfpostfix))
+
+getattr(process,'patPF2PATSequence'+pfpostfix).remove(getattr(process,'selectedPatPFParticles'+pfpostfix))
+getattr(process,'patPF2PATSequence'+pfpostfix).remove(getattr(process,'selectedPatCandidateSummary'+pfpostfix))
+getattr(process,'patPF2PATSequence'+pfpostfix).remove(getattr(process,'countPatElectrons'+pfpostfix))
+getattr(process,'patPF2PATSequence'+pfpostfix).remove(getattr(process,'countPatMuons'+pfpostfix))
+getattr(process,'patPF2PATSequence'+pfpostfix).remove(getattr(process,'countPatLeptons'+pfpostfix))
+getattr(process,'patPF2PATSequence'+pfpostfix).remove(getattr(process,'countPatJets'+pfpostfix))
+getattr(process,'patPF2PATSequence'+pfpostfix).remove(getattr(process,'countPatPFParticles'+pfpostfix))
+
+getattr(process,'patPF2PATSequence'+pfpostfix).remove(getattr(process,'pfPhotonSequence'+pfpostfix))
+
+massSearchReplaceAnyInputTag(getattr(process,'patPF2PATSequence'+pfpostfix),'pfNoTau'+pfpostfix,'pfJets'+pfpostfix)
+
+
+
 
 
 process.p = cms.Path(

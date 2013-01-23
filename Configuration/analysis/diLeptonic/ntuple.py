@@ -275,7 +275,7 @@ elif options.samplename == 'ttbarbg':
 elif options.samplename == 'dy1050' or options.samplename == 'dy50inf':
     zproducer = True
 elif options.samplename == 'ttbarhiggstobbar' or options.samplename == 'ttbarhiggsinclusive':
-    topfilter = False
+    topfilter = True
     signal = True
     viaTau = False
     alsoViaTau = True
@@ -315,10 +315,14 @@ metCollection = "scaledJetEnergy:patMETs"
 ## detector conditions and magnetic field
 
 if topfilter:
+    process.load("TopAnalysis.TopFilter.filters.GeneratorTopFilter_cfi")
+    if higgsSignal:
+        process.generatorTopFilter.invert_selection = True
+        process.generatorTopFilter.channels = []
+    else:
         all = ['ElectronElectron', 'ElectronElectronViaTau', 
                'MuonMuon', 'MuonMuonViaTau', 
                'ElectronMuon', 'ElectronMuonViaTau']
-        process.load("TopAnalysis.TopFilter.filters.GeneratorTopFilter_cfi")
         if signal:
                 process.generatorTopFilter.invert_selection = False
                 if viaTau:
@@ -330,6 +334,7 @@ if topfilter:
         else:
                 process.generatorTopFilter.channels = all
                 process.generatorTopFilter.invert_selection = True
+
 
 
 ## produce pat trigger content
@@ -528,41 +533,27 @@ else:
 
 
 if topfilter:
-	process.load("TopQuarkAnalysis.TopEventProducers.sequences.ttGenEvent_cff")
-	#process.load("TopAnalysis.TopUtils.HadronLevelBJetProducer_cfi")
+    process.load("TopQuarkAnalysis.TopEventProducers.sequences.ttGenEvent_cff")
+    #process.load("TopAnalysis.TopUtils.HadronLevelBJetProducer_cfi")
 
-        process.load("SimGeneral.HepPDTESSource.pythiapdt_cfi") # supplies PDG ID to real name resolution of MC particles, necessary for GenLevelBJetProducer
-	process.load("TopAnalysis.TopUtils.GenLevelBJetProducer_cfi")
-        process.produceGenLevelBJets.deltaR = 5.0
-        process.produceGenLevelBJets.noBBbarResonances = True
+    process.load("SimGeneral.HepPDTESSource.pythiapdt_cfi") # supplies PDG ID to real name resolution of MC particles, necessary for GenLevelBJetProducer
+    process.load("TopAnalysis.TopUtils.GenLevelBJetProducer_cfi")
+    process.produceGenLevelBJets.deltaR = 5.0
+    process.produceGenLevelBJets.noBBbarResonances = True
 
-	process.decaySubset.fillMode = "kME" # Status3, use kStable for Status2
-        if signal:
-            process.topsequence = cms.Sequence(
-                process.makeGenEvt *
-                process.generatorTopFilter *
-                process.produceGenLevelBJets)
-        else:
-            process.topsequence = cms.Sequence(
-                process.makeGenEvt *
-                process.generatorTopFilter)
+    process.decaySubset.fillMode = "kME" # Status3, use kStable for Status2
+    if signal:
+        process.topsequence = cms.Sequence(
+            process.makeGenEvt *
+            process.generatorTopFilter *
+            process.produceGenLevelBJets)
+    else:
+        process.topsequence = cms.Sequence(
+            process.makeGenEvt *
+            process.generatorTopFilter)
 
 else:
-    if higgsSignal:
-        if signal:
-            process.load("TopQuarkAnalysis.TopEventProducers.sequences.ttGenEvent_cff")
-            process.decaySubset.fillMode = "kME" # Status3, use kStable for Status2
-            process.load("SimGeneral.HepPDTESSource.pythiapdt_cfi") # supplies PDG ID to real name resolution of MC particles, necessary for GenLevelBJetProducer
-            process.load("TopAnalysis.TopUtils.GenLevelBJetProducer_cfi")
-            process.produceGenLevelBJets.deltaR = 5.0
-            process.produceGenLevelBJets.noBBbarResonances = True
-            process.topsequence = cms.Sequence(
-                process.makeGenEvt *
-                process.produceGenLevelBJets)
-        else:
-            process.topsequence = cms.Sequence()    
-    else:
-        process.topsequence = cms.Sequence()
+    process.topsequence = cms.Sequence()
 
 
 if higgsSignal:

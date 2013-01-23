@@ -133,21 +133,27 @@ process.load("Configuration.StandardSequences.FrontierConditions_GlobalTag_cff")
 #this won't be pretty but I'm not a python guy
 
 if options.globalTag != '':
+    print "Setting global tag to the command-line value"
     process.GlobalTag.globaltag = cms.string( options.globalTag )
 else:
+    print "Determine global tag automatically"
     if options.runOnMC:
-        #process.GlobalTag.globaltag = cms.string('START53_V15::All')
         process.GlobalTag.globaltag = cms.string('START53_V7G::All')
     else:
-        if options.outputFile == 'emu_run2012A.root' or options.outputFile == 'ee_run2012A.root' or options.outputFile == 'mumu_run2012A.root' or options.outputFile == 'emu_run2012B.root' or options.outputFile == 'ee_run2012B.root' or options.outputFile == 'mumu_run2012B.root':
+        if 'run2012A.root' in options.outputFile or 'run2012B.root' in options.outputFile:
             process.GlobalTag.globaltag = cms.string('FT_53_V6_AN3::All')
-        elif options.outputFile == 'emu_run2012Arecover.root' or options.outputFile == 'ee_run2012Arecover.root' or options.outputFile == 'mumu_run2012Arecover.root':
+        elif 'run2012Arecover.root' in options.outputFile:
             process.GlobalTag.globaltag = cms.string('FT_53_V6C_AN3::All')
-        elif  options.outputFile == 'emu_run2012C_24Aug.root' or options.outputFile == 'ee_run2012C_24Aug.root' or options.outputFile == 'mumu_run2012C_24Aug.root':
+        elif 'run2012C_24Aug.root' in options.outputFile:
             process.GlobalTag.globaltag = cms.string('FT53_V10A_AN3::All')
+        elif 'run2012C_PromptReco.root' in options.outputFile:
+            process.GlobalTag.globaltag = cms.string('GR_P_V41_AN3::All')
         else:
-            process.GlobalTag.globaltag = cms.string('FT_P_V42C_AN3::All')
-            
+            print "Please check the global tag for this data period!"
+            exit(1)
+
+print "Using global tag: ", process.GlobalTag.globaltag
+
 process.load("Configuration.StandardSequences.MagneticField_cff")
 
 ####################################################################
@@ -159,7 +165,7 @@ from TopAnalysis.TopFilter.sequences.diLeptonTriggers_cff import *
 # setup filter
 process.load("TopAnalysis.TopFilter.filters.TriggerFilter_cfi")
 process.filterTrigger.TriggerResults = cms.InputTag('TriggerResults','','HLT')
-process.filterTrigger.printTriggers = True
+process.filterTrigger.printTriggers = False
 if options.mode == 'mumu':
     process.filterTrigger.hltPaths  = mumuTriggers
 elif options.mode == 'emu':
@@ -169,6 +175,7 @@ elif options.mode == 'ee':
 else:
     process.filterTrigger.hltPaths = eeTriggers + emuTriggers + mumuTriggers
     
+#print "Printing triggers: ", process.filterTrigger.printTriggers
 
 # setup part running PAT objects
 from PhysicsTools.PatAlgos.selectionLayer1.electronSelector_cfi import *
@@ -254,30 +261,32 @@ if options.samplename == 'ttbarsignal':
     topfilter = True
     signal = True
     viaTau = False
-       
-if options.samplename == 'ttbarsignalviatau':
+elif options.samplename == 'ttbarsignalviatau':
     topfilter = True
     signal = True
     viaTau = True
-       
-if options.samplename == 'ttbarsignalplustau':
+elif options.samplename == 'ttbarsignalplustau':
     topfilter = True
     signal = True
     viaTau = False
     alsoViaTau = True
-       
-if options.samplename == 'ttbarbg':
+elif options.samplename == 'ttbarbg':
     topfilter = True
-       
-if options.samplename == 'dy':
+elif options.samplename == 'dy1050' or options.samplename == 'dy50inf':
     zproducer = True
-
-if options.samplename == 'ttbarhiggs':
+elif options.samplename == 'ttbarhiggstobbar' or options.samplename == 'ttbarhiggsinclusive':
     topfilter = False
     signal = True
     viaTau = False
     alsoViaTau = True
     higgsSignal = True
+elif options.samplename in ['data', 'singletop', 'singleantitop','ww','wz','zz','wjets','qcdmu15','qcdem2030','qcdem3080','qcdem80170']:
+    #no special treatment needed, put here to avoid typos
+    pass
+else:
+    print "Error: Unknown samplename!"
+    exit(8)
+
 
 #-------------------------------------------------
 # process configuration
@@ -647,9 +656,11 @@ else:
     process.load("RecoMET.METFilters.ecalLaserCorrFilter_cfi")
     for pathname in pathnames:
         getattr(process, pathname).replace(process.goodOfflinePrimaryVertices,
-                                           process.HBHENoiseFilter * process.scrapingFilter * process.ecalLaserCorrFilter * process.goodOfflinePrimaryVertices)
+                                           process.HBHENoiseFilter * 
+                                           process.scrapingFilter * 
+                                           process.ecalLaserCorrFilter * 
+                                           process.goodOfflinePrimaryVertices)
         
-process.load("TopAnalysis.TopUtils.SignalCatcher_cfi")
 
 # see https://twiki.cern.ch/twiki/bin/view/CMSPublic/SWGuideCandidateModules#ParticleTreeDrawer_Utility
 #process.load("SimGeneral.HepPDTESSource.pythiapdt_cfi")
@@ -665,3 +676,5 @@ process.load("TopAnalysis.TopUtils.SignalCatcher_cfi")
 #process.p = cms.Path(process.printTree)
 #process.pNtuple = cms.Path()
 #
+
+process.load("TopAnalysis.TopUtils.SignalCatcher_cfi")

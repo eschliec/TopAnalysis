@@ -280,7 +280,10 @@ elif options.samplename == 'ttbarhiggstobbar' or options.samplename == 'ttbarhig
     viaTau = False
     alsoViaTau = True
     higgsSignal = True
-elif options.samplename in ['data', 'singletop', 'singleantitop','ww','wz','zz','wjets','qcdmu15','qcdem2030','qcdem3080','qcdem80170']:
+elif options.samplename in ['data', 'singletop', 'singleantitop','ww',
+        'wz','zz','wjets',
+        'qcdmu15','qcdem2030','qcdem3080','qcdem80170',
+        'qcdbcem2030','qcdbcem3080','qcdbcem80170']:
     #no special treatment needed, put here to avoid typos
     pass
 else:

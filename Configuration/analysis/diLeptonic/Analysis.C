@@ -2122,7 +2122,7 @@ double Analysis::calculateBtagSF()
                     SFPerJet = LJetSF ( pt, eta, "up");
                 } else if ( systematic.BeginsWith("BTAG_LJET_DOWN") ) { //systematic variation of l-jets for inclusive XSection measurement
                     SFPerJet = LJetSF ( pt, eta, "down");
-                } else if ( systematic.BeginsWith("BTAG_LJET_") ){
+                } else if ( systematic.BeginsWith("BTAG_LJET_") ){ //systematic variations for differential XSection
                     if ( (systematic.Contains("PT_UP") && pt>btag_ptmedian) || (systematic.Contains("PT_DOWN") && pt<btag_ptmedian)
                         || (systematic.Contains("ETA_UP") && eta>btag_etamedian) || (systematic.Contains("ETA_DOWN") && eta<btag_etamedian) ){
                         SFPerJet = LJetSF ( pt, eta, "up");

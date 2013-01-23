@@ -13,63 +13,70 @@
 
 
 # Data Samples (PromptReco, 2012A, 2012B)
-25   samples.dilepton.MuEG_Run2012A_13Jul2012_v1_cff                     emu_run2012A.root                data,mode=emu,json=${CMSSW_BASE}/src/TopAnalysis/Configuration/python/samples/Cert_190456-196531_8TeV_13Jul2012ReReco_Collisions12_JSON_v2.txt
-70   samples.dilepton.MuEG_Run2012B_13Jul2012_v1_cff                     emu_run2012B.root                data,mode=emu,json=${CMSSW_BASE}/src/TopAnalysis/Configuration/python/samples/Cert_190456-196531_8TeV_13Jul2012ReReco_Collisions12_JSON_v2.txt
-5    samples.dilepton.MuEG_Run2012A_recover_06Aug2012_v1_cff             emu_run2012Arecover.root         data,mode=emu,json=${CMSSW_BASE}/src/TopAnalysis/Configuration/python/samples/Cert_190782-190949_8TeV_06Aug2012ReReco_Collisions12_JSON.txt
-25   samples.dilepton.MuEG_Run2012C_24Aug2012_v1_cff                     emu_run2012C_24Aug.root          data,mode=emu,json=${CMSSW_BASE}/src/TopAnalysis/Configuration/python/samples/Cert_198022-198523_8TeV_24Aug2012ReReco_Collisions12_JSON.txt
-150  samples.dilepton.MuEG_Run2012C_PromptReco_v2_cff                    emu_run2012C_PromptReco.root     data,mode=emu,json=${CMSSW_BASE}/src/TopAnalysis/Configuration/python/samples/Cert_190456-203002_8TeV_PromptReco_Collisions12_JSON_v2.txt
+40   samples.dilepton.MuEG_Run2012A_13Jul2012_v1_cff                     emu_run2012A.root                data,mode=emu,json=${CMSSW_BASE}/src/TopAnalysis/Configuration/python/samples/Cert_190456-196531_8TeV_13Jul2012ReReco_Collisions12_JSON_v2.txt
+120  samples.dilepton.MuEG_Run2012B_13Jul2012_v1_cff                     emu_run2012B.root                data,mode=emu,json=${CMSSW_BASE}/src/TopAnalysis/Configuration/python/samples/Cert_190456-196531_8TeV_13Jul2012ReReco_Collisions12_JSON_v2.txt
+10   samples.dilepton.MuEG_Run2012A_recover_06Aug2012_v1_cff             emu_run2012Arecover.root         data,mode=emu,json=${CMSSW_BASE}/src/TopAnalysis/Configuration/python/samples/Cert_190782-190949_8TeV_06Aug2012ReReco_Collisions12_JSON.txt
+35   samples.dilepton.MuEG_Run2012C_24Aug2012_v1_cff                     emu_run2012C_24Aug.root          data,mode=emu,json=${CMSSW_BASE}/src/TopAnalysis/Configuration/python/samples/Cert_198022-198523_8TeV_24Aug2012ReReco_Collisions12_JSON.txt
+220  samples.dilepton.MuEG_Run2012C_PromptReco_v2_cff                    emu_run2012C_PromptReco.root     data,mode=emu,json=${CMSSW_BASE}/src/TopAnalysis/Configuration/python/samples/Cert_190456-203002_8TeV_PromptReco_Collisions12_JSON_v2.txt
 
 
-25   samples.dilepton.DoubleMu_Run2012A_13Jul2012_v1_cff                 mumu_run2012A.root               data,mode=mumu,json=${CMSSW_BASE}/src/TopAnalysis/Configuration/python/samples/Cert_190456-196531_8TeV_13Jul2012ReReco_Collisions12_JSON_v2.txt
-100  samples.dilepton.DoubleMu_Run2012B_13Jul2012_v4_cff                 mumu_run2012B.root               data,mode=mumu,json=${CMSSW_BASE}/src/TopAnalysis/Configuration/python/samples/Cert_190456-196531_8TeV_13Jul2012ReReco_Collisions12_JSON_v2.txt
-5    samples.dilepton.DoubleMu_Run2012A_recover_06Aug2012_v1_cff         mumu_run2012Arecover.root        data,mode=mumu,json=${CMSSW_BASE}/src/TopAnalysis/Configuration/python/samples/Cert_190782-190949_8TeV_06Aug2012ReReco_Collisions12_JSON.txt
-25   samples.dilepton.DoubleMu_Run2012C_24Aug2012_v1_cff                 mumu_run2012C_24Aug.root         data,mode=mumu,json=${CMSSW_BASE}/src/TopAnalysis/Configuration/python/samples/Cert_198022-198523_8TeV_24Aug2012ReReco_Collisions12_JSON.txt
-100  samples.dilepton.DoubleMu_Run2012C_PromptReco_v2_cff                mumu_run2012C_PromptReco.root    data,mode=mumu,json=${CMSSW_BASE}/src/TopAnalysis/Configuration/python/samples/Cert_190456-203002_8TeV_PromptReco_Collisions12_JSON_v2.txt
+60   samples.dilepton.DoubleMu_Run2012A_13Jul2012_v1_cff                 mumu_run2012A.root               data,mode=mumu,json=${CMSSW_BASE}/src/TopAnalysis/Configuration/python/samples/Cert_190456-196531_8TeV_13Jul2012ReReco_Collisions12_JSON_v2.txt
+200  samples.dilepton.DoubleMu_Run2012B_13Jul2012_v4_cff                 mumu_run2012B.root               data,mode=mumu,json=${CMSSW_BASE}/src/TopAnalysis/Configuration/python/samples/Cert_190456-196531_8TeV_13Jul2012ReReco_Collisions12_JSON_v2.txt
+10   samples.dilepton.DoubleMu_Run2012A_recover_06Aug2012_v1_cff         mumu_run2012Arecover.root        data,mode=mumu,json=${CMSSW_BASE}/src/TopAnalysis/Configuration/python/samples/Cert_190782-190949_8TeV_06Aug2012ReReco_Collisions12_JSON.txt
+35   samples.dilepton.DoubleMu_Run2012C_24Aug2012_v1_cff                 mumu_run2012C_24Aug.root         data,mode=mumu,json=${CMSSW_BASE}/src/TopAnalysis/Configuration/python/samples/Cert_198022-198523_8TeV_24Aug2012ReReco_Collisions12_JSON.txt
+160  samples.dilepton.DoubleMu_Run2012C_PromptReco_v2_cff                mumu_run2012C_PromptReco.root    data,mode=mumu,json=${CMSSW_BASE}/src/TopAnalysis/Configuration/python/samples/Cert_190456-203002_8TeV_PromptReco_Collisions12_JSON_v2.txt
 
-25   samples.dilepton.DoubleElectron_Run2012A_13Jul2012_v1_cff           ee_run2012A.root                 data,mode=ee,json=${CMSSW_BASE}/src/TopAnalysis/Configuration/python/samples/Cert_190456-196531_8TeV_13Jul2012ReReco_Collisions12_JSON_v2.txt
-100  samples.dilepton.DoubleElectron_Run2012B_13Jul2012_v1_cff           ee_run2012B.root                 data,mode=ee,json=${CMSSW_BASE}/src/TopAnalysis/Configuration/python/samples/Cert_190456-196531_8TeV_13Jul2012ReReco_Collisions12_JSON_v2.txt
-20   samples.dilepton.DoubleElectron_Run2012A_recover_06Aug2012_v1_cff   ee_run2012Arecover.root          data,mode=ee,json=${CMSSW_BASE}/src/TopAnalysis/Configuration/python/samples/Cert_190782-190949_8TeV_06Aug2012ReReco_Collisions12_JSON.txt
-25   samples.dilepton.DoubleElectron_Run2012C_24Aug2012_v1_cff           ee_run2012C_24Aug.root           data,mode=ee,json=${CMSSW_BASE}/src/TopAnalysis/Configuration/python/samples/Cert_198022-198523_8TeV_24Aug2012ReReco_Collisions12_JSON.txt
-100  samples.dilepton.DoubleElectron_Run2012C_PromptReco_v2_cff          ee_run2012C_PromptReco.root      data,mode=ee,json=${CMSSW_BASE}/src/TopAnalysis/Configuration/python/samples/Cert_190456-203002_8TeV_PromptReco_Collisions12_JSON_v2.txt
+60   samples.dilepton.DoubleElectron_Run2012A_13Jul2012_v1_cff           ee_run2012A.root                 data,mode=ee,json=${CMSSW_BASE}/src/TopAnalysis/Configuration/python/samples/Cert_190456-196531_8TeV_13Jul2012ReReco_Collisions12_JSON_v2.txt
+200  samples.dilepton.DoubleElectron_Run2012B_13Jul2012_v1_cff           ee_run2012B.root                 data,mode=ee,json=${CMSSW_BASE}/src/TopAnalysis/Configuration/python/samples/Cert_190456-196531_8TeV_13Jul2012ReReco_Collisions12_JSON_v2.txt
+10   samples.dilepton.DoubleElectron_Run2012A_recover_06Aug2012_v1_cff   ee_run2012Arecover.root          data,mode=ee,json=${CMSSW_BASE}/src/TopAnalysis/Configuration/python/samples/Cert_190782-190949_8TeV_06Aug2012ReReco_Collisions12_JSON.txt
+35   samples.dilepton.DoubleElectron_Run2012C_24Aug2012_v1_cff           ee_run2012C_24Aug.root           data,mode=ee,json=${CMSSW_BASE}/src/TopAnalysis/Configuration/python/samples/Cert_198022-198523_8TeV_24Aug2012ReReco_Collisions12_JSON.txt
+160  samples.dilepton.DoubleElectron_Run2012C_PromptReco_v2_cff          ee_run2012C_PromptReco.root      data,mode=ee,json=${CMSSW_BASE}/src/TopAnalysis/Configuration/python/samples/Cert_190456-203002_8TeV_PromptReco_Collisions12_JSON_v2.txt
 
 ################################################################
 #############   MC  samples ####################################
 ################################################################
 
 # TT
-100  Summer12.TTJets_MassiveBinDECAY_TuneZ2star_8TeV_madgraph_tauola_Summer12_DR53X_PU_S10_START53_V7A_v1_cff   ttbarbg.root                 ttbarbg
-150  Summer12.TTJets_MassiveBinDECAY_TuneZ2star_8TeV_madgraph_tauola_Summer12_DR53X_PU_S10_START53_V7A_v1_cff   ttbarsignalplustau.root      ttbarsignalplustau
+230  Summer12.TTJets_MassiveBinDECAY_TuneZ2star_8TeV_madgraph_tauola_Summer12_DR53X_PU_S10_START53_V7A_v1_cff   ttbarsignalplustau.root      ttbarsignalplustau
+150  Summer12.TTJets_MassiveBinDECAY_TuneZ2star_8TeV_madgraph_tauola_Summer12_DR53X_PU_S10_START53_V7A_v1_cff   ttbarbg.root                 ttbarbg
 
 # Drell Yan
-100    Summer12.DYJetsToLL_M_10To50filter_8TeV_madgraph_Summer12_DR53X_PU_S10_START53_V7A_v1_cff             dy1050.root      dy
-100    Summer12.DYJetsToLL_M_50_TuneZ2Star_8TeV_madgraph_tarball_Summer12_DR53X_PU_S10_START53_V7A_v1_cff    dy50inf.root     dy
+160    Summer12.DYJetsToLL_M_10To50filter_8TeV_madgraph_Summer12_DR53X_PU_S10_START53_V7A_v1_cff             dy1050.root      dy1050
+180    Summer12.DYJetsToLL_M_50_TuneZ2Star_8TeV_madgraph_tarball_Summer12_DR53X_PU_S10_START53_V7A_v1_cff    dy50inf.root     dy50inf
 
 # WW, WZ and ZZ
-30   Summer12.WW_TuneZ2star_8TeV_pythia6_tauola_Summer12_DR53X_PU_S10_START53_V7A_v1_cff    wwtoall.root      ww
-20   Summer12.WZ_TuneZ2star_8TeV_pythia6_tauola_Summer12_DR53X_PU_S10_START53_V7A_v1_cff    wztoall.root      wz
-50   Summer12.ZZ_TuneZ2star_8TeV_pythia6_tauola_Summer12_DR53X_PU_S10_START53_V7A_v1_cff    zztoall.root      zz
+80   Summer12.WW_TuneZ2star_8TeV_pythia6_tauola_Summer12_DR53X_PU_S10_START53_V7A_v1_cff    wwtoall.root      ww
+50   Summer12.WZ_TuneZ2star_8TeV_pythia6_tauola_Summer12_DR53X_PU_S10_START53_V7A_v1_cff    wztoall.root      wz
+130  Summer12.ZZ_TuneZ2star_8TeV_pythia6_tauola_Summer12_DR53X_PU_S10_START53_V7A_v1_cff    zztoall.root      zz
 
 # Single Top
-20   Summer12.Tbar_tW_channel_DR_TuneZ2star_8TeV_powheg_tauola_Summer12_DR53X_PU_S10_START53_V7A_v1_cff  singleantitop_tw.root    singleantitop
-20   Summer12.T_tW_channel_DR_TuneZ2star_8TeV_powheg_tauola_Summer12_DR53X_PU_S10_START53_V7A_v1_cff     singletop_tw.root        singletop
+30   Summer12.Tbar_tW_channel_DR_TuneZ2star_8TeV_powheg_tauola_Summer12_DR53X_PU_S10_START53_V7A_v1_cff  singleantitop_tw.root    singleantitop
+30   Summer12.T_tW_channel_DR_TuneZ2star_8TeV_powheg_tauola_Summer12_DR53X_PU_S10_START53_V7A_v1_cff     singletop_tw.root        singletop
 
 # W+Jets
-50   Summer12.WJetsToLNu_TuneZ2Star_8TeV_madgraph_tarball_Summer12_DR53X_PU_S10_START53_V7A_v2_cff              wtolnu.root                  wjets 
+130  Summer12.WJetsToLNu_TuneZ2Star_8TeV_madgraph_tarball_Summer12_DR53X_PU_S10_START53_V7A_v2_cff              wtolnu.root                  wjets 
 
-# QCD
-30   Summer12.QCD_Pt_20_MuEnrichedPt_15_TuneZ2star_8TeV_pythia6_Summer12_DR53X_PU_S10_START53_V7A_v3_cff        qcdmu15.root                 qcdmu15
-30   Summer12.QCD_Pt_20to30_MuEnrichedPt5_TuneZ2star_8TeV_pythia6_Summer12_DR53X_PU_S10_START53_V7A_v1_cff      qcdmu2030.root               qcdmu2030
-30   Summer12.QCD_Pt_30to50_MuEnrichedPt5_TuneZ2star_8TeV_pythia6_Summer12_DR53X_PU_S10_START53_V7A_v1_cff      qcdmu3050.root               qcdmu3050
-30   Summer12.QCD_Pt_50to80_MuEnrichedPt5_TuneZ2star_8TeV_pythia6_Summer12_DR53X_PU_S10_START53_V7A_v1_cff      qcdmu5080.root               qcdmu5080
-30   Summer12.QCD_Pt_80to120_MuEnrichedPt5_TuneZ2star_8TeV_pythia6_Summer12_DR53X_PU_S10_START53_V7A_v1cff      qcdmu80120.root              qcdmu80120
-30   Summer12.QCD_Pt_120to170_MuEnrichedPt5_TuneZ2star_8TeV_pythia6_Summer12_DR53X_PU_S10_START53_V7A_v1_cff    qcdmu120170.root             qcdmu120170
-30   Summer12.QCD_Pt_20_30_EMEnriched_TuneZ2star_8TeV_pythia6_Summer12_DR53X_PU_S10_START53_V7A_v1_cff          qcdem2030.root               qcdem2030
-30   Summer12.QCD_Pt_30_80_EMEnriched_TuneZ2star_8TeV_pythia6_Summer12_DR53X_PU_S10_START53_V7A_v1_cff          qcdem3080.root               qcdem3080
-30   Summer12.QCD_Pt_80_170_EMEnriched_TuneZ2star_8TeV_pythia6_Summer12_DR53X_PU_S10_START53_V7A_v1_cff         qcdem80170.root              qcdem80170
+# QCD - Muon enriched
+100  Summer12.QCD_Pt_20_MuEnrichedPt_15_TuneZ2star_8TeV_pythia6_Summer12_DR53X_PU_S10_START53_V7A_v3_cff        qcdmu15.root                 qcdmu15
+# we are currently using one mu sample, the following 20-...-170 samples are
+# not at DESY
+#30   Summer12.QCD_Pt_20to30_MuEnrichedPt5_TuneZ2star_8TeV_pythia6_Summer12_DR53X_PU_S10_START53_V7A_v1_cff      qcdmu2030.root               qcdmu2030
+#30   Summer12.QCD_Pt_30to50_MuEnrichedPt5_TuneZ2star_8TeV_pythia6_Summer12_DR53X_PU_S10_START53_V7A_v1_cff      qcdmu3050.root               qcdmu3050
+#30   Summer12.QCD_Pt_50to80_MuEnrichedPt5_TuneZ2star_8TeV_pythia6_Summer12_DR53X_PU_S10_START53_V7A_v1_cff      qcdmu5080.root               qcdmu5080
+#30   Summer12.QCD_Pt_80to120_MuEnrichedPt5_TuneZ2star_8TeV_pythia6_Summer12_DR53X_PU_S10_START53_V7A_v1cff      qcdmu80120.root              qcdmu80120
+#30   Summer12.QCD_Pt_120to170_MuEnrichedPt5_TuneZ2star_8TeV_pythia6_Summer12_DR53X_PU_S10_START53_V7A_v1_cff    qcdmu120170.root             qcdmu120170
+
+# QCD - Electron enriched
+60   Summer12.QCD_Pt_20_30_EMEnriched_TuneZ2star_8TeV_pythia6_Summer12_DR53X_PU_S10_START53_V7A_v1_cff          qcdem2030.root               qcdem2030
+80   Summer12.QCD_Pt_30_80_EMEnriched_TuneZ2star_8TeV_pythia6_Summer12_DR53X_PU_S10_START53_V7A_v1_cff          qcdem3080.root               qcdem3080
+80   Summer12.QCD_Pt_80_170_EMEnriched_TuneZ2star_8TeV_pythia6_Summer12_DR53X_PU_S10_START53_V7A_v1_cff         qcdem80170.root              qcdem80170
+60   Summer12.QCD_Pt_20_30_BCtoE_TuneZ2star_8TeV_pythia6_Summer12_DR53X_PU_S10_START53_V7A_v1_cff               qcdbcem2030.root             qcdbcem2030
+80   Summer12.QCD_Pt_30_80_BCtoE_TuneZ2star_8TeV_pythia6_Summer12_DR53X_PU_S10_START53_V7A_v1_cff               qcdbcem3080.root             qcdbcem3080
+80   Summer12.QCD_Pt_80_170_BCtoE_TuneZ2star_8TeV_pythia6_Summer12_DR53X_PU_S10_START53_V7A_v1_cff              qcdbcem80170.root            qcdbcem80170
 
 
 ################################################################
 ############# Higgs samples ####################################
 ################################################################
-30   Summer12.TTH_HToBB_M125_8TeV_pythia6_Summer12_DR53X_PU_S10_START53_V7A_v1_cff         ttbarH125tobbbar.root        ttbarhiggs
-30   Summer12.TTH_Inclusive_M125_8TeV_pythia6_Summer12_DR53X_PU_S10_START53_V7A_v1_cff     ttbarH125inclusive.root      ttbarhiggs
+50   Summer12.TTH_HToBB_M125_8TeV_pythia6_Summer12_DR53X_PU_S10_START53_V7A_v1_cff         ttbarH125tobbbar.root        ttbarhiggstobbar
+50   Summer12.TTH_Inclusive_M125_8TeV_pythia6_Summer12_DR53X_PU_S10_START53_V7A_v1_cff     ttbarH125inclusive.root      ttbarhiggsinclusive

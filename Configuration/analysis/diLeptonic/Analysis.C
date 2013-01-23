@@ -479,10 +479,11 @@ void Analysis::SlaveBegin ( TTree * )
     
 
     //btagSF
-    const int PtMax = 16;
+    const int PtMax = 11;
     const int EtaMax = 5;
-    Double_t ptbins[PtMax+1] = {20.,30.,40.,50.,60.,70.,80.,100.,120.,160.,210.,260.,320.,400.,500.,600.,800.};
+    Double_t ptbins[PtMax+1] = {20.,30.,40.,50.,60.,70.,80.,100.,120.,160.,210.,800.};
     Double_t etabins[EtaMax+1] = {0.0,0.5,1.0,1.5,2.0,2.4};
+    
     h_bjets = store(new TH2D("bjets2D", "unTagged Bjets", PtMax, ptbins, EtaMax, etabins));              h_bjets->Sumw2();
     h_btaggedjets = store(new TH2D("bjetsTagged2D", "Tagged Bjets", PtMax, ptbins, EtaMax, etabins));    h_btaggedjets->Sumw2();
     h_cjets = store(new TH2D("cjets2D", "unTagged Cjets", PtMax, ptbins, EtaMax, etabins));              h_cjets->Sumw2();
@@ -1025,11 +1026,40 @@ Bool_t Analysis::Process ( Long64_t entry )
         h_jetpT->Fill(jets->at(i).Pt(), weight);
     }
 
-
     //=== CUT ===
     //Require at least one b tagged jet
     if (!hasBtag) return kTRUE;
 
+    
+    if(isSignal){//finally do the btag efficiency calculation stuff
+        for (size_t i = 0; i < jets->size(); ++i) {
+            if (jets->at(i).Pt() <= JETPTCUT) break;
+            double absJetEta = abs(jets->at(i).Eta());
+            if (absJetEta<2.4) {
+                int partonFlavour = abs(jetType->at(i));
+                partonFlavour = useOldPartonFlavour(partonFlavour);
+                if(partonFlavour == 5){//b-quark
+                    h_bjets->Fill(jets->at(i).Pt(), absJetEta);
+                    if((*jetBTagCSV)[i]>BtagWP){
+                        h_btaggedjets->Fill(jets->at(i).Pt(), absJetEta);
+                    }
+                }
+                else if (partonFlavour == 4){//c-quark
+                    h_cjets->Fill(jets->at(i).Pt(), absJetEta);
+                    if((*jetBTagCSV)[i]>BtagWP){
+                        h_ctaggedjets->Fill(jets->at(i).Pt(), absJetEta);
+                    }
+                }
+                else if (partonFlavour != 0){//l-quark
+                    h_ljets->Fill(jets->at(i).Pt(), absJetEta);
+                    if((*jetBTagCSV)[i]>BtagWP){
+                        h_ltaggedjets->Fill(jets->at(i).Pt(), absJetEta);
+                    }
+                }
+            }
+        }
+    }
+    
     if (weightBtagSF == -1) weightBtagSF = isMC ? calculateBtagSF() : 1; //avoid calculation of the btagSF twice
     weight *= weightBtagSF;
     h_BTagSF->Fill(weightBtagSF );
@@ -1445,38 +1475,6 @@ Bool_t Analysis::Process ( Long64_t entry )
     h_GenRecoTTBarpT->Fill(hypttbar.Pt(), genttbar.Pt(), weight );
     h_GenRecoTTBarRapidity->Fill(hypttbar.Rapidity(), genttbar.Rapidity(), weight );
 
-    //finally do the btag SF calculation stuff
-    for (size_t i = 0; i < jets->size(); ++i) {
-        if (jets->at(i).Pt() <= JETPTCUT) break;
-        double absJetEta = abs(jets->at(i).Eta());
-        if (absJetEta<2.4) {
-            int partonFlavour = abs(jetType->at(i));
-            partonFlavour = useOldPartonFlavour(partonFlavour);
-            if(partonFlavour == 5){//b-quark
-                h_bjets->Fill(jets->at(i).Pt(), absJetEta);
-                if((*jetBTagCSV)[i]>BtagWP){
-                    h_btaggedjets->Fill(jets->at(i).Pt(), absJetEta);
-                }
-            }
-            else if (partonFlavour == 4){//c-quark
-                h_cjets->Fill(jets->at(i).Pt(), absJetEta);
-                if((*jetBTagCSV)[i]>BtagWP){
-                    h_ctaggedjets->Fill(jets->at(i).Pt(), absJetEta);
-                }
-            }
-            else if (partonFlavour != 0){//l-quark
-                h_ljets->Fill(jets->at(i).Pt(), absJetEta);
-                if((*jetBTagCSV)[i]>BtagWP){
-                    h_ltaggedjets->Fill(jets->at(i).Pt(), absJetEta);
-                }
-            }
-//             else {
-//                 cout<<"I found a jet in event "<<eventNumber<<" which is not b, c nor ligth"<<partonFlavour<<endl; 
-//                 return kFALSE;
-//             }
-        }
-    }
-
     return kTRUE;
 }
 
@@ -1646,7 +1644,7 @@ double Analysis::CJetSF ( double pt, double eta )
 
 double Analysis::LJetSF ( double pt, double eta, TString typevar )
 {
-    //CSVL ligth jet mistag SF. Includes also the SFfor  variations up and down
+    //CSVL ligth jet mistag SF. Includes also the SF for variations up and down
     //From BTV-11-004 and https://twiki.cern.ch/twiki/pub/CMS/BtagPOG/SFlightFuncs.C (ICHEP 2012 prescription)
     //From https://twiki.cern.ch/twiki/pub/CMS/BtagPOG/SFlightFuncs_Moriond2013.C  (Moriond 2013 prescription)
 
@@ -1698,22 +1696,36 @@ double Analysis::LJetSF ( double pt, double eta, TString typevar )
         }
     } else {
         cout<<"Type of variation not valid. Check it"<<endl;
-        exit(91);
+        exit(92);
     }
 
 }
 
-double Analysis::BJetSFAbsErr ( int ptbin )
+double Analysis::BJetSFAbsErr ( double pt )
 {
-    //c- and l-jets errors are not necessary for the calculation and are not implemented. If needed go to https://twiki.cern.ch/twiki/bin/viewauth/CMS/BtagPOG#2012_Data_and_MC
+    //If needed go to https://twiki.cern.ch/twiki/bin/viewauth/CMS/BtagPOG#2012_Data_and_MC
+    //this pt range MUST match the binning of the error array provided by the BTV in the above link
 
-    //b-jet pt ranges {20, 30, 40, 50, 60, 70, 80, 100, 120, 160, 210, 260, 320, 400, 500, 600, 800};
-    //this pt range MUST match the pTEff histogram!!
-
+    double ptarray[] = {20, 30, 40, 50, 60, 70, 80, 100, 120, 160, 210, 260, 320, 400, 500, 600, 800};
     double SFb_error[] = { 0.0484285,  0.0126178,  0.0120027,  0.0141137, 0.0145441, 0.0131145, 0.0168479, 0.0160836, 0.0126209, 0.0136017, 0.019182, 0.0198805, 0.0386531, 0.0392831, 0.0481008, 0.0474291 };
 
-    if ( ptbin > 15 ) {
-        return 2 * SFb_error[15];
+    int ptbin = -1;
+    int ptarray_Size = sizeof(ptarray) / sizeof(ptarray[0]);
+    int SFb_error_array_Size = sizeof(SFb_error) / sizeof(SFb_error[0]);
+    
+    if( ptarray_Size != SFb_error_array_Size+1 ) {
+        cout<<"You wrote 2 arrays with sizes that don't agree together!! Fix this."<<endl;
+        exit(100);
+    }
+    for ( int i=0; i<(ptarray_Size-1); i++){
+        if ( pt > ptarray[i] && pt < ptarray[i+1]) {
+            ptbin = i;
+            break;
+        }
+    }
+
+    if ( ptbin > ptarray_Size ) {
+        return 2 * SFb_error[ptarray_Size];
     } else if ( ptbin < 0){
         return 2 * SFb_error[0];
     } else {
@@ -1721,9 +1733,9 @@ double Analysis::BJetSFAbsErr ( int ptbin )
     };
 }
 
-double Analysis::CJetSFAbsErr ( int ptbin)
+double Analysis::CJetSFAbsErr ( double pt)
 {
-    return 2 * BJetSFAbsErr ( ptbin );
+    return 2 * BJetSFAbsErr ( pt );
 }
 
 void Analysis::SetBTagFile(TString btagFile)
@@ -2091,16 +2103,26 @@ double Analysis::calculateBtagSF()
             double SF_Error=0;
             if ( partonFlavour == 5 ) { //b-quark
                 eff=bEff->GetBinContent ( ptbin, etabin );
+                if(systematic.Contains("BEFF_UP")){eff = eff + bEff->GetBinError ( ptbin, etabin );}
+                else if(systematic.Contains("BEFF_DOWN")){eff = eff - bEff->GetBinError ( ptbin, etabin );} 
                 SFPerJet = BJetSF( pt, eta );
-                SF_Error = BJetSFAbsErr ( ptbin );
+                SF_Error = BJetSFAbsErr ( pt );
             } else if ( partonFlavour == 4 ) { //c-quark
                 eff=cEff->GetBinContent ( ptbin, etabin );
+                if(systematic.Contains("CEFF_UP")){eff = eff + cEff->GetBinError ( ptbin, etabin );}
+                else if(systematic.Contains("CEFF_DOWN")){eff = eff - cEff->GetBinError ( ptbin, etabin );} 
                 SFPerJet = CJetSF( pt, eta );
-                SF_Error = CJetSFAbsErr ( ptbin );
+                SF_Error = CJetSFAbsErr ( pt );
             } else if ( partonFlavour != 0 ) { //l-quark
                 eff=lEff->GetBinContent ( ptbin, etabin );
+                if(systematic.Contains("LEFF_UP")){eff = eff + lEff->GetBinError ( ptbin, etabin );}
+                else if(systematic.Contains("LEFF_DOWN")){eff = eff - lEff->GetBinError ( ptbin, etabin );} 
                 SFPerJet = LJetSF( pt, eta, "central");
-                if ( systematic.Contains("BTAG_LJET_") ){
+                if ( systematic.BeginsWith("BTAG_LJET_UP") ) {   //systematic variation of l-jets for inclusive XSection measurement
+                    SFPerJet = LJetSF ( pt, eta, "up");
+                } else if ( systematic.BeginsWith("BTAG_LJET_DOWN") ) { //systematic variation of l-jets for inclusive XSection measurement
+                    SFPerJet = LJetSF ( pt, eta, "down");
+                } else if ( systematic.BeginsWith("BTAG_LJET_") ){
                     if ( (systematic.Contains("PT_UP") && pt>btag_ptmedian) || (systematic.Contains("PT_DOWN") && pt<btag_ptmedian)
                         || (systematic.Contains("ETA_UP") && eta>btag_etamedian) || (systematic.Contains("ETA_DOWN") && eta<btag_etamedian) ){
                         SFPerJet = LJetSF ( pt, eta, "up");
@@ -2108,10 +2130,6 @@ double Analysis::calculateBtagSF()
                     else {
                         SFPerJet = LJetSF ( pt, eta, "down");
                     }
-                } else if ( systematic.Contains("BTAG_UP") ) {  //systematic variation for inclusive XSection measurement
-                    SFPerJet = LJetSF ( pt, eta, "up");
-                } else if ( systematic.Contains("BTAG_DOWN") ) {  //systematic variation for inclusive XSection measurement
-                    SFPerJet = LJetSF ( pt, eta, "down");
                 }
             } else {
                 cout<<"I found a jet in event "<<eventNumber<<" which is not b, c nor light: "<<partonFlavour<<endl;
@@ -2157,7 +2175,6 @@ double Analysis::calculateBtagSF()
                     sf = SFPerJet - 0.5 * SF_Error;
                 }
             }
-
             OneMinusSEff *= 1 - eff * sf;
         }
     }

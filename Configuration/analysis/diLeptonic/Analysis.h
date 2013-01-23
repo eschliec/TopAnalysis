@@ -310,8 +310,8 @@ class Analysis : public TSelector
     double BJetSF ( double, double );
     double CJetSF ( double, double );
     double LJetSF ( double , double , TString );
-    double BJetSFAbsErr ( int );
-    double CJetSFAbsErr ( int );
+    double BJetSFAbsErr ( double );
+    double CJetSFAbsErr ( double );
     double btag_ptmedian, btag_etamedian;
     // END of btag SF stuff
     

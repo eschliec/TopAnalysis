@@ -13,7 +13,7 @@ Implementation:
 //
 // Original Author:  Jan Kieseler,,,DESY
 //         Created:  Thu Aug 11 16:37:05 CEST 2011
-// $Id: NTupleWriter.cc,v 1.30.2.8 2013/01/18 19:13:10 wbehrenh Exp $
+// $Id: NTupleWriter.cc,v 1.30.2.9 2013/01/22 18:51:43 hauk Exp $
 //
 //
 
@@ -135,6 +135,10 @@ private:
     std::vector<LV>     Vlep;
     std::vector<int>    VlepPdgId;
     std::vector<double> VlepID ; //mvaID for electrons (-1 for muon)
+    std::vector<double> VlepChargedHadronIso;
+    std::vector<double> VlepNeutralHadronIso;
+    std::vector<double> VlepPhotonIso;
+    std::vector<double> VlepPuChargedHadronIso;
     std::vector<double> VlepPfIso;
     std::vector<double> VlepCombIso;
     std::vector<double> VlepDxyVertex0;
@@ -181,8 +185,8 @@ private:
     std::vector<int> HypJet1index;
 
 
-    int decayMode;
-    std::vector<int> zDecayMode;
+    int TopDecayMode;
+    std::vector<int> ZDecayMode;
     int recoInChannel;
 
     /////////jets///////////
@@ -398,10 +402,12 @@ NTupleWriter::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup )
     if (includeZdecay_) {
         edm::Handle<std::vector<int> > zDecayModeHandle;
         iEvent.getByLabel(zDecayTag_, zDecayModeHandle);
-        zDecayMode = *zDecayModeHandle;
-        std::cout << zDecayModeHandle->at(0) << "\n";
+        ZDecayMode = *zDecayModeHandle;
     }
     
+    edm::Handle<int> TopDecayModeHandle;
+    iEvent.getByLabel(decayMode_, TopDecayModeHandle);
+    TopDecayMode = TopDecayModeHandle.failedToGet() ? 0 : *TopDecayModeHandle;
     
     //////////////////Trigger Stuff///////////////hltPaths_[i].c_str()
     edm::Handle<edm::TriggerResults> trigResults;
@@ -501,10 +507,6 @@ NTupleWriter::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup )
     
     if ( isTtBarSample_ )
     {
-
-        edm::Handle<int> decayModeH;
-        iEvent.getByLabel(decayMode_, decayModeH);
-        decayMode = decayModeH.failedToGet() ? 0 : *decayModeH;
         
         //Generator info
         edm::Handle<TtGenEvent> genEvt;
@@ -675,10 +677,26 @@ NTupleWriter::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup )
             //Fill muonstuff
             Vlep.push_back( amuon->polarP4());
             VlepPdgId.push_back(amuon->pdgId());
-            VlepID.push_back(-1);
-            VlepPfIso.push_back(((amuon->chargedHadronIso() +amuon->neutralHadronIso() +amuon->photonIso())/ amuon->pt()));
+            VlepID.push_back(-1);          
+            
+            if (amuon->gsfTrack().isAvailable()) {
+                const reco::GsfTrack &track = *(amuon->gsfTrack());
+                VlepDxyVertex0.push_back(track.dxy(vertices->at(0).position()));
+            } else {
+                VlepDxyVertex0.push_back(-1000); //no such value available
+            }
+            
+            VlepChargedHadronIso.push_back(amuon->chargedHadronIso());
+            VlepNeutralHadronIso.push_back(amuon->neutralHadronIso());
+            VlepPhotonIso.push_back(amuon->photonIso());
+            VlepPuChargedHadronIso.push_back(amuon->puChargedHadronIso());
+            VlepPfIso.push_back((amuon->chargedHadronIso() 
+                                 + std::max(0., amuon->neutralHadronIso() 
+                                               + amuon->photonIso() 
+                                               - 0.5*amuon->puChargedHadronIso())
+                                ) / amuon->pt());
+            
             VlepCombIso.push_back(( amuon->trackIso() +amuon->caloIso())/amuon->pt());
-            VlepDxyVertex0.push_back(0);
 
 
             int triggerResult = 0;
@@ -692,7 +710,7 @@ NTupleWriter::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup )
             VlepTrigger.push_back(triggerResult);
 
             //          std::cout << "trigger result: " << std::hex << triggerResult << std::dec << std::endl;
-            amuon++;
+            ++amuon;
 
 
         }
@@ -715,6 +733,16 @@ NTupleWriter::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup )
 	    VlepID.push_back(idtemp);
             const reco::GsfTrack &track = *(anelectron->gsfTrack());
             VlepDxyVertex0.push_back(track.dxy(vertices->at(0).position()));
+
+            VlepChargedHadronIso.push_back(anelectron->chargedHadronIso());
+            VlepNeutralHadronIso.push_back(anelectron->neutralHadronIso());
+            VlepPhotonIso.push_back(anelectron->photonIso());
+            VlepPuChargedHadronIso.push_back(anelectron->puChargedHadronIso());
+            VlepPfIso.push_back((anelectron->chargedHadronIso() 
+                                 + std::max(0., anelectron->neutralHadronIso() 
+                                               + anelectron->photonIso() 
+                                               - 0.5*anelectron->puChargedHadronIso())
+                                ) / anelectron->pt());
 
             Vlep.push_back(anelectron->polarP4());
             VlepPdgId.push_back(anelectron->pdgId());
@@ -741,8 +769,17 @@ NTupleWriter::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup )
 
             //          std::cout << "trigger result: " << std::hex << triggerResult << std::dec << std::endl;
 
-            anelectron++;
+            ++anelectron;
 
+        }
+    }
+
+    //store the information in which channel the lepton is reconstructed
+    for (size_t i = 1; i < VlepPdgId.size(); ++i) {
+        int product = VlepPdgId.at(0) * VlepPdgId.at(i);
+        if (product < 0) {
+            recoInChannel = product;
+            break;
         }
     }
 
@@ -803,7 +840,7 @@ int NTupleWriter::getTriggerBits (const edm::Event &iEvent, const edm::Handle< e
         if ( trigResults.product()->accept(i_Trig))
         {
             if (includeTrig_) VfiredTriggers.push_back(trigName.triggerName(i_Trig));
-            std::string triggerName = trigName.triggerName(i_Trig);
+            const std::string &triggerName = trigName.triggerName(i_Trig);
             std::string triggerNameWithoutVersion(triggerName);
             while (triggerNameWithoutVersion.length() > 0
                     && triggerNameWithoutVersion[triggerNameWithoutVersion.length()-1] >= '0'
@@ -823,7 +860,7 @@ int NTupleWriter::getTriggerBits(const std::vector< std::string > &trigName)
     int result = 0;
 
     for ( unsigned int i_Trig = 0; i_Trig < trigName.size(); ++i_Trig ) {
-        std::string triggerName = trigName.at( i_Trig);
+        const std::string &triggerName = trigName.at( i_Trig);
         std::string triggerNameWithoutVersion(triggerName);
         while (triggerNameWithoutVersion.length() > 0
                 && triggerNameWithoutVersion[triggerNameWithoutVersion.length()-1] >= '0'
@@ -847,7 +884,7 @@ int NTupleWriter::getTriggerBitsTau(const edm::Event &iEvent, const edm::Handle<
     {
         if ( trigResults.product()->accept(i_Trig))
         {
-            std::string triggerName = trigName.triggerName(i_Trig);
+            const std::string &triggerName = trigName.triggerName(i_Trig);
             std::string triggerNameWithoutVersion(triggerName);
             while (triggerNameWithoutVersion.length() > 0
                     && triggerNameWithoutVersion[triggerNameWithoutVersion.length()-1] >= '0'
@@ -887,6 +924,10 @@ NTupleWriter::beginJob()
     Ntuple->Branch("lepPdgId", &VlepPdgId);
     Ntuple->Branch("lepID", &VlepID);
     Ntuple->Branch("lepPfIso", &VlepPfIso);
+    Ntuple->Branch("lepChargedHadronIso", &VlepChargedHadronIso);
+    Ntuple->Branch("lepNeutralHadronIso", &VlepNeutralHadronIso);
+    Ntuple->Branch("lepPhotonIso", &VlepPhotonIso);
+    Ntuple->Branch("lepPuChargedHadronIso", &VlepPuChargedHadronIso);
     Ntuple->Branch("lepCombIso", &VlepCombIso);
     Ntuple->Branch("lepDxyVertex0", &VlepDxyVertex0);
     Ntuple->Branch("lepTrigger", &VlepTrigger);
@@ -960,7 +1001,6 @@ NTupleWriter::beginJob()
         Ntuple->Branch("BHadronVsJet", &VBHadVsJet);
         Ntuple->Branch("AntiBHadronVsJet", &VAntiBHadVsJet);
 
-        Ntuple->Branch("decayMode", &decayMode, "decayMode/I");
     }
 
     //Gen Info for Higgs and b quarks of decay
@@ -984,9 +1024,8 @@ NTupleWriter::beginJob()
     Ntuple->Branch("HypJet0index", &HypJet0index);
     Ntuple->Branch("HypJet1index", &HypJet1index);
 
-    if (includeZdecay_) {
-        Ntuple->Branch("ZDecayMode", &zDecayMode);
-    }
+    Ntuple->Branch("TopDecayMode", &TopDecayMode, "TopDecayMode/I");
+    Ntuple->Branch("ZDecayMode", &ZDecayMode);
     Ntuple->Branch("recoInChannel", &recoInChannel, "recoInChannel/I");
 }
 
@@ -1045,6 +1084,10 @@ void NTupleWriter::clearVariables()
     VlepID.clear() ;
     VlepPdgId.clear();
     VlepPfIso.clear();
+    VlepChargedHadronIso.clear();
+    VlepNeutralHadronIso.clear();
+    VlepPhotonIso.clear();
+    VlepPuChargedHadronIso.clear();
     VlepCombIso.clear();
     VlepDxyVertex0.clear();
     VlepTrigger.clear();
@@ -1098,6 +1141,8 @@ void NTupleWriter::clearVariables()
     HypJet0index.clear();
     HypJet1index.clear();
 
+    ZDecayMode.clear();
+    TopDecayMode = 0;
 }
 
 

@@ -318,7 +318,7 @@ if topfilter:
     process.load("TopAnalysis.TopFilter.filters.GeneratorTopFilter_cfi")
     if higgsSignal:
         process.generatorTopFilter.invert_selection = True
-        process.generatorTopFilter.channels = []
+        process.generatorTopFilter.channels = ["none"] #empty array would use some defaults
     else:
         all = ['ElectronElectron', 'ElectronElectronViaTau', 
                'MuonMuon', 'MuonMuonViaTau', 

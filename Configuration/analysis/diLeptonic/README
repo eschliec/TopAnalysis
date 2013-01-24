@@ -13,8 +13,8 @@ This creates a directory called OriginalRoot which has the Ntuple root files and
 
 ======Analysis
 
-The input files need to be listed in selectionList.txt as before. Current version of the 
-NTuple is at stored in:
+The input files need to be listed in selectionList.txt as before. Current version of the
+NTuple is stored in:
 /data/group/top/DiffXS/8TeV/2012-11-09/Nominal (old object definition!!)
 
 (/data/group/top/DiffXS/2012ObjectDef/ - new object definition! Nominal and systematic samples are in different folders, check with Tyler...)
@@ -25,10 +25,12 @@ mkdir mergedRoot
 ln -s /data/group/top/DiffXS/8TeV/2012-10-25/Nominal mergedRoot/Nominal
 ls -1 --color=no mergedRoot/Nominal/*.root > selectionList.txt
 
+In case you want to run over everything, you have to do the above step inlcuding also JES_UP, JES_DOWN, JER_UP, JER_DOWN, and SIGNALSYST in addition to the Nominal sample.
+
 To compile the code:
 make
 
-To run the analysis, do 
+To run the analysis, do
 ./load_Analysis
 
 To run only over a specific dataset, you can do
@@ -40,20 +42,43 @@ the old plotterclass.h
 
 For Nominal just do: ./runNominalParallel.pl
 
+You also need to generate the signal variations with: ./runNominalVariations.sh
 
 This runs Analysis.C on each event in the root tuple for each sample. All analysis cuts are made in Analysis.C and the output are a bunch of user specified histograms.
 Except for adding histograms or changing analysis cuts, additions to this file should be made as separate functions in the Analysis class.
 
-===== Histograms! 
+===== Histograms!
 Once this is finished, run the command:
 
-
+./lnData.sh
 ./mk_HistoFileList.sh
+./Histo (check Histo.C for options to create some of the plots, with or without unfolding etc.)
+
+This runs Histo.C which is essentially a wrapper class using plotterclass.h.
+
+For each histogram you want
+
+SetOptions will specify what variable you would like plotted
+fillHisto will fill the histogram and create the histogram stack
+setDataset list the files and whatnot
+CalcXsec explains itself
+plotDiffXsec also does
+write writes the histogram
+
+the plots will be put into a directory called Plots according to the channel in .eps format which is the best
+
+
+========
+========
+To run the new analysis:
+
+
+
 ./Histo (check Histo.C for options to create some of the plots, with or without unfolding etc.)
 
 
 
-This runs Histo.C which is essentially a wrapper class using plotterclass.h. 
+This runs Histo.C which is essentially a wrapper class using plotterclass.h.
 
 For each histogram you want
 
@@ -81,5 +106,3 @@ For nominal just do: ./runNominalParallel.pl
 Profiling the code:
 CPUPROFILE=test.prof LD_PRELOAD=/afs/desy.de/group/cms/perftool/v2.0/lib/libprofiler.so ./load_Analysis -f file
 /afs/desy.de/group/cms/perftool/v2.0/bin/pprof --pdf load_Analysis test.prof >| test.pdf
-
-

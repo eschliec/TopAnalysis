@@ -8,6 +8,7 @@
 #include <fstream>
 #include <memory>
 #include <sstream>
+#include <functional>
 
 #include <TROOT.h>
 #include <TChain.h>
@@ -157,6 +158,10 @@ class Analysis : public TSelector
     TBranch        *b_HypJet1index;   //!
     TBranch        *b_TopDecayMode;   //!
     TBranch        *b_ZDecayMode;
+    
+#ifndef __CINT__   
+    std::function<bool(Long64_t)> checkZDecayMode;
+#endif
 
     virtual ~Analysis() { }
     virtual Int_t   Version() const {
@@ -344,6 +349,7 @@ class Analysis : public TSelector
     bool getLeptonPair(size_t& LeadLeptonNumber, size_t& NLeadLeptonNumber);
     bool runViaTau;
     int pdf_no;
+    int trueDYchannelCut;
     TH1* weightedEvents;
     PUReweighter *pureweighter;
     
@@ -374,7 +380,7 @@ class Analysis : public TSelector
     
         
 public:
-    Analysis ( TTree * = 0 ) : runViaTau {0}, pureweighter {nullptr} {};
+    Analysis ( TTree * = 0 ) : checkZDecayMode {nullptr}, runViaTau {0}, pureweighter {nullptr} {};
     void SetBTagFile(TString btagFile);
     void SetChannel(TString channel);
     void SetSignal(bool isSignal);
@@ -382,6 +388,7 @@ public:
     void SetSamplename(TString samplename);
     void SetOutputfilename(TString outputfilename);
     void SetMC(bool isMC);
+    void SetTrueLevelDYChannel(int dy);
     void SetWeightedEvents(TH1* weightedEvents);
     void SetRunViaTau(bool runViaTau);
     void SetPUReweighter(PUReweighter *pu);

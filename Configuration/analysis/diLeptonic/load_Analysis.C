@@ -10,7 +10,7 @@
 #include "PUReweighter.h"
 #include "CommandLineParameters.hh"
 
-void load_Analysis(TString validFilenamePattern, TString givenChannel, TString systematic){
+void load_Analysis(TString validFilenamePattern, TString givenChannel, TString systematic, int dy){
    
     ifstream infile ("selectionList.txt");
     if (!infile.good()) { 
@@ -94,11 +94,27 @@ void load_Analysis(TString validFilenamePattern, TString givenChannel, TString s
         for (const auto& channel : channels) {
             TString btagFile = "BTagEff/Nominal/" + channel + "/" 
                 + channel + "_ttbarsignalplustau.root";
+            TString outputfilename { filename };
+            if (outputfilename.Contains('/')) {
+                Ssiz_t last = outputfilename.Last('/');
+                outputfilename = outputfilename.Data() + last + 1;
+            }
+            if (!outputfilename.Contains(channel + "_")) outputfilename.Prepend(channel + "_");
+            //outputfile is now channel_filename.root
             
             selector->SetBTagFile(btagFile);
             selector->SetChannel(channel);
             selector->SetSignal(isSignal);
             selector->SetMC(isMC);
+            selector->SetTrueLevelDYChannel(dy);
+            if (dy) {
+                if (outputfilename.First("_dy") == kNPOS) { 
+                    std::cerr << "DY variations must be run on DY samples!\n";
+                    std::cerr << outputfilename << " must start with 'channel_dy'\n";
+                    std::exit(1);
+                }
+                outputfilename.ReplaceAll("_dy", TString("_dy").Append(dy == 11 ? "ee" : dy == 13 ? "mumu" : "tautau"));
+            }
             if (systematic == "") {
                 selector->SetSystematic(systematics_from_file->GetString());
             } else {
@@ -106,7 +122,7 @@ void load_Analysis(TString validFilenamePattern, TString givenChannel, TString s
             }
             selector->SetWeightedEvents(weightedEvents);
             selector->SetSamplename(samplename->GetString());
-            selector->SetOutputfilename(filename);
+            selector->SetOutputfilename(outputfilename);
             selector->SetRunViaTau(0);
 
             TTree *tree = dynamic_cast<TTree*>(file.Get("writeNTuple/NTuple"));
@@ -133,8 +149,8 @@ void load_Analysis(TString validFilenamePattern, TString givenChannel, TString s
                 chain.Process(selector);
                 if (isSignal) {
                     selector->SetRunViaTau(1);
-                    filename.ReplaceAll("signalplustau", "bgviatau");
-                    selector->SetOutputfilename(filename);
+                    outputfilename.ReplaceAll("signalplustau", "bgviatau");
+                    selector->SetOutputfilename(outputfilename);
                     chain.Process(selector);
                 }
             }
@@ -143,46 +159,20 @@ void load_Analysis(TString validFilenamePattern, TString givenChannel, TString s
     }
 }
 
-void syntaxError() {
-    std::cerr << 
-        "\nload_Analysis: Invalid syntax!\n---------------------------------\n" <<
-        "Valid Parameters:\n" <<
-        "-f pattern\n" <<
-        "   only process filenames containing the pattern\n" <<
-        "-s [ PU_UP | PU_DOWN | TRIG_UP | TRIG_DOWN | BTAG_... ]\n" << 
-        "   run with a systematic that runs on the normal ntuples\n" <<
-        "-c channel (ee, emu, mumu)\n" <<
-        "   provide this for all MC samples, automatically known for data" <<
-        "   if no channel is provided, run over all three channels" <<
-        "\n";
-    exit(1);
-}
-
 int main(int argc, char** argv) {
-    //CLParameter<std::string> opt_f("f", "Restrict to filename pattern", false, 1, 1);
+    CLParameter<std::string> opt_f("f", "Restrict to filename pattern, e.g. ttbar", false, 1, 1);
+    CLParameter<std::string> opt_s("s", "Run with a systematic that runs on the nominal ntuples, e.g. 'PU_UP' or 'TRIG_DOWN'", false, 1, 1);
+    CLParameter<std::string> opt_c("c", "Specify a certain channel (ee, emu, mumu). No channel specified = run on all channels", false, 1, 1,
+            [](const std::string &ch){return ch == "" || ch == "ee" || ch == "emu" || ch == "mumu";});
+    CLParameter<int> opt_dy("d", "Drell-Yan mode (11 for ee, 13 for mumu, 15 for tautau)", false, 1, 1,
+            [](int dy){return dy == 11 || dy == 13 || dy == 15;});
+    CLAnalyser::interpretGlobal(argc, argv);
     
-    //CLAnalyser::interpretGlobal(argc, (char**)argv);
-    
-    char opt;
-    TString validFilenamePattern;
-    TString syst;
-    TString channel;
-    while ((opt = getopt(argc, argv, "f:s:c:")) != -1) {
-        if (opt == 'f') {
-            validFilenamePattern = optarg;
-        } else if (opt == 's') {
-            syst = optarg;
-        } else if (opt == 'c') {
-            if (channel != "" && channel != "ee" && channel != "emu" && channel != "mumu") {
-                std::cerr << "invalid channel!\n"; exit(1);
-            }
-            channel = optarg;
-        } else {
-            syntaxError();
-        }
-    }
-    if (optind < argc) syntaxError();
+    TString validFilenamePattern = opt_f.isSet() ? opt_f[0] : "";
+    TString syst = opt_s.isSet() ? opt_s[0] : "";
+    TString channel = opt_c.isSet() ? opt_c[0] : "";
+    int dy = opt_dy.isSet() ? opt_dy[0] : 0;
 //     TProof* p = TProof::Open(""); // not before ROOT 5.34
-    load_Analysis(validFilenamePattern, channel, syst);
+    load_Analysis(validFilenamePattern, channel, syst, dy);
 //     delete p;
 }

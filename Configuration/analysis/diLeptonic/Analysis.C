@@ -514,7 +514,10 @@ Bool_t Analysis::Process ( Long64_t entry )
 {
     static const double JETPTCUT = 30;
     
-    if ( ++EventCounter % 100000 == 0 ) cout << "Event Counter: " << EventCounter << endl;
+    if ( ++EventCounter % 1000000 == 0 ) cout << "Event Counter: " << EventCounter << endl;
+    
+    //do we have a DY true level cut?
+    if (checkZDecayMode && !checkZDecayMode(entry)) return kTRUE;
     
     b_TopDecayMode->GetEntry(entry);
     //decayMode contains the decay of the top (*10) + the decay of the antitop
@@ -1788,6 +1791,36 @@ void Analysis::SetMC(bool isMC)
     this->isMC = isMC;
 }
 
+void Analysis::SetTrueLevelDYChannel(int dy)
+{
+    trueDYchannelCut = dy;
+    if (dy) {
+        std::cout << "Include true-level filter for Z decay to pdgid " << dy << "\n";
+        
+        //create function to check the DY decay channel
+        checkZDecayMode = [&, dy](Long64_t entry) -> bool {
+            b_ZDecayMode->GetEntry(entry);
+            bool pass = false;
+            for (const auto decayMode : *ZDecayMode) {
+                if ((dy == 15 && decayMode > 15110000) ||
+                    (dy == 13 && decayMode == 1313) ||
+                    (dy == 11 && decayMode == 1111))
+                {
+                    pass = true;
+                    break;
+                }
+            }
+            return pass;
+        };
+        
+    } else {
+        checkZDecayMode = nullptr;
+    }
+}
+
+    
+
+
 void Analysis::SetPDF(int pdf_no)
 {
     this->pdf_no = pdf_no;
@@ -1796,12 +1829,7 @@ void Analysis::SetPDF(int pdf_no)
 
 void Analysis::SetOutputfilename(TString outputfilename)
 {
-    if (outputfilename.Contains('/')) {
-        Ssiz_t last = outputfilename.Last('/');
-        this->outputfilename = outputfilename.Data() + last + 1;
-    } else {
-        this->outputfilename = outputfilename;
-    }
+    this->outputfilename = outputfilename;
 }
 
 void Analysis::SetWeightedEvents(TH1* weightedEvents)

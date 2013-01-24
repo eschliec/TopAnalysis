@@ -215,7 +215,7 @@ void CLAnalyser::interpret(const int argc, char** argv) {
 
     for (int iPar = 1; iPar < argc; ++iPar ) {
       std::string token(argv[iPar]);
-      if (token == "--help") {
+      if (token == "--help" || token == "-h") {
 	printHelp();
 	exit(0);
       }
@@ -232,7 +232,7 @@ void CLAnalyser::interpret(const int argc, char** argv) {
   for (int iPar = 1; iPar < argc; ++iPar ) {
     std::string token(argv[iPar]);
 
-    if (token == "--help") {
+    if (token == "--help" || token == "-h") {
       printHelp();
       exit(0);
     }

@@ -7,6 +7,7 @@
 #include <vector>
 #include <iostream>
 #include <cstdlib>
+#include <functional>
 
 class CLAnalyser;
 
@@ -145,8 +146,12 @@ public:
 	       const std::string &helpText,
 	       const bool isRequired = false,
 	       const unsigned int minArguments = 0,
-	       const unsigned int maxArguments = std::numeric_limits<int>::max() )
-    : CLParameterBase( identifier, helpText, isRequired, minArguments, maxArguments ) {}
+	       const unsigned int maxArguments = std::numeric_limits<int>::max(),
+               std::function<bool(T)> checkFunction = 0
+             )
+    : CLParameterBase( identifier, helpText, isRequired, minArguments, maxArguments ),
+      _checkFunction(checkFunction)
+  {}
 
   /**
    * get the arguments of the parameter
@@ -173,7 +178,7 @@ public:
    * @returns the argument with index
    */
   T operator [] (const unsigned int index) const {
-    return _values[index];
+    return _values.at(index);
   }
 protected:
   virtual void parseArgument(const std::string token);
@@ -182,6 +187,7 @@ protected:
 private:
 
   std::vector<T> _values;
+  std::function<bool(T)> _checkFunction;
 };
 
 template <class T>
@@ -200,6 +206,14 @@ bool CLParameter<T>::check() const {
     std::cout << "Parameter " << getIdentifier() << " needs to be set. " << std::endl;
     result = false;
   }
+  if (_checkFunction && isSet()) {
+    for (size_t i = 0; i < _values.size(); ++i) {
+      if (!_checkFunction(_values[i])) {
+        std::cout << "Parameter " << getIdentifier() << " has invalid value: " << _values[i] << std::endl;
+        result = false;
+      }
+    }
+  }
   return result;
 }
 
@@ -211,10 +225,10 @@ void CLParameter<T>::parseArgument(const std::string token) {
 
   T value;
 
-//   if ( (conversionStream >> value).fail() ) {
-//     std::cout << "cannot convert " << token << " to the required type for parameter " << getIdentifier() << std::endl;
-//     exit(1);
-//   }
+  if ( (conversionStream >> value).fail() ) {
+    std::cout << "cannot convert " << token << " to the required type for parameter " << getIdentifier() << std::endl;
+    exit(1);
+  }
 
   _values.push_back(value);
 }

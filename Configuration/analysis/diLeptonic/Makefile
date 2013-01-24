@@ -5,7 +5,7 @@ COMPFLAGS=`root-config --cflags` -Wall -Wextra -pedantic -Wno-vla -O2 -g -std=c+
 
 all: load_Analysis Histo
 
-load_Analysis: dict.o Analysis.o load_Analysis.o PUReweighter.o utils.o HistoListReader.o KinReco.o
+load_Analysis: dict.o Analysis.o load_Analysis.o PUReweighter.o utils.o HistoListReader.o KinReco.o CommandLineParameters.o
 	g++ -o $@ $^ $(ROOTLIBS)
 
 load_Analysis.o: load_Analysis.C
@@ -16,6 +16,9 @@ dict.o: dict.cpp
 
 utils.o: utils.cpp utils.h
 	g++ -c -o utils.o $(COMPFLAGS) utils.cpp
+
+CommandLineParameters.o: CommandLineParameters.cc CommandLineParameters.hh
+	g++ -c -o CommandLineParameters.o $(COMPFLAGS) CommandLineParameters.cc
 
 KinReco.o: KinReco.h KinReco.cpp
 	g++ -c -o KinReco.o $(COMPFLAGS) KinReco.cpp

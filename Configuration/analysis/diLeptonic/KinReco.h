@@ -43,14 +43,31 @@ public:
 
 public:
 
-    /// construct with mass range
-    TtFullLepKinSolver(const std::vector< double >& nupars, double mW, double mB);
+    /** @brief Constructor of the TtFullLepKinSolver
+     * 
+     *  @param[in] nupars Input neutrino spectrum, given as five values:
+     *                    Normalisation, MPV (neutrino), sigma(neutrino), MPV (antineutrino), sigma (antineutrino)      
+     *  @param[in] mW Mass of the W boson (default to 80.4 GeV)
+     *  @param[in] mB Mass of the b quark (default to 4.8 GeV)
+     */
+    TtFullLepKinSolver(const std::vector< double >& nupars, double mW = 80.4, double mB = 4.8);
 
-    ///
+    /** @brief Really solve the equation system and return the most probable solution
+     *  
+     *  @param[in] leptonMinus 4-vector of the lepton
+     *  @param[in] leptonPlus  4-vector of the antilepton
+     *  @param[in] b 4-vector of the b quark
+     *  @param[in] bbar 4-vector of the bbar quark
+     *  @param[in] met 4-vector of the missing transverse energy
+     *  @param[in] topMass mass of the top quark (default is 173 GeV)
+     * 
+     *  @return Returns the post probable solution with respect to the given
+     *          neutrino spectrum
+     */
     TtDilepEvtSolution 
     GetKinSolution(const TLorentzVector& leptonMinus, const TLorentzVector& leptonPlus, 
                 const TLorentzVector &b, const TLorentzVector &bbar, 
-                const TLorentzVector &met, double topMass);
+                const TLorentzVector &met, double topMass = 173);
 
 private:
     NeutrinoSolution 

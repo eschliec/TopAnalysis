@@ -167,8 +167,6 @@ TtFullLepKinSolver::FindCoeff(const TLorentzVector& al,
 
 void TtFullLepKinSolver::NeutrinoRec(double sol)
 {
-    TVector3 t_ttboost;
-    TLorentzVector aux;
     double pxp, pyp, pzp, pup, pvp, pwp;
         
     pxp = sol*(m3*n3/k51);   
@@ -378,7 +376,6 @@ GetKinSolutions(const LV& leptonMinus, const LV& leptonPlus,
     TLorentzVector met_tlv = LVtoTLV(*met);
             
     std::vector<TLorentzVector> jets_tlv;
-    //transform(jets->begin(), jets->end(), jets_tlv.begin(), [](LV j){return LVtoTLV(j);});
     for (const auto& jet : *jets) jets_tlv.push_back(LVtoTLV(jet));
     
     // consider all permutations

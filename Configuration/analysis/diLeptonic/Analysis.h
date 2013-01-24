@@ -32,21 +32,18 @@ using namespace std; //yes, shouldnt be in the header...
 
 class Analysis : public TSelector
 {
-    static const int LEP_TYPE_ELECTRON = -1;
-    static const int LEP_TYPE_MUON = 1;
-    
     TTree          *fChain;   //!pointer to the analyzed TTree or TChain
     Int_t           EventCounter;
     VLV             *leptons;
-    vector<int>     *lepQ;
-    vector<int>     *lepType;
+    vector<int>     *lepPdgId;
     vector<double>  *lepPfIso;
     vector<double>  *lepCombIso;
+    vector<double>  *lepDxyVertex0;
     VLV             *jets;
     vector<double>  *jetBTagTCHE;
     vector<double>  *jetBTagCSV;
     vector<double>  *jetBTagSSVHE;
-    vector<int>     *jetType;
+    vector<int>     *jetPartonFlavour;
     //VLV             *genJets;
     LV              *met;
     UInt_t          runNumber;
@@ -95,19 +92,20 @@ class Analysis : public TSelector
 //     VLV           *HypWMinus;
     vector<int>     *HypJet0index;
     vector<int>     *HypJet1index;
-    Int_t           decayMode;
+    Int_t           topDecayMode;
+    vector<int>     *ZDecayMode;
 
     // List of branches
     TBranch        *b_lepton;   //!
-    TBranch        *b_lepQ;   //!
-    TBranch        *b_lepType;   //!
+    TBranch        *b_lepPdgId;   //!
     TBranch        *b_lepPfIso;   //!
     TBranch        *b_lepCombIso;   //!
+    TBranch        *b_lepDxyVertex0;
     TBranch        *b_jet;   //!
     TBranch        *b_jetBTagTCHE;   //!
     TBranch        *b_jetBTagCSV;   //!
     TBranch        *b_jetBTagSSVHE;   //!
-    TBranch        *b_jetType;   //!
+    TBranch        *b_jetPartonFlavour;   //!
     //TBranch        *b_genJet;   //!
     TBranch        *b_met;   //!
     TBranch        *b_runNumber;   //!
@@ -157,7 +155,8 @@ class Analysis : public TSelector
     TBranch        *b_HypWMinus;   //!
     TBranch        *b_HypJet0index;   //!
     TBranch        *b_HypJet1index;   //!
-    TBranch        *b_decayMode;   //!
+    TBranch        *b_TopDecayMode;   //!
+    TBranch        *b_ZDecayMode;
 
     virtual ~Analysis() { }
     virtual Int_t   Version() const {
@@ -326,7 +325,7 @@ class Analysis : public TSelector
     void prepareLeptonIDSF();
     double getTriggerSF(const LV& lep1, const LV& lep2);
     double getLeptonIDSF(const LV& lep1, const LV& lep2);
-    double get2DSF(TH2* histo, const double x, const double y);
+    double get2DSF(TH2* histo, double x, double y);
     
     // store the object in the output list and return it
     template<class T> T* store(T* obj);
@@ -334,6 +333,7 @@ class Analysis : public TSelector
     // Variables added from the outside
     TString btagFile;
     TString channel;
+    int channelPdgIdProduct;
     TString systematic;
     TString samplename;
     bool isTtbarPlusTauSample;

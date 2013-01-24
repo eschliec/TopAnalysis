@@ -25,12 +25,6 @@ using namespace std;
 using ROOT::Math::VectorUtil::DeltaPhi;
 using ROOT::Math::VectorUtil::DeltaR;
 
-//remove this function once we have new ntuples with correct jetType's
-//also remove the lines in which this function is called!
-constexpr int useOldPartonFlavour(int flavour) {
-    return flavour == 2 ? 5 : flavour == 1 ? 4 : 1;
-}
-
 double SampleXSection(TString sample){
     
     //MC cross sections taken from:
@@ -521,18 +515,32 @@ Bool_t Analysis::Process ( Long64_t entry )
     static const double JETPTCUT = 30;
     
     if ( ++EventCounter % 100000 == 0 ) cout << "Event Counter: " << EventCounter << endl;
-    GetRecoBranches(entry);
     
+    b_TopDecayMode->GetEntry(entry);
+    //decayMode contains the decay of the top (*10) + the decay of the antitop
+    //1=hadron, 2=e, 3=mu, 4=tau->hadron, 5=tau->e, 6=tau->mu
+    //i.e. 23 == top decays to e, tbar decays to mu
     if (isTtbarPlusTauSample) {
-        bool isViaTau = decayMode > 40 || ( decayMode % 10 > 4 );
-        if (runViaTau != isViaTau) return kTRUE;
+        bool isViaTau = topDecayMode > 40 || ( topDecayMode % 10 > 4 );
+        bool isCorrectChannel = false;
+        switch (channelPdgIdProduct) {
+            case -11*13: isCorrectChannel = topDecayMode == 23 || topDecayMode == 32; break;
+            case -11*11: isCorrectChannel = topDecayMode == 22; break;
+            case -13*13: isCorrectChannel = topDecayMode == 33; break;
+            default: cerr << "Invalid channel! Product = " << channelPdgIdProduct << "\n";
+        };
+        bool isBackgroundInSignalSample = !isCorrectChannel || isViaTau;
+        if (runViaTau != isBackgroundInSignalSample) return kTRUE;
     }
+
     
+    
+    GetRecoBranches(entry);
     //We must correct for the madGraph branching fraction being 1/9 for dileptons (PDG average is .108)
     if ( correctMadgraphBR ) {
-        if ( decayMode == 11 ) { //all hadronic decay
+        if ( topDecayMode == 11 ) { //all hadronic decay
             weightGenerator *= (0.676*1.5) * (0.676*1.5);
-        } else if ( decayMode < 20 || ( decayMode % 10 == 1) ) { //semileptonic Decay
+        } else if ( topDecayMode< 20 || ( topDecayMode % 10 == 1) ) { //semileptonic Decay
             weightGenerator *= (0.108*9) * (0.676*1.5);
         } else {//dileptonic decay (including taus!)
             weightGenerator *= (0.108*9) * (0.108*9);
@@ -556,7 +564,7 @@ Bool_t Analysis::Process ( Long64_t entry )
     
     int BHadronIndex=-1;
     int AntiBHadronIndex=-1;
-
+    
     if (isSignal) {
         GetSignalBranches(entry);
 
@@ -726,7 +734,7 @@ Bool_t Analysis::Process ( Long64_t entry )
 
     //Should we just look for two Bjets above 0.244 or the two highest bjets?:: Make this a function
     bool hasSolution = false;
-    int solutionIndex = 0;
+    int solutionIndex = -1;
     for ( size_t i =0; i < HypTop->size(); ++i ) {
         if (jets->at((*HypJet0index)[i]).pt() < JETPTCUT 
             || jets->at((*HypJet1index)[i]).pt() < JETPTCUT)
@@ -748,6 +756,7 @@ Bool_t Analysis::Process ( Long64_t entry )
             hasSolution = true;
         }
     }
+//     std::cout << "solution index is " << solutionIndex << " event: " << eventNumber << "\n";
     
     
     LV LeadGenTop, NLeadGenTop;
@@ -906,10 +915,14 @@ Bool_t Analysis::Process ( Long64_t entry )
 
     //===CUT===
     // check if event was triggered
-    //if (isTtbarPlusTauSample || true) {
-    if (!(((triggerBits & 0x0000FF) && channel == "mumu")    //mumu triggers in rightmost byte
-        ||((triggerBits & 0x00FF00) && channel == "emu")     //emu in 2nd byte
-        ||((triggerBits & 0xFF0000) && channel == "ee")))    //ee in 3rd byte
+    //our triggers (bits: see the ntuplewriter!)    
+    constexpr int mumuTriggers = 0x8 + 0x20; //17/8 + 17Tr8
+    constexpr int emuTriggers = 0x2000 + 0x4000;
+    constexpr int eeTriggers = 0x40000;
+    
+    if (!(((triggerBits & mumuTriggers) && channelPdgIdProduct == -13*13)    //mumu triggers in rightmost byte
+          ||((triggerBits & emuTriggers) && channelPdgIdProduct == -11*13)     //emu in 2nd byte
+          ||((triggerBits & eeTriggers) && channelPdgIdProduct == -11*11)))    //ee in 3rd byte
     {
         return kTRUE;
     }
@@ -921,6 +934,8 @@ Bool_t Analysis::Process ( Long64_t entry )
     //===CUT===
     // we need an OS lepton pair
     if (! hasLeptonPair) return kTRUE;
+    // lepton pt cut > 20, sufficient to test the second leading lepton
+    if (leptons->at(NLeadLeptonNumber).pt() <= 20) return kTRUE; 
     
     LV dilepton = leptons->at(LeadLeptonNumber) + leptons->at(NLeadLeptonNumber);
     
@@ -931,7 +946,7 @@ Bool_t Analysis::Process ( Long64_t entry )
     // find l+ and l-
     LV leptonPlus;
     LV leptonMinus;
-    if (lepQ->at(LeadLeptonNumber) == +1) {
+    if (lepPdgId->at(LeadLeptonNumber) < 0) {
         leptonPlus = leptons->at(LeadLeptonNumber);
         leptonMinus = leptons->at(NLeadLeptonNumber);
     } else {
@@ -994,11 +1009,11 @@ Bool_t Analysis::Process ( Long64_t entry )
     
     //loop over both leptons
     for (auto i : {LeadLeptonNumber, NLeadLeptonNumber}) {
-        if ( lepType->at(i) == LEP_TYPE_ELECTRON ) {
+        if ( std::abs(lepPdgId->at(i)) == 11 ) {
             h_ElectronpT->Fill(leptons->at(i).Pt(), weight);
             h_ElectronEta->Fill(leptons->at(i).Eta(), weight);
         }
-        if ( lepType->at(i) == LEP_TYPE_MUON ) {
+        if ( std::abs(lepPdgId->at(i)) == 13 ) {
             h_MuonpT->Fill(leptons->at(i).Pt(), weight);
             h_MuonEta->Fill(leptons->at(i).Eta(), weight);
         }
@@ -1030,14 +1045,13 @@ Bool_t Analysis::Process ( Long64_t entry )
     //Require at least one b tagged jet
     if (!hasBtag) return kTRUE;
 
-    
-    if(isSignal){//finally do the btag efficiency calculation stuff
+    //finally do the btag efficiency calculation stuff
+    if(isSignal){
         for (size_t i = 0; i < jets->size(); ++i) {
             if (jets->at(i).Pt() <= JETPTCUT) break;
             double absJetEta = abs(jets->at(i).Eta());
             if (absJetEta<2.4) {
-                int partonFlavour = abs(jetType->at(i));
-                partonFlavour = useOldPartonFlavour(partonFlavour);
+                int partonFlavour = abs(jetPartonFlavour->at(i));
                 if(partonFlavour == 5){//b-quark
                     h_bjets->Fill(jets->at(i).Pt(), absJetEta);
                     if((*jetBTagCSV)[i]>BtagWP){
@@ -1746,6 +1760,10 @@ void Analysis::SetBTagFile(TString btagFile)
 void Analysis::SetChannel(TString channel)
 {
     this->channel = channel;
+    this->channelPdgIdProduct = 
+        channel == "ee" ? -11*11
+        : channel == "emu" ? -11*13
+        : -13*13;
 }
 
 void Analysis::SetSignal(bool isSignal)
@@ -1814,15 +1832,15 @@ void Analysis::Init ( TTree *tree )
 
     // Set object pointer
     leptons = 0;
-    lepQ = 0;
-    lepType = 0;
+    lepPdgId = 0;
     lepPfIso = 0;
     lepCombIso = 0;
+    lepDxyVertex0 = 0;
     jets = 0;
     jetBTagTCHE = 0;
     jetBTagCSV = 0;
     jetBTagSSVHE = 0;
-    jetType = 0;
+    jetPartonFlavour = 0;
     met = 0;
     HypJet0index = 0;
     HypJet1index = 0;
@@ -1862,16 +1880,16 @@ void Analysis::Init ( TTree *tree )
     if ( !tree ) return;
     fChain = tree;
     fChain->SetMakeClass ( 0 );
-    fChain->SetBranchAddress("lepton", &leptons, &b_lepton );
-    fChain->SetBranchAddress("lepQ", &lepQ, &b_lepQ );
-    fChain->SetBranchAddress("lepType", &lepType, &b_lepType );
+    fChain->SetBranchAddress("leptons", &leptons, &b_lepton );
+    fChain->SetBranchAddress("lepPdgId", &lepPdgId, &b_lepPdgId );
     fChain->SetBranchAddress("lepPfIso", &lepPfIso, &b_lepPfIso );
     fChain->SetBranchAddress("lepCombIso", &lepCombIso, &b_lepCombIso );
-    fChain->SetBranchAddress("jet", &jets, &b_jet );
+    fChain->SetBranchAddress("lepDxyVertex0", &lepDxyVertex0, &b_lepDxyVertex0);
+    fChain->SetBranchAddress("jets", &jets, &b_jet );
     fChain->SetBranchAddress("jetBTagTCHE", &jetBTagTCHE, &b_jetBTagTCHE );
     fChain->SetBranchAddress("jetBTagCSV", &jetBTagCSV, &b_jetBTagCSV );
     fChain->SetBranchAddress("jetBTagSSVHE", &jetBTagSSVHE, &b_jetBTagSSVHE );
-    fChain->SetBranchAddress("jetType", &jetType, &b_jetType );
+    fChain->SetBranchAddress("jetPartonFlavour", &jetPartonFlavour, &b_jetPartonFlavour );
     //fChain->SetBranchAddress("genJet", &genJets, &b_genJet );
     fChain->SetBranchAddress("met", &met, &b_met );
     fChain->SetBranchAddress("runNumber", &runNumber, &b_runNumber );
@@ -1898,7 +1916,8 @@ void Analysis::Init ( TTree *tree )
     */
     fChain->SetBranchAddress("HypJet0index", &HypJet0index, &b_HypJet0index );
     fChain->SetBranchAddress("HypJet1index", &HypJet1index, &b_HypJet1index );
-    fChain->SetBranchAddress("decayMode", &decayMode, &b_decayMode );
+    fChain->SetBranchAddress("TopDecayMode", &topDecayMode, &b_TopDecayMode );
+    fChain->SetBranchAddress("ZDecayMode", &ZDecayMode, &b_ZDecayMode);
     
     if (isSignal) {
         fChain->SetBranchAddress("GenTop", &GenTop, &b_GenTop );
@@ -1941,23 +1960,29 @@ Bool_t Analysis::Notify()
 
 
 void Analysis::GetRecoBranches ( Long64_t & entry )
-{
-
-    b_met->GetEntry(entry); //!
-    b_eventNumber->GetEntry(entry); //!
+{    
     b_lepton->GetEntry(entry); //!
+    b_lepPdgId->GetEntry(entry); //!
     b_jet->GetEntry(entry); //!
-    b_lepQ->GetEntry(entry); //!
-    b_lepType->GetEntry(entry); //!
-    b_lepPfIso->GetEntry(entry); //!
-    b_lepCombIso->GetEntry(entry); //!
-    b_jetBTagTCHE->GetEntry(entry); //!
-    b_jetBTagCSV->GetEntry(entry); //!
-    b_jetBTagSSVHE->GetEntry(entry); //!
-    b_jetType->GetEntry(entry); //!
+    b_met->GetEntry(entry); //!
+    
+    b_eventNumber->GetEntry(entry); //!
     b_runNumber->GetEntry(entry); //!
-    b_triggerBits->GetEntry(entry); //!
     b_lumiBlock->GetEntry(entry); //!
+    
+    //special variables, not used currently
+//     b_lepPfIso->GetEntry(entry); //!
+//     b_lepCombIso->GetEntry(entry); //!
+//     b_lepDxyVertex0->GetEntry(entry);
+    
+    
+    //We only need CSV
+//     b_jetBTagTCHE->GetEntry(entry); //!
+    b_jetBTagCSV->GetEntry(entry); //!
+//     b_jetBTagSSVHE->GetEntry(entry); //!
+    
+    b_jetPartonFlavour->GetEntry(entry); //!
+    b_triggerBits->GetEntry(entry); //!
     b_weightGenerator->GetEntry(entry); //!
     b_vertMulti->GetEntry(entry); //!
     b_vertMultiTrue->GetEntry(entry); //!
@@ -1988,7 +2013,6 @@ void Analysis::GetRecoBranches ( Long64_t & entry )
     */
     b_HypJet0index->GetEntry(entry);
     b_HypJet1index->GetEntry(entry);
-    b_decayMode->GetEntry(entry);
 
 }
 
@@ -2027,49 +2051,20 @@ void Analysis::GetSignalBranches ( Long64_t & entry )
 
 bool Analysis::getLeptonPair(size_t &LeadLeptonNumber, size_t &NLeadLeptonNumber)
 {
-    if ( leptons->size() > 1 ) {
-        if ( channel == "emu" ) { //quick and DIRTY!
-            for ( size_t i = 1; i < leptons->size(); i++ ) {
-                if ( ( ( *lepQ )[0] != ( *lepQ )[i] ) && ( (*lepType)[0] != (*lepType)[i] ) ) {
-                    LeadLeptonNumber = 0;
-                    NLeadLeptonNumber = i;
-                    return true;
-                }
-            }
-        }
-        if ( channel == "ee" ) { //quick and DIRTY!
-            for ( size_t i = 0; i < leptons->size(); i++ ) {
-                if ( ( *lepType ) [i] == LEP_TYPE_ELECTRON ) {
-                    LeadLeptonNumber=i;
-                    break;
-                }
-            }
-            for ( size_t i = LeadLeptonNumber+1; i < leptons->size(); i++ ) {
-                if ( ( ( *lepQ ) [LeadLeptonNumber]!= ( *lepQ ) [i] ) && ( *lepType ) [i] == LEP_TYPE_ELECTRON ) {
-                    NLeadLeptonNumber = i;
-                    return true;
-                }
-            }
-        }
-        if ( channel == "mumu" ) { //quick and DIRTY!
-            for ( size_t i = 0; i < leptons->size(); i++ ) {
-                if ( ( *lepType )[i] == LEP_TYPE_MUON ) {
-                    LeadLeptonNumber=i;
-                    break;
-                }
-            }
-            for ( size_t i = LeadLeptonNumber+1; i<leptons->size(); i++ ) {
-                if ( ( ( *lepQ )[LeadLeptonNumber]!= ( *lepQ )[i] ) && ( *lepType )[i] == LEP_TYPE_MUON ) {
-                    NLeadLeptonNumber = i;
-                    return true;
-                }
-            }
-        }
+    //find opposite-charge leading two leptons
+    //the first lepton is always at index 0 because we only have two different charges
+    for (size_t i = 1; i < leptons->size(); ++i) {
+        int product = lepPdgId->at(0) * lepPdgId->at(i);
+        if (product < 0) {
+            LeadLeptonNumber = 0;
+            NLeadLeptonNumber = i;
+            return product == channelPdgIdProduct;
+        }            
     }
     return false;
 }
 
-double Analysis::get2DSF(TH2* histo, const double x, const double y)
+double Analysis::get2DSF(TH2* histo, double x, double y)
 {
     int xbin, ybin, dummy;
     histo->GetBinXYZ(histo->FindBin(x, y), xbin, ybin, dummy);
@@ -2091,8 +2086,7 @@ double Analysis::calculateBtagSF()
         double pt = jets->at(i).Pt();
         double eta = abs(jets->at(i).Eta());
         if ( pt > 30 && eta < 2.4 ) {
-            int partonFlavour = abs(jetType->at(i)); //store absolute value
-            partonFlavour = useOldPartonFlavour(partonFlavour);
+            int partonFlavour = abs(jetPartonFlavour->at(i)); //store absolute value
             if (partonFlavour == 0) continue;
             int ptbin, etabin, dummy;
             bEff->GetBinXYZ(bEff->FindBin(pt, eta), ptbin, etabin, dummy);

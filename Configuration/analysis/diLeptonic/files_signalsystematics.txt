@@ -2,80 +2,32 @@
 
 #JOBS  DATASET                                   OUTPUT HISTOGRAM NAME                   SAMPLENAME
 
-###### MU E channel
 
-17  Fall11.ttjets_matching_up_MadgraphZ2_Fall11_AOD_cff    emu_ttbarsignalplustau_matchingup.root     ttbarsignalplustau,runOnAOD=True
-17  Fall11.ttjets_matching_up_MadgraphZ2_Fall11_AOD_cff    emu_ttbarbg_matchingup.root		   ttbarbg,runOnAOD=True
+150  Summer12.TTJets_MatchingUp_TuneZ2star_8TeV_madgraph_tauola_Summer12_DR53X_PU_S10_START53_V7A_v1_cff     ttbarsignalplustau_matchingup.root     ttbarsignalplustau,systematicsName=MATCH_UP
+150  Summer12.TTJets_MatchingUp_TuneZ2star_8TeV_madgraph_tauola_Summer12_DR53X_PU_S10_START53_V7A_v1_cff     ttbarbg_matchingup.root                ttbarbg,systematicsName=MATCH_UP
 
-17  Fall11.ttjets_matching_down_MadgraphZ2_Fall11_AOD_cff  emu_ttbarsignalplustau_matchingdown.root   ttbarsignalplustau,runOnAOD=True
-17  Fall11.ttjets_matching_down_MadgraphZ2_Fall11_AOD_cff  emu_ttbarbg_matchingdown.root		   ttbarbg,runOnAOD=True
+150  Summer12.TTJets_MatchingDown_TuneZ2star_8TeV_madgraph_tauola_Summer12_DR53X_PU_S10_START53_V7A_v1_cff   ttbarsignalplustau_matchingdown.root   ttbarsignalplustau,systematicsName=MATCH_DOWN
+150  Summer12.TTJets_MatchingDown_TuneZ2star_8TeV_madgraph_tauola_Summer12_DR53X_PU_S10_START53_V7A_v1_cff   ttbarbg_matchingdown.root              ttbarbg,systematicsName=MATCH_DOWN
 
-20  Fall11.ttjets_scale_up_MadgraphZ2_Fall11_AOD_cff       emu_ttbarsignalplustau_scaleup.root        ttbarsignalplustau,runOnAOD=True
-20  Fall11.ttjets_scale_up_MadgraphZ2_Fall11_AOD_cff       emu_ttbarbg_scaleup.root		   ttbarbg,runOnAOD=True
+150  Summer12.TTJets_ScaleUp_TuneZ2star_8TeV_madgraph_tauola_Summer12_DR53X_PU_S10_START53_V7A_v1_cff        ttbarsignalplustau_scaleup.root        ttbarsignalplustau,systematicsName=SCALE_UP
+150  Summer12.TTJets_ScaleUp_TuneZ2star_8TeV_madgraph_tauola_Summer12_DR53X_PU_S10_START53_V7A_v1_cff        ttbarbg_scaleup.root                   ttbarbg,systematicsName=SCALE_UP
 
-18  Fall11.ttjets_scale_down_MadgraphZ2_Fall11_AOD_cff     emu_ttbarsignalplustau_scaledown.root      ttbarsignalplustau,runOnAOD=True
-18  Fall11.ttjets_scale_down_MadgraphZ2_Fall11_AOD_cff     emu_ttbarbg_scaledown.root		   ttbarbg,runOnAOD=True
+150  Summer12.TTJets_ScaleDown_TuneZ2star_8TeV_madgraph_tauola_Summer12_DR53X_PU_S10_START53_V7A_v1_cff      ttbarsignalplustau_scaledown.root      ttbarsignalplustau,systematicsName=SCALE_DOWN
+150  Summer12.TTJets_ScaleDown_TuneZ2star_8TeV_madgraph_tauola_Summer12_DR53X_PU_S10_START53_V7A_v1_cff      ttbarbg_scaledown.root                 ttbarbg,systematicsName=SCALE_DOWN
 
-20  Fall11.ttjets_mass184_5_MadgraphZ2_Fall11_AOD_cff      emu_ttbarsignalplustau_massup.root	   ttbarsignalplustau,runOnAOD=True
-20  Fall11.ttjets_mass184_5_MadgraphZ2_Fall11_AOD_cff      emu_ttbarbg_massup.root			   ttbarbg,runOnAOD=True
+150  Summer12.TTJets_mass184_5_TuneZ2star_8TeV_madgraph_tauola_Summer12_DR53X_PU_S10_START53_V7A_v1_cff      ttbarsignalplustau_massup.root         ttbarsignalplustau,systematicsName=MASS_UP
+150  Summer12.TTJets_mass184_5_TuneZ2star_8TeV_madgraph_tauola_Summer12_DR53X_PU_S10_START53_V7A_v1_cff      ttbarbg_massup.root                    ttbarbg,systematicsName=MASS_UP
+ 
+150  Summer12.TTJets_mass161_5_TuneZ2star_8TeV_madgraph_tauola_Summer12_DR53X_PU_S10_START53_V7A_v1_cff      ttbarsignalplustau_massdown.root       ttbarsignalplustau,systematicsName=MASS_DOWN
+150  Summer12.TTJets_mass161_5_TuneZ2star_8TeV_madgraph_tauola_Summer12_DR53X_PU_S10_START53_V7A_v1_cff      ttbarbg_massdown.root                  ttbarbg,systematicsName=MASS_DOWN
 
-20  Fall11.ttjets_mass161_5_MadgraphZ2_Fall11_AOD_cff      emu_ttbarsignalplustau_massdown.root	   ttbarsignalplustau,runOnAOD=True
-20  Fall11.ttjets_mass161_5_MadgraphZ2_Fall11_AOD_cff      emu_ttbarbg_massdown.root		   ttbarbg,runOnAOD=True
+150  Summer12.TT_CT10_TuneZ2star_8TeV_powheg_tauola_Summer12_DR53X_PU_S10_START53_V7A_v1_and_v2_cff.py       ttbarsignalplustau_powheg.root         ttbarsignalplustau,systematicsName=POWHEG
+150  Summer12.TT_CT10_TuneZ2star_8TeV_powheg_tauola_Summer12_DR53X_PU_S10_START53_V7A_v1_and_v2_cff.py       ttbarbg_powheg.root                    ttbarbg,systematicsName=POWHEG
 
-20  Fall11.tt_Z2_powheg_Fall11_AOD_cff                     emu_ttbarsignalplustau_powheg.root	   ttbarsignalplustau,runOnAOD=True
-20  Fall11.tt_Z2_powheg_Fall11_AOD_cff                     emu_ttbarbg_powheg.root	           ttbarbg,runOnAOD=True
+150  Summer12.TT_8TeV_mcatnlo_Summer12_DR53X_PU_S10_START53_V7A_v1_cff                                       ttbarsignalplustau_mcatnlo.root        ttbarsignalplustau,systematicsName=MCATNLO
+150  Summer12.TT_8TeV_mcatnlo_Summer12_DR53X_PU_S10_START53_V7A_v1_cff                                       ttbarbg_mcatnlo.root                   ttbarbg,systematicsName=MCATNLO
 
-30  Fall11.tt_Z2_mcatnlo_Fall11_AOD_cff                     emu_ttbarsignalplustau_mcatnlo.root	   ttbarsignalplustau,runOnAOD=True
-30  Fall11.tt_Z2_mcatnlo_Fall11_AOD_cff                     emu_ttbarbg_mcatnlo.root	           ttbarbg,runOnAOD=True
-
-###### MUMU channel
-
-17  Fall11.ttjets_matching_up_MadgraphZ2_Fall11_AOD_cff    mumu_ttbarsignalplustau_matchingup.root     ttbarsignalplustau,runOnAOD=True
-17  Fall11.ttjets_matching_up_MadgraphZ2_Fall11_AOD_cff    mumu_ttbarbg_matchingup.root		   ttbarbg,runOnAOD=True
-
-17  Fall11.ttjets_matching_down_MadgraphZ2_Fall11_AOD_cff  mumu_ttbarsignalplustau_matchingdown.root   ttbarsignalplustau,runOnAOD=True
-17  Fall11.ttjets_matching_down_MadgraphZ2_Fall11_AOD_cff  mumu_ttbarbg_matchingdown.root		   ttbarbg,runOnAOD=True
-
-20  Fall11.ttjets_scale_up_MadgraphZ2_Fall11_AOD_cff       mumu_ttbarsignalplustau_scaleup.root        ttbarsignalplustau,runOnAOD=True
-20  Fall11.ttjets_scale_up_MadgraphZ2_Fall11_AOD_cff       mumu_ttbarbg_scaleup.root		   ttbarbg,runOnAOD=True
-
-18  Fall11.ttjets_scale_down_MadgraphZ2_Fall11_AOD_cff     mumu_ttbarsignalplustau_scaledown.root      ttbarsignalplustau,runOnAOD=True
-18  Fall11.ttjets_scale_down_MadgraphZ2_Fall11_AOD_cff     mumu_ttbarbg_scaledown.root		   ttbarbg,runOnAOD=True
-
-20  Fall11.ttjets_mass184_5_MadgraphZ2_Fall11_AOD_cff      mumu_ttbarsignalplustau_massup.root	   ttbarsignalplustau,runOnAOD=True
-20  Fall11.ttjets_mass184_5_MadgraphZ2_Fall11_AOD_cff      mumu_ttbarbg_massup.root			   ttbarbg,runOnAOD=True
-
-20  Fall11.ttjets_mass161_5_MadgraphZ2_Fall11_AOD_cff      mumu_ttbarsignalplustau_massdown.root	   ttbarsignalplustau,runOnAOD=True
-20  Fall11.ttjets_mass161_5_MadgraphZ2_Fall11_AOD_cff      mumu_ttbarbg_massdown.root		   ttbarbg,runOnAOD=True
-
-20  Fall11.tt_Z2_powheg_Fall11_AOD_cff                     mumu_ttbarsignalplustau_powheg.root	   ttbarsignalplustau,runOnAOD=True
-20  Fall11.tt_Z2_powheg_Fall11_AOD_cff                     mumu_ttbarbg_powheg.root	           ttbarbg,runOnAOD=True
-
-30  Fall11.tt_Z2_mcatnlo_Fall11_AOD_cff                    mumu_ttbarsignalplustau_mcatnlo.root	   ttbarsignalplustau,runOnAOD=True
-30  Fall11.tt_Z2_mcatnlo_Fall11_AOD_cff                    mumu_ttbarbg_mcatnlo.root	           ttbarbg,runOnAOD=True
-
-#### EE channel
-
-17  Fall11.ttjets_matching_up_MadgraphZ2_Fall11_AOD_cff    ee_ttbarsignalplustau_matchingup.root      ttbarsignalplustau,runOnAOD=True
-17  Fall11.ttjets_matching_up_MadgraphZ2_Fall11_AOD_cff    ee_ttbarbg_matchingup.root		   ttbarbg,runOnAOD=True
-
-17  Fall11.ttjets_matching_down_MadgraphZ2_Fall11_AOD_cff  ee_ttbarsignalplustau_matchingdown.root    ttbarsignalplustau,runOnAOD=True
-17  Fall11.ttjets_matching_down_MadgraphZ2_Fall11_AOD_cff  ee_ttbarbg_matchingdown.root		   ttbarbg,runOnAOD=True
-
-20  Fall11.ttjets_scale_up_MadgraphZ2_Fall11_AOD_cff       ee_ttbarsignalplustau_scaleup.root	   ttbarsignalplustau,runOnAOD=True
-20  Fall11.ttjets_scale_up_MadgraphZ2_Fall11_AOD_cff       ee_ttbarbg_scaleup.root			   ttbarbg,runOnAOD=True
-
-18  Fall11.ttjets_scale_down_MadgraphZ2_Fall11_AOD_cff     ee_ttbarsignalplustau_scaledown.root       ttbarsignalplustau,runOnAOD=True
-18  Fall11.ttjets_scale_down_MadgraphZ2_Fall11_AOD_cff     ee_ttbarbg_scaledown.root		   ttbarbg,runOnAOD=True
-
-20  Fall11.ttjets_mass184_5_MadgraphZ2_Fall11_AOD_cff      ee_ttbarsignalplustau_massup.root	   ttbarsignalplustau,runOnAOD=True
-20  Fall11.ttjets_mass184_5_MadgraphZ2_Fall11_AOD_cff      ee_ttbarbg_massup.root			   ttbarbg,runOnAOD=True
-
-20  Fall11.ttjets_mass161_5_MadgraphZ2_Fall11_AOD_cff      ee_ttbarsignalplustau_massdown.root	   ttbarsignalplustau,runOnAOD=True
-20  Fall11.ttjets_mass161_5_MadgraphZ2_Fall11_AOD_cff      ee_ttbarbg_massdown.root		   ttbarbg,runOnAOD=True
-
-20  Fall11.tt_Z2_powheg_Fall11_AOD_cff                     ee_ttbarsignalplustau_powheg.root	   ttbarsignalplustau,runOnAOD=True
-20  Fall11.tt_Z2_powheg_Fall11_AOD_cff                     ee_ttbarbg_powheg.root	           ttbarbg,runOnAOD=True
-
-30  Fall11.tt_Z2_mcatnlo_Fall11_AOD_cff                     ee_ttbarsignalplustau_mcatnlo.root	   ttbarsignalplustau,runOnAOD=True
-30  Fall11.tt_Z2_mcatnlo_Fall11_AOD_cff                     ee_ttbarbg_mcatnlo.root	           ttbarbg,runOnAOD=True
+#Madgrpah with spin correlations exclusive samples
+300  Summer12.TTJets_FullLeptMGDecays_8TeV_madgraph_Summer12_DR53X_PU_S10_START53_V7A_v2_cff                 ttbarsignalplustau_FullLeptMadgraphWithSpinCorrelation.root  ttbarsignalplustau,systematicsName=SPINCORR
+100  Summer12.TTJets_SemiLeptMGDecays_8TeV_madgraph_Summer12_DR53X_PU_S10_START53_V7A_v1_cff                 ttbarbg_SemiLeptMadgraphWithSpinCorrelation.root             ttbarbg,systematicsName=SPINCORR
+100  Summer12.TTJets_HadronicMGDecays_8TeV_madgraph_Summer12_DR53X_PU_S10_START53_V7A_v1_cff                 ttbarbg_HadronicMadgraphWithSpinCorrelation.root             ttbarbg,systematicsName=SPINCORR

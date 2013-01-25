@@ -9,8 +9,9 @@
 #include <algorithm>
 #include <iterator>
 #include <vector>
-
 #include <TString.h>
+
+#include "CommandLineParameters.hh"
 
 using namespace std;
 
@@ -122,11 +123,36 @@ double ReadLineFromFile (TString Filename, TString Systematic){
 
 
 
+void SanityCheck( TString channel = "", TString systematic = "", TString variable = ""){
+
+    vector<TString> ValidChannel = Channels(), ValidSystematic = Systematics(), ValidVariable = Variables();
+    
+    if (find(ValidChannel.begin(), ValidChannel.end(), channel) != ValidChannel.end() || channel == "") {}
+    else{
+        cout<<"\n\nThe proposed channel '"<<channel<<"' is not valid. Exiting!\n"<<endl;
+        exit(2);
+    }
+    
+    if (find(ValidSystematic.begin(), ValidSystematic.end(), systematic) != ValidSystematic.end() || systematic == "") {}
+    else{
+        cout<<"\n\nThe proposed systematic '"<<systematic<<"' is not valid (or is not implemented yet). Exiting!\n"<<endl;
+        exit(22);
+    }
+    
+    if (find(ValidVariable.begin(), ValidVariable.end(), variable) != ValidVariable.end() || variable == "") {}
+    else{
+        cout<<"\n\nThe proposed variable '"<<variable<<"' is not valid (or is not implemented yet). Exiting!\n"<<endl;
+        exit(222);
+    }
+
+}
 
 void TypicalError( TString channel = "", TString systematic = "", TString variable = ""){
 
-    vector<TString> Channel, Systematic;
+    SanityCheck(channel, systematic, variable);
     
+    vector<TString> Channel, Systematic;
+
     if ( channel != ""){Channel.push_back(channel);}
     else { Channel = Channels(); }
     
@@ -157,37 +183,18 @@ void TypicalError( TString channel = "", TString systematic = "", TString variab
 }
 
 
-int main(int argc, const char * const argv[]) {
-    //COMPILE USING
-    //g++ -o TypicalError GetTypicalErrors.C `root-config --cflags` -Wall -Wextra -pedantic -std=c++0x `root-config --ldflags --libs`
+int main(int argc, char** argv) {
+    CLParameter<std::string> opt_v("v", "Return the typical error for certain variable, e.g. 'ToppTLead', 'LLBarMass', ...", false, 1, 1);
+    CLParameter<std::string> opt_s("s", "Return the typical systematic uncertainty for a certain systematic variation, e.g. 'PU_', 'TRIG_', 'BTAG_LJET_ETA_', 'BTAG_PT_', ...", false, 1, 1);
+    CLParameter<std::string> opt_c("c", "Return the typical systematic uncertainty for an specific channel (ee, emu, mumu). No channel specified = run on all channels", false, 1, 1,
+            [](const std::string &ch){return ch == "" || ch == "ee" || ch == "emu" || ch == "mumu";});
+    CLAnalyser::interpretGlobal(argc, argv);
     
-    //Use it via: ./TypicalError channel systematic variable
-    // this will return the typical error for systematic 'systematic' in the chanel 'channel'
-    // in case you want the value in one specific variable please add a 3rd option: variable
+    TString ValidSystematics = opt_s.isSet() ? opt_s[0] : "";
+    TString ValidVariable    = opt_v.isSet() ? opt_v[0] : "";
+    TString ValidChannel     = opt_c.isSet() ? opt_c[0] : "";
+        
+    TypicalError(ValidChannel, ValidSystematics, ValidVariable);
     
-    
-    TString channel = argc > 1 ? argv[1] : "";
-    TString systematic = argc > 2 ? argv[2] : "";
-    TString variable = argc > 3 ? argv[3] : "";
-    
-    vector<TString> ValidChannels = Channels();
-    vector<TString> ValidSystematics = Systematics();
-    
-    if (find(ValidChannels.begin(), ValidChannels.end(), channel) != ValidChannels.end() || channel == "") {}
-    else{
-        cout<<"\n\nThe proposed channel '"<<channel<<"' is not valid. Exiting!\n"<<endl;
-        exit(2);
-    }
-    
-    if (find(ValidSystematics.begin(), ValidSystematics.end(), systematic) != ValidSystematics.end() || systematic == "") {}
-    else{
-        cout<<"\n\nThe proposed systematic '"<<systematic<<"' is not valid (or is not implemented yet). Exiting!\n"<<endl;
-        exit(22);
-    }
-    
-    TypicalError(channel, systematic, variable);
-
     return 0;
 }
-
-

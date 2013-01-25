@@ -519,7 +519,7 @@ Bool_t Analysis::Process ( Long64_t entry )
     //do we have a DY true level cut?
     if (checkZDecayMode && !checkZDecayMode(entry)) return kTRUE;
     
-    b_TopDecayMode->GetEntry(entry);
+    if (isTtbarPlusTauSample || correctMadgraphBR) b_TopDecayMode->GetEntry(entry);
     //decayMode contains the decay of the top (*10) + the decay of the antitop
     //1=hadron, 2=e, 3=mu, 4=tau->hadron, 5=tau->e, 6=tau->mu
     //i.e. 23 == top decays to e, tbar decays to mu
@@ -536,9 +536,6 @@ Bool_t Analysis::Process ( Long64_t entry )
         if (runViaTau != isBackgroundInSignalSample) return kTRUE;
     }
 
-    
-    
-    GetRecoBranches(entry);
     //We must correct for the madGraph branching fraction being 1/9 for dileptons (PDG average is .108)
     if ( correctMadgraphBR ) {
         if ( topDecayMode == 11 ) { //all hadronic decay
@@ -555,6 +552,7 @@ Bool_t Analysis::Process ( Long64_t entry )
         weightGenerator *= weightPDF->at(pdf_no - 1); //vector is 0 based
     }
     
+    GetRecoBranches(entry);
     double weightPU = 1;
     if (isMC) { 
         //still have lumi weights for old plotterclass
@@ -733,35 +731,6 @@ Bool_t Analysis::Process ( Long64_t entry )
         }
     }
 
-
-
-    //Should we just look for two Bjets above 0.244 or the two highest bjets?:: Make this a function
-    bool hasSolution = false;
-    int solutionIndex = -1;
-    for ( size_t i =0; i < HypTop->size(); ++i ) {
-        if (jets->at((*HypJet0index)[i]).pt() < JETPTCUT 
-            || jets->at((*HypJet1index)[i]).pt() < JETPTCUT)
-            // || abs(HypTop->at(i).M() - 172.5) > 1 ) 
-        {       
-            continue;
-        }
-        bool jet0tagged = jetBTagCSV->at( (*HypJet0index)[i] ) > BtagWP;
-        bool jet1tagged = jetBTagCSV->at( (*HypJet1index)[i] ) > BtagWP;
-        if (jet0tagged && jet1tagged) {   
-            //solution with 2 tags found, so take it and stop
-            solutionIndex = i;
-            hasSolution = true;
-            break;
-        }
-        if (!hasSolution && (jet0tagged || jet1tagged)) {
-            //one btag found, save solution if it is the first one
-            solutionIndex = i;
-            hasSolution = true;
-        }
-    }
-//     std::cout << "solution index is " << solutionIndex << " event: " << eventNumber << "\n";
-    
-    
     LV LeadGenTop, NLeadGenTop;
     LV LeadGenLepton, NLeadGenLepton;
     LV LeadGenBJet, NLeadGenBJet;
@@ -1001,6 +970,9 @@ Bool_t Analysis::Process ( Long64_t entry )
     double weightKinFit = 1;
     double weightBtagSF = -1; //trick: initialize to -1 to avoid calculation of the btagSF twice
     
+    if (kinRecoOnTheFly || true) calculateKinReco(leptonMinus, leptonPlus);
+    bool hasSolution = HypTop->size() > 0;
+    
     if ( isZregion ) {
         Looseh1->Fill(dilepton.M(), weight);
         if ( hasJets && hasMetOrEmu && hasBtag && hasSolution) {
@@ -1104,6 +1076,7 @@ Bool_t Analysis::Process ( Long64_t entry )
     
     //for HT, count only >= 30 GeV jets
 
+
     //=== CUT ===
     //Require at least one solution for the kinematic event reconstruction
     if (!hasSolution) return kTRUE;
@@ -1121,6 +1094,7 @@ Bool_t Analysis::Process ( Long64_t entry )
     LV LeadHypLepton, NLeadHypLepton;
     LV LeadHypBJet, NLeadHypBJet;
     
+    size_t solutionIndex = 0; //always zero!
     orderLVByPt(LeadHypTop, NLeadHypTop, HypTop->at(solutionIndex), HypAntiTop->at(solutionIndex));
     orderLVByPt(LeadHypLepton, NLeadHypLepton, HypLepton->at(solutionIndex), HypAntiLepton->at(solutionIndex));
     orderLVByPt(LeadHypBJet, NLeadHypBJet, HypBJet->at(solutionIndex), HypAntiBJet->at(solutionIndex));
@@ -1317,59 +1291,6 @@ Bool_t Analysis::Process ( Long64_t entry )
         TTh1->Fill(dilepton.M(), weight);
         Allh1->Fill(dilepton.M(), weight);  //this is also filled in the Z region in the code above
     }
-    
-//     printf("HypTop pt=%.1f, eta=%.2f -- HypAntiTop pt=%.1f, eta=%.2f\n", 
-//             HypTop->at(solutionIndex).Pt(), HypTop->at(solutionIndex).Eta(),
-//             HypAntiTop->at(solutionIndex).Pt(), HypAntiTop->at(solutionIndex).Eta());
-
-    
-    
-//     auto sols = GetKinSolutions(leptonMinus, leptonPlus, jets, jetBTagCSV, met);
-// //     cout << "solutionindex = " << solutionIndex << " " << sols.size() << " " << HypNeutrino->size() << "\n";
-//     if (sols.size()) {
-//         const auto& top = sols[0].top;
-//         h_HypToppT2->Fill(top.Pt(), weight);
-//         h_HypTopEta2->Fill(top.Eta(), weight);
-//         h_HypTopMass2->Fill(top.M(), weight);
-//         h_HypTopRapidity2->Fill(top.Rapidity(), weight);
-//         if (GenTop)
-//         h_GenRecoToppTNEW->Fill(top.Pt(), GenTop->Pt(), weight );
-//     }
-    
-//     if (sols.size() == HypNeutrino->size()) {
-//         const auto& top = sols.at(solutionIndex).top;
-// //         h_HypToppT2->Fill(top.Pt(), weight);
-// //         h_HypTopEta2->Fill(top.Eta(), weight);
-// //         h_HypTopMass2->Fill(top.M(), weight);
-// //         h_HypTopRapidity2->Fill(top.Rapidity(), weight);
-// //         if (GenTop)
-// //         h_GenRecoToppTNEW->Fill(top.Pt(), GenTop->Pt(), weight );
-// 
-//         cout << "pt / eta / phi / M\n";
-//         cout << "nu / top / topbar / ttbar\n" << setprecision(2) << fixed;
-//         for (size_t i = 0; i < HypNeutrino->size(); ++i) {
-//             std::cout << "OLD: " << HypNeutrino->at(i) << " " 
-//                       << HypTop->at(i) << " " << HypAntiTop->at(i) << " " << HypTop->at(i) + HypAntiTop->at(i)
-//                       << endl;
-//             auto sol = sols.at(i);
-//             std::cout << "NEW: " << TLVtoLV(sol.neutrino) << " "
-//                       << TLVtoLV(sol.top) << " " << TLVtoLV(sol.topBar) << " " << TLVtoLV(sol.ttbar)
-//                       << endl;
-//         }
-//         
-// //         if (sols.size() == HypNeutrino->size()) {
-// //             for (size_t i = 0; i < sols.size(); ++i) {
-// //                 std::cout << "OLD - NEW: nu = " << (HypNeutrino->at(i) - TLVtoLV(sols.at(i)->neutrino)) << endl;
-// //             }
-// //         }
-// //         cout << "B old = " << HypBJet->at(0) << " B new = " << jets->at(sols[0]->jetB_index) <<  endl;
-//     }
-//     
-//     static int count = 0;
-//     
-//     std::cout << std::endl;
-//     if (++count == 2) exit(1);
-    
 
     //=== CUT ===
     //Following histograms only filled for the signal sample
@@ -2063,7 +1984,7 @@ void Analysis::GetRecoBranches ( Long64_t & entry )
 
 void Analysis::GetSignalBranches ( Long64_t & entry )
 {
-    b_GenTop->GetEntry(entry, 1); //!
+    b_GenTop->GetEntry(entry); //!
     b_GenAntiTop->GetEntry(entry); //!
     b_GenLepton->GetEntry(entry); //!
     b_GenAntiLepton->GetEntry(entry); //!
@@ -2391,5 +2312,23 @@ void Analysis::CreateBinnedControlPlots(TH1* h_differential, TH1* h_control)
             new TH1D(n.c_str(), (std::string(h_control->GetName())+binning).c_str(), 
                      h_control->GetNbinsX(), h_control->GetBinLowEdge(1), 
                      h_control->GetBinLowEdge(h_control->GetNbinsX()+1)));
+    }
+}
+
+void Analysis::calculateKinReco(const LV& leptonMinus, const LV& leptonPlus)
+{
+    auto sols = GetKinSolutions(leptonMinus, leptonPlus, jets, jetBTagCSV, met);
+    if (sols.size()) {
+        const TtDilepEvtSolution &sol = sols[0];
+        HypTop->clear(); HypTop->push_back(TLVtoLV(sol.top));
+        HypAntiTop->clear(); HypAntiTop->push_back(TLVtoLV(sol.topBar));
+        HypLepton->clear(); HypLepton->push_back(TLVtoLV(sol.lm));
+        HypAntiLepton->clear(); HypAntiLepton->push_back(TLVtoLV(sol.lp));
+        HypBJet->clear(); HypBJet->push_back(TLVtoLV(sol.jetB));
+        HypAntiBJet->clear(); HypAntiBJet->push_back(TLVtoLV(sol.jetBbar));
+        HypNeutrino->clear(); HypNeutrino->push_back(TLVtoLV(sol.neutrino));
+        HypAntiNeutrino->clear(); HypAntiNeutrino->push_back(TLVtoLV(sol.neutrinoBar));
+        HypJet0index->clear(); HypJet0index->push_back(sol.jetB_index);
+        HypJet1index->clear(); HypJet1index->push_back(sol.jetBbar_index);
     }
 }

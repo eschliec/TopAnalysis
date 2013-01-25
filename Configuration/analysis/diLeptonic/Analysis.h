@@ -377,9 +377,13 @@ class Analysis : public TSelector
     void FillBinnedControlPlot(TH1* h_differential, double binvalue, 
                                TH1 *h_control, double value, double weight);
     
+    bool kinRecoOnTheFly;
+    void calculateKinReco(const LV &leptonMinus, const LV &leptonPlus);
+    
         
 public:
-    Analysis ( TTree * = 0 ) : checkZDecayMode {nullptr}, runViaTau {0}, pureweighter {nullptr} {};
+    Analysis ( TTree * = 0 ) : checkZDecayMode {nullptr}, 
+        runViaTau {0}, pureweighter {nullptr}, kinRecoOnTheFly {0} {};
     void SetBTagFile(TString btagFile);
     void SetChannel(TString channel);
     void SetSignal(bool isSignal);

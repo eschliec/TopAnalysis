@@ -386,9 +386,9 @@ GetKinSolutions(const LV& leptonMinus, const LV& leptonPlus,
             TtDilepEvtSolution best;
             double weightBest = 0;
             
-            for(double topMass = 100; topMass < 300.5; topMass += 1) 
+//             for(double topMass = 100; topMass < 300.5; topMass += 1) 
 //             for(double topMass = 160; topMass < 180.5; topMass += 1) 
-//             double topMass = 173;
+            double topMass = 173;
             {
 //                 std::cout << "input = " << x(leptonPlus_tlv) << x(leptonMinus_tlv) 
 //                         << x(jets_tlv.at(ib)) << x(jets_tlv.at(ibbar)) << "\n";

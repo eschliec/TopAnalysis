@@ -69,5 +69,10 @@ addpkg TopQuarkAnalysis
 
 #checkdeps -a
 
+# for full memory option of LHAPDF, we NEED to compile ElectroWeakAnalysis/Utilities after scram setup lhapdffull
+scram setup lhapdffull
+addpkg ElectroWeakAnalysis/Utilities
+
+
 scram b -j12
 

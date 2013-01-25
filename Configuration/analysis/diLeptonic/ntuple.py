@@ -203,15 +203,17 @@ process.pfIsolatedElectrons.isolationCut = 0.15
 
 process.pfIsolatedElectrons.doDeltaBetaCorrection = True   # not really a 'deltaBeta' correction, but it serves
 #process.pfIsolatedElectrons.deltaBetaFactor = -1.0
-#process.pfSelectedElectrons.cut = 'gsfTrackRef.isNonnull && gsfTrackRef.trackerExpectedHitsInner.numberOfLostHits<2'
-process.pfSelectedElectrons.cut = 'gsfTrackRef.isNonnull'
 
-process.selectedPatElectrons.cut = cms.string('electronID("mvaTrigV0") > 0.5'
+#default is:
+#process.pfSelectedElectrons.cut = 'pt > 5 && gsfTrackRef.isNonnull && gsfTrackRef.trackerExpectedHitsInner.numberOfLostHits<2'
+#here a low pt cut needs to be used!
+process.pfSelectedElectrons.cut = 'pt > 5 && gsfTrackRef.isNonnull && gsfTrackRef.trackerExpectedHitsInner.numberOfHits <= 0'
+
+process.selectedPatElectrons.cut = 'electronID("mvaTrigV0") > 0.5' \
             ' && passConversionVeto'
             #cant do this on python level :-(
             #' && abs(gsfTrack().dxy(vertex_.position())) < 0.04'
-            ' && gsfTrack().trackerExpectedHitsInner().numberOfHits <= 0'
-            )
+
 
 process.selectedPatElectronsAfterScaling = selectedPatElectrons.clone(
     src = 'scaledJetEnergy:selectedPatElectrons',
@@ -219,13 +221,25 @@ process.selectedPatElectronsAfterScaling = selectedPatElectrons.clone(
 )
 
 process.pfIsolatedMuons.doDeltaBetaCorrection = True
-process.pfIsolatedMuons.isolationCut = 0.20
-process.pfIsolatedMuons.cut = cms.string('pt > 20'
-                                         '&& abs(eta) < 2.4'
-                                         '&& muonRef.isNonnull()'
-                                         '&& (muonRef().isGlobalMuon() || muonRef.isTrackerMuon())')
+process.pfIsolatedMuons.isolationCut = 0.15
+process.pfIsolatedMuons.deltaBetaIsolationValueMap = cms.InputTag("muPFIsoValuePU03", "", "")
+process.pfIsolatedMuons.isolationValueMapsCharged = [cms.InputTag("muPFIsoValueCharged03")]
+process.pfIsolatedMuons.isolationValueMapsNeutral = [cms.InputTag("muPFIsoValueNeutral03"), cms.InputTag("muPFIsoValueGamma03")]
+process.pfSelectedMuons.cut = 'pt > 5' \
+                              '&& muonRef.isNonnull()' \
+                              '&& (muonRef.isGlobalMuon() || muonRef.isTrackerMuon())'
 
-process.selectedPatMuons.cut = 'isPFMuon'
+process.patMuons.isolationValues = cms.PSet(
+        pfNeutralHadrons = cms.InputTag("muPFIsoValueNeutral03"),
+        pfChargedAll = cms.InputTag("muPFIsoValueChargedAll03"),
+        pfPUChargedHadrons = cms.InputTag("muPFIsoValuePU03"),
+        pfPhotons = cms.InputTag("muPFIsoValueGamma03"),
+        pfChargedHadrons = cms.InputTag("muPFIsoValueCharged03")
+)
+
+process.selectedPatMuons.cut = 'isPFMuon && pt > 20 && abs(eta) < 2.4'
+
+
 
 
 ####################################################################
@@ -358,7 +372,10 @@ process.goodIdJets.version = cms.string('FIRSTDATA')
 process.goodIdJets.quality = cms.string('LOOSE')
 
 process.hardJets = selectedPatJets.clone(src = 'goodIdJets', cut = 'pt > 5 & abs(eta) < 2.4') 
-#process.jetsForKinReco = process.hardJets.clone(src = 'hardJets', cut = 'pt > 30')
+#WARNING! The jet.pt > 30 cut is currently hardcoded in the NTupleWriter.cc file
+#adding a collections like
+#    process.jetsForKinReco = process.hardJets.clone(src = 'hardJets', cut = 'pt > 30')
+#will cause problems because the selection of the "best" solution is hardcoded!!!!!
 process.buildJets = cms.Sequence(
             process.scaledJetEnergy * process.selectedPatElectronsAfterScaling *
             process.goodIdJets * 
@@ -490,15 +507,15 @@ process.kinSolutionTtFullLepEventHypothesis.neutrino_parameters = (30.641, 57.94
 #nu    mpv 40.567 sigma = 16.876
 #nubar mpv 40.639 sigma = 17.021
 
-process.kinSolutionTtFullLepEventHypothesis.mumuChannel = False
-process.kinSolutionTtFullLepEventHypothesis.eeChannel = False
-process.kinSolutionTtFullLepEventHypothesis.emuChannel = True
+#process.kinSolutionTtFullLepEventHypothesis.mumuChannel = False
+#process.kinSolutionTtFullLepEventHypothesis.eeChannel = False
+#process.kinSolutionTtFullLepEventHypothesis.emuChannel = True
 process.ttFullLepEvent.decayChannel1 = cms.int32(1)
 process.ttFullLepEvent.decayChannel2 = cms.int32(2)
 
-#process.kinSolutionTtFullLepEventHypothesis.mumuChannel = True
-#process.kinSolutionTtFullLepEventHypothesis.emuChannel  = True
-#process.kinSolutionTtFullLepEventHypothesis.eeChannel = True
+process.kinSolutionTtFullLepEventHypothesis.mumuChannel = True
+process.kinSolutionTtFullLepEventHypothesis.emuChannel  = True
+process.kinSolutionTtFullLepEventHypothesis.eeChannel = True
 
 #process.ttFullLepEvent.decayChannel1 = cms.int32(1)
 #process.ttFullLepEvent.decayChannel2 = cms.int32(2)

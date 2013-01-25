@@ -322,8 +322,7 @@ class Analysis : public TSelector
     //other SF
     double lumiWeight; //needed while using old plotterclass
     
-    TH1* h_TrigSFeta;
-    TH2* h_LepIDSFpteta;
+    TH2 *h_TrigSFeta, *h_LepIDSFpteta;
     
     void prepareTriggerSF();
     void prepareBtagSF();

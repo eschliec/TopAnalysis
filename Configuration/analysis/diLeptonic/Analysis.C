@@ -514,7 +514,7 @@ Bool_t Analysis::Process ( Long64_t entry )
 {
     static const double JETPTCUT = 30;
     
-    if ( ++EventCounter % 1000000 == 0 ) cout << "Event Counter: " << EventCounter << endl;
+    if ( ++EventCounter % 100000 == 0 ) cout << "Event Counter: " << EventCounter << endl;
     
     //do we have a DY true level cut?
     if (checkZDecayMode && !checkZDecayMode(entry)) return kTRUE;
@@ -957,9 +957,26 @@ Bool_t Analysis::Process ( Long64_t entry )
         leptonPlus = leptons->at(NLeadLeptonNumber);
     }
 
+    //This is necessary due to the ordering in the trigger 2D-plots
+    LV leptonX, leptonY;
+    if ( abs( lepPdgId->at(LeadLeptonNumber) ) == abs( lepPdgId->at(NLeadLeptonNumber) ) ){
+        //in ee and mumu channel leptonX must be the highest pT lepton
+        leptonX = leptons->at(LeadLeptonNumber);
+        leptonY = leptons->at(NLeadLeptonNumber);
+    } else {
+        // in emu channel lepX should be electron
+        if (abs(lepPdgId->at(LeadLeptonNumber)) == 11) {
+            leptonX = leptons->at(LeadLeptonNumber);
+            leptonY = leptons->at(NLeadLeptonNumber);
+        } else {
+            leptonX = leptons->at(NLeadLeptonNumber);
+            leptonY = leptons->at(LeadLeptonNumber);
+        }
+    }
+    
     //Now determine the lepton trigger and ID scale factors
     double weightLepSF = isMC ? getLeptonIDSF(leptonPlus, leptonMinus) : 1;
-    double weightTrigSF = isMC ? getTriggerSF(leptonPlus, leptonMinus) : 1;
+    double weightTrigSF = isMC ? getTriggerSF(leptonX, leptonY) : 1;
     
     //First control plots after dilepton selection (without Z cut)
     double weight = weightGenerator*weightTrigSF*weightLepSF;
@@ -2222,22 +2239,24 @@ void Analysis::prepareTriggerSF()
     TFile trigEfficiencies(TString("triggerSummary_").Append(channel).Append(".root"));
     if (trigEfficiencies.IsZombie()) {
         cout << "Trigger efficiencies not found. Assuming ScaleFactor = 1.\n";
-        cout << "Currently triggerEfficieny files can be found in Jan's NAF public afs\n\n";
+        cout << "Currently triggerEfficieny files can be found in the HEAD version of diLeptonic folder\n\n";
         return;
     }
     
     //Right now pT efficiency flat ==> Not used
-    h_TrigSFeta = dynamic_cast<TH1*>(trigEfficiencies.Get("TH scalefactor eta incl corrErr"));
+    h_TrigSFeta = dynamic_cast<TH2*>(trigEfficiencies.Get("scalefactor eta2d with syst"));
     if ( !h_TrigSFeta ) {
-        cout<<"TH1 >>TH scalefactor eta<< is not in the file "<<trigEfficiencies.GetName()<<"\n";
+        cout<<"TH2 >>TH scalefactor eta<< is not in the file "<<trigEfficiencies.GetName()<<"\n";
         return;
     }
     
     if (systematic.BeginsWith("TRIG_")) {
         double factor = systematic.EndsWith("_UP") ? 1 : -1;
         for (int i = 1; i <= h_TrigSFeta->GetNbinsX(); ++i) {
-            h_TrigSFeta->SetBinContent(i, 
-                h_TrigSFeta->GetBinContent(i) + factor*h_TrigSFeta->GetBinError(i));
+            for (int j = 1; j <= h_TrigSFeta->GetNbinsY(); ++j) {
+                h_TrigSFeta->SetBinContent(i, j,
+                    h_TrigSFeta->GetBinContent(i,j) + factor*h_TrigSFeta->GetBinError(i,j));
+            }
         }
     }
     
@@ -2246,10 +2265,12 @@ void Analysis::prepareTriggerSF()
 }
 
 double Analysis::getTriggerSF(const LV& lep1, const LV& lep2) {
+    
+    //For 'ee' and 'mumu' channels Xaxis of the 2D plots is the highest pT lepton
+    // for the 'emu' channel Xaxis is the electron and Y axis muon
+    
     if (!h_TrigSFeta) return 1;
-    return TMath::Sqrt(        
-        h_TrigSFeta->GetBinContent(h_TrigSFeta->FindBin(lep1.eta()))
-        * h_TrigSFeta->GetBinContent(h_TrigSFeta->FindBin(lep2.eta())));
+    return get2DSF(h_TrigSFeta, abs(lep1.eta()), abs(lep2.eta()));
 }
 
 double Analysis::getLeptonIDSF(const LV& lep1, const LV& lep2) {

@@ -92,6 +92,14 @@ write writes the histogram
 the plots will be put into a directory called Plots according to the channel in .eps format which is the best
 
 
+Once the plots has been created you can get the typical systematic errors for the Diff. XSection via:
+
+./TypicalError
+
+This runs GetTypicalErrors.C which checks for one specific systematic variation, and one specific channel (ee, emu, mumu) in all files 
+    Ploos/channel/*Systematics.txt
+it parses the content and for one specific systematic takes the average ('typical') systematic error.
+
 ========
 ========
 To run the new analysis:

@@ -126,6 +126,7 @@ void CLAnalyser::printExample(const std::string &programName) const {
   for (parVec_t::const_iterator iter = _parameters.begin(); iter != _parameters.end(); ++iter)
     std::cout << " " << (*iter)->getCommandLineExample();
 
+  std::cout << "\n\nto get detailled help: " << programName << " --help\n";
   std::cout << std::endl;
 }
 

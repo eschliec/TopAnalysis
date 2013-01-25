@@ -11,130 +11,120 @@
 
 #include "plotterclass.h"
 #include "HistoListReader.h"
-
-// you can run me like this:
-// ./Histo preunfold vertmulti JERUP emu
-// ./Histo preunfold vertmulti JERUP //all channels
-// ./Histo preunfold vertmulti //all systematics and all channels
-// ./Histo unfold toppt
-// ./Histo preunfold //all preunfolded
-// ./Histo //everything
+#include "CommandLineParameters.hh"
 
 using namespace std;
 
-std::set<TString> SetOfValidSystematics(){
+const std::vector<const char*> VectorOfValidSystematics 
+    {"Nominal", 
+    "JER_UP", "JER_DOWN", "JES_UP", "JES_DOWN", "PU_UP", "PU_DOWN", "TRIG_UP", "TRIG_DOWN", 
+    "BTAG_UP", "BTAG_DOWN", "BTAG_PT_UP", "BTAG_PT_DOWN", "BTAG_ETA_UP", "BTAG_ETA_DOWN", "MASS_UP", "MASS_DOWN", "MATCH_UP", "MASS_DOWN",
+    "SCALE_UP", "SCALE_DOWN", 
+    "POWHEG", "MCATNLO", "SPINCORR"};
     
-    //Dummy function to create a 'set' containing the list of all systematics
-    //Include also '' to be able to run in all the systematics
-    static TString syst_array[]={"Nominal", "JERUP", "JERDOWN", "JESUP", "JESDOWN", "PU_UP", "PU_DOWN", "TRIG_UP", "TRIG_DOWN", "BTAG_UP", "BTAG_DOWN", "BTAG_PT_UP", "BTAG_PT_DOWN",
-                          "BTAG_ETA_UP", "BTAG_ETA_DOWN", "MASSUP", "MASSDOWN", "MATCHUP", "MASSDOWN", "SCALEUP", "SCALEDOWN", "POWHEG", "MCATNLO", "SPINCORR", ""};
-    std::set<TString> SetOfSystematics (syst_array, syst_array+sizeof(syst_array)/sizeof(syst_array[0]));
-    return SetOfSystematics;
-}
+void Histo(bool doControlPlots, bool doPreunfold, bool doUnfold, 
+           std::vector<std::string> plots, 
+           std::vector<std::string> systematics, 
+           std::vector<std::string> channels) 
+{
+    //to stay compatible with old code
+    std::set<TString> SetOfValidSystematics;
+    for (auto s: VectorOfValidSystematics) SetOfValidSystematics.insert(s);
 
-
-void Histo(TString type = "", TString oneHistoToProcess = "", TString systematic="", TString channel="") {
     const double lumi = 12100;
 
-    //Take the list of systematica variations from 'SetOfValidSystematics()' and check if the systematic you want to run exists. If doesn't return
-    set<TString> ListOfSysts = SetOfValidSystematics();
+    HistoListReader histoList(doControlPlots ? "HistoList_control" : "HistoList");
+    if (histoList.IsZombie()) exit(12);
+    for (auto it = histoList.begin(); it != histoList.end(); ++it) {
+        const PlotProperties& p = it->second;
+        cout << "checking " << p.name << endl;
+        bool found = false;
+        for (auto plot : plots) {
+            if (p.name.Contains(plot, TString::kIgnoreCase)) {
+                found = true;
+                break;
+            }
+        }
+        if (!found) continue;
 
-    //Check if the channel in which the code will run is valid: ee, emu, mumu, combined or '' (all the channels)
-    if(channel != "ee" && channel != "emu" && channel != "mumu" && channel != "combined" && channel != ""){
-        cout<<"\n\nWARNING (in Histo.C)!! You are using an unsupported channel type."<<endl;
-        cout<<"Please use: ee, emu, mumu, combined or '' (all channels)"<<endl;
-        cout<<"Returning"<<endl;
-        return;
-    }
+        // Create Plotter 
+        Plotter h_generalPlot;
+        h_generalPlot.setLumi(lumi);
+        h_generalPlot.ListOfSystematics(SetOfValidSystematics);
+        
+        /////////////////////////////////////////////////////
+        /////////   UNFOLDING OPTIONS     ///////////////////
+        /////////////////////////////////////////////////////
 
-    bool doPreunfold = 1;
-    bool doUnfold = 1;
-    if (type == "preunfold") doUnfold = 0;
-    if (type == "unfold") doPreunfold = 0;
+        TString outpath = "";
+        h_generalPlot.UnfoldingOptions(doUnfold);
+        h_generalPlot.SetOutpath("");
 
-    if (doUnfold) {
-        HistoListReader histoList("HistoList");
-        if (histoList.IsZombie()) exit(11);
-        for (auto it = histoList.begin(); it != histoList.end(); ++it) {
-            const PlotProperties& p = it->second;
-            cout << "checking " << p.name << endl;
-            if (! p.name.Contains(oneHistoToProcess, TString::kIgnoreCase)) continue;
-
-            // Create Plotter 
-            Plotter h_generalPlot;
-            h_generalPlot.setLumi(lumi);
-            h_generalPlot.ListOfSystematics(ListOfSysts);
-
-            /////////////////////////////////////////////////////
-            /////////   UNFOLDING OPTIONS     ///////////////////
-            /////////////////////////////////////////////////////
-
-            // Unfolding Options
-            bool doSVD = true;
-            TString outpath = "";
-            h_generalPlot.UnfoldingOptions(doSVD);
-            h_generalPlot.SetOutpath("");
-
-            /////////////////////////////////////////////////////
-            /////////////////////////////////////////////////////
-            /////////////////////////////////////////////////////
-
-            h_generalPlot.setOptions(p.name,p.specialComment,p.ytitle,p.xtitle, 
-                                     p.rebin, p.do_dyscale, p.logX, p.logY, 
-                                     p.ymin, p.ymax, p.xmin, p.xmax, p.bins, p.xbinbounds, p.bincenters);
-            h_generalPlot.DYScaleFactor();
-            h_generalPlot.preunfolding(channel, systematic);
-            h_generalPlot.unfolding();
-            h_generalPlot.PlotDiffXSec("emu");
-            h_generalPlot.PlotDiffXSec("mumu");
-            h_generalPlot.PlotDiffXSec("ee");
-            h_generalPlot.PlotDiffXSec("combined");
-            
+        /////////////////////////////////////////////////////
+        /////////////////////////////////////////////////////
+        ///////////////////////////////////////////////////// 
+        
+        h_generalPlot.setOptions(p.name,p.specialComment,p.ytitle,p.xtitle, 
+                                    p.rebin, p.do_dyscale, p.logX, p.logY, 
+                                    p.ymin, p.ymax, p.xmin, p.xmax, p.bins, p.xbinbounds, p.bincenters);
+        h_generalPlot.DYScaleFactor();
+        for (auto channel : channels) {
+            for (auto systematic : systematics) {
+                if (doPreunfold || doControlPlots) {
+                    h_generalPlot.preunfolding(channel, systematic);
+                }
+                if (doControlPlots) {
+                    h_generalPlot.MakeTable();
+                }
+                if (doUnfold) {
+                    h_generalPlot.unfolding();
+                    h_generalPlot.PlotDiffXSec(channel);
+                }
+            }
         }
     }
+
     cout << "Done with the unfolding\n";
-
-
-    if (doPreunfold) {
-        HistoListReader histoList("HistoList_control");
-        if (histoList.IsZombie()) exit(12);
-        for (auto it = histoList.begin(); it != histoList.end(); ++it) {
-            const PlotProperties& p = it->second;
-            cout << "checking " << p.name << endl;
-            if (! p.name.Contains(oneHistoToProcess, TString::kIgnoreCase)) continue;
-
-            // Create Plotter 
-            Plotter h_generalPlot;
-            h_generalPlot.setLumi(lumi);
-            h_generalPlot.ListOfSystematics(ListOfSysts);
-            /////////////////////////////////////////////////////
-            /////////   UNFOLDING OPTIONS     ///////////////////
-            /////////////////////////////////////////////////////
-
-            // Unfolding Options
-            bool doSVD = false; 
-            TString outpath = "";
-            h_generalPlot.UnfoldingOptions(doSVD);
-            h_generalPlot.SetOutpath("");
-
-            /////////////////////////////////////////////////////
-            /////////////////////////////////////////////////////
-            ///////////////////////////////////////////////////// 
-            
-            h_generalPlot.setOptions(p.name,p.specialComment,p.ytitle,p.xtitle, 
-                                     p.rebin, p.do_dyscale, p.logX, p.logY, 
-                                     p.ymin, p.ymax, p.xmin, p.xmax, p.bins, p.xbinbounds, p.bincenters);
-            h_generalPlot.DYScaleFactor();
-            h_generalPlot.preunfolding(channel, systematic);
-            h_generalPlot.MakeTable();
-        }
-    }
 }
 
-int main(int argc, const char * const argv[]) {
-    TString type = argc > 1 ? argv[1] : "";
-    TString oneHistoToProcess = argc > 2 ? argv[2] : "";
-    TString systematic = argc > 3 ? argv[3] : "";
-    TString channel = argc > 4 ? argv[4] : "";
-    Histo(type, oneHistoToProcess, systematic, channel);
+/**
+ * Helper function to create a function which checks if a string found is in the
+ * passed vector of string.
+ * 
+ * @param allowed a vector of allowed strings (char*s)
+ * @return a function taking a std::string and returning a bool
+ */
+std::function<bool(const std::string &s)> makeStringChecker(const std::vector<const char *> allowed) {
+    return [allowed](const std::string &test) {
+        return std::find(begin(allowed), end(allowed), test) != end(allowed);
+    };
+}
+
+int main(int argc, char** argv) {
+    CLParameter<std::string> opt_type("t", "cp|preunfold|unfold|p+u - required, cp=contol plots, p+u = preunfold+unfold", true, 1, 1,
+        makeStringChecker({"cp", "preunfold", "unfold", "p+u"}));    
+    CLParameter<std::string> opt_plots("p", "Name (pattern) of plot; multiple patterns possible", false, 1, 100);
+    CLParameter<std::string> opt_channel("c", "Specify channel(s), valid: emu, ee, mumu, combined. Default: all channels", false, 1, 4,
+        makeStringChecker({"ee", "emu", "mumu", "combined"}));
+    CLParameter<std::string> opt_sys("s", "Systematic variation - default is Nominal", false, 1, 100,
+        makeStringChecker(VectorOfValidSystematics));
+    CLAnalyser::interpretGlobal(argc, argv);
+    
+    std::vector<std::string> channels { "emu", "ee", "mumu", "combined" };
+    if (opt_channel.isSet()) channels = opt_channel.getArguments();
+    std::cout << "Processing channels: "; 
+    for (auto ch: channels) cout << ch << " "; cout << "\n";
+        
+    std::vector<std::string> systematics { "Nominal" };
+    if (opt_sys.isSet()) systematics = opt_sys.getArguments();
+    std::cout << "Processing systematics: "; 
+    for (auto sys: systematics) cout << sys << " "; cout << "\n";
+    
+    std::vector<std::string> plots { "" };
+    if (opt_plots.isSet()) plots = opt_plots.getArguments();
+
+    bool doControlPlots = opt_type[0] == "cp";
+    bool doPreunfold = opt_type[0] == "preunfold" || opt_type[0] == "p+u";
+    bool doUnfold = opt_type[0] == "unfold" || opt_type[0] == "p+u";
+    Histo(doControlPlots, doPreunfold, doUnfold, plots, systematics, channels);
 }

@@ -53,8 +53,8 @@ BaseSVDUnfold.o: ../unfolding/BaseSVDUnfold.C
 plotterclass.o: plotterclass.cpp plotterclass.h utils.o
 	g++ -c -o plotterclass.o $(COMPFLAGS) plotterclass.cpp
 
-Histo: Histo.o plotterclass.o HistoListReader.o utils.o DilepSVDFunctions.o TopSVDFunctions.o TopSVDUnfold.o BaseSVDUnfold.o
-	g++ -o Histo Histo.o plotterclass.o HistoListReader.o utils.o DilepSVDFunctions.o TopSVDFunctions.o TopSVDUnfold.o BaseSVDUnfold.o $(ROOTLIBS)
+Histo: Histo.o plotterclass.o HistoListReader.o utils.o DilepSVDFunctions.o TopSVDFunctions.o TopSVDUnfold.o BaseSVDUnfold.o CommandLineParameters.o
+	g++ -o Histo Histo.o plotterclass.o HistoListReader.o utils.o DilepSVDFunctions.o TopSVDFunctions.o TopSVDUnfold.o BaseSVDUnfold.o CommandLineParameters.o $(ROOTLIBS)
 	
 TypicalError: GetTypicalErrors.C CommandLineParameters.o
 	g++ -o TypicalError GetTypicalErrors.C $(COMPFLAGS) $(ROOTLIBS) CommandLineParameters.o

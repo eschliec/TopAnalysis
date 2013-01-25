@@ -56,6 +56,8 @@ plotterclass.o: plotterclass.cpp plotterclass.h utils.o
 Histo: Histo.o plotterclass.o HistoListReader.o utils.o DilepSVDFunctions.o TopSVDFunctions.o TopSVDUnfold.o BaseSVDUnfold.o
 	g++ -o Histo Histo.o plotterclass.o HistoListReader.o utils.o DilepSVDFunctions.o TopSVDFunctions.o TopSVDUnfold.o BaseSVDUnfold.o $(ROOTLIBS)
 	
+TypicalError: GetTypicalErrors.C
+	g++ -o TypicalError GetTypicalErrors.C $(COMPFLAGS) $(ROOTLIBS)
 
 .PHONY: clean
 clean:

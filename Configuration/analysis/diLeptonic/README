@@ -3,44 +3,42 @@ How to measure a Differential Cross-Section DESY Ntuple-style
 ========Preselection
 This is pretty automatic. A command like:
 
-runall2.pl -d NtupleDirectory -c pf2pat_ntuple2.py -s -x 0.3
+runall2.pl -d NtupleDirectory -c ntuple.py -s
 
-will run on all jobs. Usually the specified number of jobs  should be multiplied by about 0.3 and run on the 12 hour queue
-
+will run on all jobs. Usually you should use the 12 hour queue:
 export NJS_QUEUE=12
 
-This creates a directory called OriginalRoot which has the Ntuple root files and output txt files
+This creates a directory called NtupleDirectory which has the Ntuple root files and output txt files
 
 ======Analysis
 
-The input files need to be listed in selectionList.txt as before. Current version of the
-NTuple is stored in:
-/data/group/top/DiffXS/8TeV/2012-11-09/Nominal (old object definition!!)
+Current version of the NTuple is stored in:
+/data/group/top/DiffXS/<date>/
 
-(/data/group/top/DiffXS/2012ObjectDef/ - new object definition! Nominal and systematic samples are in different folders, check with Tyler...)
+The file /data/group/top/DiffXS/README contains a description of the NTuples, i.e.
+what was new, which <date> to use...
 
-
-so do (mergedRoot just to keep the old naming, there is no merge step):
-mkdir mergedRoot
-ln -s /data/group/top/DiffXS/8TeV/2012-10-25/Nominal mergedRoot/Nominal
-ls -1 --color=no mergedRoot/Nominal/*.root > selectionList.txt
-
-In case you want to run over everything, you have to do the above step inlcuding also JES_UP, JES_DOWN, JER_UP, JER_DOWN, and SIGNALSYST in addition to the Nominal sample.
+The input files need to be listed in selectionList.txt as before, so do:
+ls -1 --color=no /data/group/top/DiffXS/2013_01_25/*.root > selectionList.txt
 
 To compile the code:
-make
+make -j8
 
 To run the analysis, do
 ./load_Analysis
 
+See
+./loadAnalysis --help
+for a list of command line options.
+
 To run only over a specific dataset, you can do
 ./loadAnalysis -f PATTERN
-where PATTERN is in the file name. So ./loadAnalysis -f emu_ would rerun all emu selection.
+where PATTERN is in the file name.
 
 The output produced is in selectionRoot, the files should be fully compatible with
 the old plotterclass.h
 
-For Nominal just do: ./runNominalParallel.pl
+For Nominal just do: ./runNominalParallel.sh
 
 You also need to generate the signal variations with: ./runNominalVariations.sh
 
@@ -102,11 +100,6 @@ it parses the content and for one specific systematic takes the average ('typica
 
 ========
 ========
-To run the new analysis:
-
-
-
-For nominal just do: ./runNominalParallel.pl
 
 
 ========

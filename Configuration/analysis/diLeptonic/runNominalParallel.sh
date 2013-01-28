@@ -4,7 +4,7 @@ for c in ee emu mumu; do
     ./load_Analysis -f dy -d 11 -c $c &
     ./load_Analysis -f dy -d 13 -c $c &
     ./load_Analysis -f dy -d 15 -c $c &
-    ./load_Analysis -f ttbarsignal -c $c &
+    ./load_Analysis -f ttbarsignalplustau.root -c $c &
 done
 
 wait

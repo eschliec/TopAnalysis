@@ -2138,6 +2138,9 @@ double Analysis::calculateBtagSF()
             OneMinusSEff *= 1 - eff * sf;
         }
     }
+
+    if( abs(1.-OneMinusEff) < 1e-8 || abs(1.-OneMinusSEff) < 1e-8 ) return 1;
+
     //per-event SF calculation (also the UP and DOWN variations)
     return ( 1.-OneMinusSEff ) / ( 1.-OneMinusEff );
 }

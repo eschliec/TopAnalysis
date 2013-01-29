@@ -736,9 +736,9 @@ if options.runOnMC:
     if options.systematicsName == "JES_DOWN":
         process.scaledJetEnergy.scaleType = "jes:down"
     if options.systematicsName == "JER_UP":
-        process.scaledJetEnergy.resolutionFactors = cms.vdouble(1.114, 1.113, 1.159, 1.221, 1.443)
+        process.scaledJetEnergy.resolutionFactors = cms.vdouble(1.115, 1.114, 1.161, 1.228, 1.488)
     if options.systematicsName == "JER_DOWN":
-        process.scaledJetEnergy.resolutionFactors = cms.vdouble(0.991, 1.002, 1.034, 1.049, 1.135)
+        process.scaledJetEnergy.resolutionFactors = cms.vdouble(0.990, 1.001, 1.032, 1.042, 1.089)
     
 
 else:

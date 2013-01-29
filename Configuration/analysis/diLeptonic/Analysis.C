@@ -943,8 +943,10 @@ Bool_t Analysis::Process ( Long64_t entry )
         }
     }
     
+    int LleptonId = lepPdgId->at(LeadLeptonNumber);                                
+    int NLleptonId = lepPdgId->at(NLeadLeptonNumber);  
     //Now determine the lepton trigger and ID scale factors
-    double weightLepSF = isMC ? getLeptonIDSF(leptonPlus, leptonMinus) : 1;
+    double weightLepSF = isMC ? getLeptonIDSF(leptons->at(LeadLeptonNumber), leptons->at(NLeadLeptonNumber), LleptonId, NLleptonId) : 1;  
     double weightTrigSF = isMC ? getTriggerSF(leptonX, leptonY) : 1;
     
     //First control plots after dilepton selection (without Z cut)
@@ -2188,6 +2190,7 @@ void Analysis::prepareTriggerSF()
     trigEfficiencies.Close();
 }
 
+
 double Analysis::getTriggerSF(const LV& lep1, const LV& lep2) {
     
     //For 'ee' and 'mumu' channels Xaxis of the 2D plots is the highest pT lepton
@@ -2197,19 +2200,68 @@ double Analysis::getTriggerSF(const LV& lep1, const LV& lep2) {
     return get2DSF(h_TrigSFeta, abs(lep1.eta()), abs(lep2.eta()));
 }
 
-double Analysis::getLeptonIDSF(const LV& lep1, const LV& lep2) {
-    if (!h_LepIDSFpteta) return 1;
-    return TMath::Sqrt(
-        get2DSF(h_LepIDSFpteta, lep1.pt(), lep1.Eta())
-        * get2DSF(h_LepIDSFpteta, lep2.pt(), lep2.Eta()));
-}
+double Analysis::getLeptonIDSF(const LV& lep1, const LV& lep2, int lep1pdgId, int lep2pdgId) {
+    if (!h_MuonIDSFpteta || !h_ElectronIDSFpteta) return 1;
+    if (abs(lep1pdgId)==11 && abs(lep2pdgId)==11) return get2DSF(h_ElectronIDSFpteta, lep1.Eta(), lep1.pt()) * get2DSF(h_ElectronIDSFpteta, lep2.Eta(), lep2.pt());
+    else if (abs(lep1pdgId)==13 && abs(lep2pdgId)==13) return get2DSF(h_MuonIDSFpteta, lep1.Eta(), lep1.pt()) * get2DSF(h_MuonIDSFpteta, lep2.Eta(), lep2.pt());
+    else if (abs(lep1pdgId)==13 && abs(lep2pdgId)== 11) return get2DSF(h_MuonIDSFpteta, lep1.Eta(), lep1.pt()) * get2DSF(h_ElectronIDSFpteta, lep2.Eta(), lep2.pt());
+    else return get2DSF(h_ElectronIDSFpteta, lep1.Eta(), lep1.pt())
+        * get2DSF(h_MuonIDSFpteta, lep2.Eta(), lep2.pt());
+  }
 
-void Analysis::prepareLeptonIDSF()
-{
-    h_LepIDSFpteta = nullptr;
-    std::cout << "Please implement reading the TH2* for the lepton SF\n\n";
-    //...
-}
+void Analysis::prepareLeptonIDSF() {
+    h_MuonIDSFpteta = nullptr; h_ElectronIDSFpteta = nullptr;
+    
+    TFile MuonEfficiencies(TString("MuonSFtop12028.root"));
+    if (MuonEfficiencies.IsZombie()) {
+        cout << "Muon Id/Iso efficiencies not found. Assuming ScaleFactor = 1.\n";
+///        cout << "Currently triggerEfficieny files can be found in the HEAD version of diLeptonic folder\n\n";
+        return;
+    }
+
+    TFile ElecEfficiencies(TString("ElectronSFtop12028.root"));
+    if (ElecEfficiencies.IsZombie()) {
+        cout << "Electron Id/Iso efficiencies not found. Assuming ScaleFactor = 1.\n";
+///        cout << "Currently triggerEfficieny files can be found in the HEAD version of diLeptonic folder\n\n";
+        return;
+    }
+    
+    //Right now pT efficiency flat ==> Not used
+    h_MuonIDSFpteta = dynamic_cast<TH2*>(MuonEfficiencies.Get("MuonSFtop12028"));
+    if ( !h_MuonIDSFpteta ) {
+        cout<<"TH2 >>TH scalefactor << is not in the file "<<MuonEfficiencies.GetName()<<"\n";
+        return;
+    }
+
+    h_ElectronIDSFpteta = dynamic_cast<TH2*>(ElecEfficiencies.Get("GlobalSF"));
+    if ( !h_ElectronIDSFpteta ) {
+        cout<<"TH2 >>TH scalefactor << is not in the file "<<ElecEfficiencies.GetName()<<"\n";
+        return;
+    }
+
+    if (systematic.BeginsWith("LEPT_")) {
+        double factor = systematic.EndsWith("_UP") ? 1 : -1;
+        for (int i = 1; i <= h_MuonIDSFpteta->GetNbinsX(); ++i) {
+            for (int j = 1; j <= h_MuonIDSFpteta->GetNbinsY(); ++j) {
+                h_MuonIDSFpteta->SetBinContent(i, j,
+                    h_MuonIDSFpteta->GetBinContent(i,j) + factor*h_MuonIDSFpteta->GetBinError(i,j));
+            }
+        }
+
+        for (int i = 1; i <= h_ElectronIDSFpteta->GetNbinsX(); ++i) {
+            for (int j = 1; j <= h_ElectronIDSFpteta->GetNbinsY(); ++j) {
+                h_ElectronIDSFpteta->SetBinContent(i, j,h_ElectronIDSFpteta->GetBinContent(i,j) + factor*h_ElectronIDSFpteta->GetBinError(i,j));
+            }
+        }
+    }
+
+    h_MuonIDSFpteta->SetDirectory(0);
+    MuonEfficiencies.Close();
+    h_ElectronIDSFpteta->SetDirectory(0);
+    ElecEfficiencies.Close();
+
+
+  }
 
 
 void Analysis::prepareBtagSF()

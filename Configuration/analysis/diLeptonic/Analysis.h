@@ -322,13 +322,13 @@ class Analysis : public TSelector
     //other SF
     double lumiWeight; //needed while using old plotterclass
     
-    TH2 *h_TrigSFeta, *h_LepIDSFpteta;
+    TH2 *h_TrigSFeta, *h_MuonIDSFpteta, *h_ElectronIDSFpteta;
     
     void prepareTriggerSF();
     void prepareBtagSF();
     void prepareLeptonIDSF();
     double getTriggerSF(const LV& lep1, const LV& lep2);
-    double getLeptonIDSF(const LV& lep1, const LV& lep2);
+    double getLeptonIDSF(const LV& lep1, const LV& lep2, int x, int y);
     double get2DSF(TH2* histo, double x, double y);
     
     // store the object in the output list and return it

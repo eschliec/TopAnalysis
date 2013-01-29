@@ -17,8 +17,12 @@ using namespace std;
 
 const std::vector<const char*> VectorOfValidSystematics 
     {"Nominal", 
-    "JER_UP", "JER_DOWN", "JES_UP", "JES_DOWN", "PU_UP", "PU_DOWN", "TRIG_UP", "TRIG_DOWN", 
-    "BTAG_UP", "BTAG_DOWN", "BTAG_PT_UP", "BTAG_PT_DOWN", "BTAG_ETA_UP", "BTAG_ETA_DOWN", "MASS_UP", "MASS_DOWN", "MATCH_UP", "MASS_DOWN",
+    "JER_UP", "JER_DOWN", "JES_UP", "JES_DOWN", "PU_UP", "PU_DOWN", "TRIG_UP", "TRIG_DOWN", "LEPT_UP", "LEPT_DOWN",
+    "BTAG_UP", "BTAG_DOWN", "BTAG_LJET_UP", "BTAG_LJET_DOWN",
+    "BTAG_PT_UP", "BTAG_PT_DOWN", "BTAG_ETA_UP", "BTAG_ETA_DOWN",
+    "BTAG_LJET_PT_UP", "BTAG_LJET_PT_DOWN", "BTAG_LJET_ETA_UP", "BTAG_LJET_ETA_DOWN",
+    "BTAG_BEFF_UP", "BTAG_BEFF_DOWN", "BTAG_CEFF_UP", "BTAG_CEFF_DOWN", "BTAG_LEFF_UP", "BTAG_LEFF_DOWN",
+    "MASS_UP", "MASS_DOWN", "MATCH_UP", "MASS_DOWN",
     "SCALE_UP", "SCALE_DOWN", 
     "POWHEG", "MCATNLO", "SPINCORR"};
     
@@ -70,7 +74,7 @@ void Histo(bool doControlPlots, bool doPreunfold, bool doUnfold,
         h_generalPlot.DYScaleFactor();
         for (auto channel : channels) {
             for (auto systematic : systematics) {
-                if (doPreunfold || doControlPlots) {
+                if (doPreunfold || doControlPlots || doUnfold) {
                     h_generalPlot.preunfolding(channel, systematic);
                 }
                 if (doControlPlots) {

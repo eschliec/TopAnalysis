@@ -35,7 +35,7 @@ void Histo(bool doControlPlots, bool doPreunfold, bool doUnfold,
     std::set<TString> SetOfValidSystematics;
     for (auto s: VectorOfValidSystematics) SetOfValidSystematics.insert(s);
 
-    const double lumi = 12100;
+    const double lumi = 12210;
 
     HistoListReader histoList(doControlPlots ? "HistoList_control" : "HistoList");
     if (histoList.IsZombie()) exit(12);

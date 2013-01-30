@@ -234,6 +234,9 @@ class Analysis : public TSelector
     TH1 *h_LeptonpT_diLep, *h_LeptonEta_diLep;
     TH1 *h_AntiLeptonpT_diLep, *h_AntiLeptonEta_diLep;
 
+    TH1 *h_leptonPtBeforeKinReco, *h_leptonEtaBeforeKinReco;
+    TH1 *h_leptonPtAfterKinReco, *h_leptonEtaAfterKinReco;
+    
     TH1 *h_HypAntiToppT, *h_HypAntiTopEta, *h_HypAntiTopMass,*h_HypAntiTopRapidity;
     TH1 *h_HypToppT, *h_HypTopEta,*h_HypTopMass, *h_HypTopRapidity;
     

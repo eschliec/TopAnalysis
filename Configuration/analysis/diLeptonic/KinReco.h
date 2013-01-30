@@ -15,6 +15,7 @@ struct TtDilepEvtSolution {
     TLorentzVector ttbar;
     double recMtop;
     double weight;
+    int ntags;
 };
 
 class TF2;

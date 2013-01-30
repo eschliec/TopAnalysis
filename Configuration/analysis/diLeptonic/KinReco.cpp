@@ -59,6 +59,10 @@ TtFullLepKinSolver::getNuSolution(const TLorentzVector& LV_antilepton,
             maxLV_neutrinoBar = LV_n_;
         }
     }
+    
+//     if (weightmax != -1 && ( LV_n.Pt() > 3500 || LV_n_.Pt() > 3500)) {
+//          std::cout << "  --> neutrino/nubar = " << x(LV_n) << x(LV_n_) << " weight = " << weightmax << "\n";
+//     }
 
     TtFullLepKinSolver::NeutrinoSolution nuSol;
     nuSol.neutrino    = maxLV_neutrino;
@@ -367,7 +371,7 @@ GetKinSolutions(const LV& leptonMinus, const LV& leptonPlus,
     static std::vector<double> nu {30.641, 57.941, 22.344, 57.533, 22.232}; //in ntuple
     //std::vector<double> nu {35., 70., 20., 75., 21.}; //in ntuple
     
-    static TtFullLepKinSolver solver(nu, 80.22, 4.8);
+    static TtFullLepKinSolver solver(nu, 80.4, 4.8);
     
     
     TLorentzVector leptonPlus_tlv = LVtoTLV(leptonPlus);
@@ -386,11 +390,18 @@ GetKinSolutions(const LV& leptonMinus, const LV& leptonPlus,
         for (size_t ibbar = 0; ibbar < max_jets; ++ibbar) {
             // avoid the diagonal: b and bbar must be distinct jets
             if (ib == ibbar) continue;
+            constexpr double BtagWP = 0.244;
+            int ntags = btags->at(ib) > BtagWP;
+            ntags += btags->at(ibbar) > BtagWP;
+            
+            //only use jet combinations with at least one tag
+            if (ntags == 0) continue;
+            
             TtDilepEvtSolution best;
             double weightBest = 0;
             
 //             for(double topMass = 100; topMass < 300.5; topMass += 1) 
-//             for(double topMass = 160; topMass < 180.5; topMass += 1) 
+//             for(double topMass = 150; topMass < 210.5; topMass += 1) 
             double topMass = 173;
             {
 //                 std::cout << "input = " << x(leptonPlus_tlv) << x(leptonMinus_tlv) 
@@ -398,8 +409,8 @@ GetKinSolutions(const LV& leptonMinus, const LV& leptonPlus,
                  auto sol = solver.GetKinSolution(leptonMinus_tlv, leptonPlus_tlv, 
                                                   jets_tlv.at(ib), jets_tlv.at(ibbar), met_tlv, topMass);
                  if (sol.weight > 0) {
+                    sol.ntags = ntags;
                     //try to modify the weight
-                    sol.weight += 100 * (btags->at(ib) + btags->at(ibbar)); //abs(topMass - 173)/100
                     if (sol.weight > weightBest) {
                         weightBest = sol.weight;
                         best = sol;
@@ -415,9 +426,14 @@ GetKinSolutions(const LV& leptonMinus, const LV& leptonPlus,
     }           
   
     // sort vectors by weight in decreasing order
-    sort(begin(result), end(result), 
+    // - actually, we only need the best element!
+    // - so using nth_element instead of sort. Use sort if you need all elements sorted
+    // std::sort(begin(result), end(result),          
+    std::nth_element(begin(result), begin(result), end(result),
         [](const TtDilepEvtSolution& a, const TtDilepEvtSolution& b){
-            return b.weight < a.weight; 
+            return  b.ntags < a.ntags
+                    ||
+                    (b.ntags == a.ntags && b.weight < a.weight);
         });
 
     return result;

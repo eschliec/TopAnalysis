@@ -1,6 +1,10 @@
 #include <TH1.h>
 #include <TCanvas.h>
 #include <TFile.h>
+#include <TSystem.h>
+#include <Rtypes.h>
+#include <TAxis.h>
+#include <TLegend.h>
 #include "utils.h"
 
 TH1 *getRatio(TH1 *bkr, TH1 *akr) {
@@ -10,8 +14,15 @@ TH1 *getRatio(TH1 *bkr, TH1 *akr) {
     return akr;    
 }
 
+void saveRootAndEps(TH1 *h, TString name) {
+    h->Write(name);
+    TCanvas c;
+    h->Draw();
+    c.SaveAs("Plots/kinReco/" + name + ".eps");    
+}
 
 int main() {
+    gSystem->mkdir("Plots/kinReco", true);
     TFile out("Plots/kinRecoPlots.root", "RECREATE");
     auto reader = RootFileReader::getInstance();
     
@@ -36,12 +47,30 @@ int main() {
         auto sfall = static_cast<TH1*>(dataRatio->Clone());
         sfall->Divide(mcallRatio);
         
-        out.cd();
-        dataRatio->Write(ch + "_" + plot + "_dataRatio");
-        mcsignalRatio->Write(ch + "_" + plot + "_mcSignalRatio");
-        mcallRatio->Write(ch + "_" + plot + "_mcAllRatio");
-        sf->Write(ch + "_" + plot + "_sf_signal");
-        sfall->Write(ch + "_" + plot + "_sf_allmc");
+        out.cd();        
+        saveRootAndEps(dataRatio, ch + "_" + plot + "_dataRatio");
+        saveRootAndEps(mcsignalRatio, ch + "_" + plot + "_mcSignalRatio");
+        saveRootAndEps(mcallRatio, ch + "_" + plot + "_mcAllRatio");
+        saveRootAndEps(sf, ch + "_" + plot + "_sf_signal");
+        saveRootAndEps(sfall, ch + "_" + plot + "_sf_allmc");
+        
+        TCanvas c;
+        dataRatio->Draw();
+        dataRatio->SetTitle(ch + " channel: " + plot + " - Kin. Reco. behaviour");
+        dataRatio->GetYaxis()->SetRangeUser(0.6, 1.1);
+        dataRatio->GetYaxis()->SetTitleOffset(1.1);
+        mcallRatio->SetMarkerColor(kRed);
+        mcallRatio->SetLineColor(kRed);
+        mcallRatio->Draw("same");
+        sfall->SetMarkerColor(kBlue);
+        sfall->Draw("same");
+        //sfall->Fit("pol0", "", "same");
+        TLegend l(0.78, 0.95, 0.99, 0.7);
+        l.AddEntry(dataRatio, "eff. in data");
+        l.AddEntry(mcallRatio, "eff. in MC");
+        l.AddEntry(sfall, "SF");
+        l.Draw("same");
+        c.SaveAs("Plots/kinReco/" + ch + "_" + plot + "_3in1.eps");
     }
     out.Write();
 }

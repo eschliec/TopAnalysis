@@ -55,9 +55,12 @@ plotterclass.o: plotterclass.cpp plotterclass.h utils.o
 
 Histo: Histo.o plotterclass.o HistoListReader.o utils.o DilepSVDFunctions.o TopSVDFunctions.o TopSVDUnfold.o BaseSVDUnfold.o CommandLineParameters.o
 	g++ -o Histo Histo.o plotterclass.o HistoListReader.o utils.o DilepSVDFunctions.o TopSVDFunctions.o TopSVDUnfold.o BaseSVDUnfold.o CommandLineParameters.o $(ROOTLIBS)
-	
+
 TypicalError: GetTypicalErrors.C CommandLineParameters.o
 	g++ -o TypicalError GetTypicalErrors.C $(COMPFLAGS) $(ROOTLIBS) CommandLineParameters.o
+
+kinRecoEfficienciesAndSF: kinRecoEfficienciesAndSF.cpp utils.o
+	g++ -o kinRecoEfficienciesAndSF kinRecoEfficienciesAndSF.cpp $(COMPFLAGS) $(ROOTLIBS) utils.o
 
 .PHONY: clean
 clean:

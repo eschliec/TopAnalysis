@@ -134,6 +134,6 @@ private:
 std::vector< TtDilepEvtSolution > 
 GetKinSolutions(const LV& leptonMinus, const LV& leptonPlus, 
                 const VLV* jets, const std::vector<double>* btags,
-                const LV* met);
+                const LV* met, double JetPtCut);
 
 #endif

@@ -378,7 +378,7 @@ class Analysis : public TSelector
                                TH1 *h_control, double value, double weight);
     
     bool kinRecoOnTheFly;
-    void calculateKinReco(const LV &leptonMinus, const LV &leptonPlus);
+    void calculateKinReco(const LV &leptonMinus, const LV &leptonPlus, double JETPTCUT);
     
         
 public:

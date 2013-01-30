@@ -972,7 +972,7 @@ Bool_t Analysis::Process ( Long64_t entry )
     double weightKinFit = 1;
     double weightBtagSF = -1; //trick: initialize to -1 to avoid calculation of the btagSF twice
     
-    if (kinRecoOnTheFly || true) calculateKinReco(leptonMinus, leptonPlus);
+    if (kinRecoOnTheFly || true) calculateKinReco(leptonMinus, leptonPlus, JETPTCUT);
     bool hasSolution = HypTop->size() > 0;
     
     if ( isZregion ) {
@@ -2370,9 +2370,9 @@ void Analysis::CreateBinnedControlPlots(TH1* h_differential, TH1* h_control)
     }
 }
 
-void Analysis::calculateKinReco(const LV& leptonMinus, const LV& leptonPlus)
+void Analysis::calculateKinReco(const LV& leptonMinus, const LV& leptonPlus, double JETPTCUT)
 {
-    auto sols = GetKinSolutions(leptonMinus, leptonPlus, jets, jetBTagCSV, met);
+    auto sols = GetKinSolutions(leptonMinus, leptonPlus, jets, jetBTagCSV, met, JETPTCUT);
     if (sols.size()) {
         const TtDilepEvtSolution &sol = sols[0];
         HypTop->clear(); HypTop->push_back(TLVtoLV(sol.top));

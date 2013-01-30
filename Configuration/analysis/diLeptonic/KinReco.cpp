@@ -360,7 +360,7 @@ TtFullLepKinSolver::GetKinSolution(const TLorentzVector& leptonMinus, const TLor
 std::vector<TtDilepEvtSolution> 
 GetKinSolutions(const LV& leptonMinus, const LV& leptonPlus, 
                 const VLV *jets, const std::vector<double> *btags, 
-                const LV* met)
+                const LV* met, double JetPtCut)
 {
     std::vector<TtDilepEvtSolution> result;
     //std::vector<double> nu {30.7137,56.2880,23.0744,59.1015,24.9145}; //old defaults
@@ -369,14 +369,17 @@ GetKinSolutions(const LV& leptonMinus, const LV& leptonPlus,
     
     static TtFullLepKinSolver solver(nu, 80.22, 4.8);
     
-    size_t max_jets = jets->size(); //run over all jets
     
     TLorentzVector leptonPlus_tlv = LVtoTLV(leptonPlus);
-    TLorentzVector leptonMinus_tlv = LVtoTLV(leptonMinus);           
+    TLorentzVector leptonMinus_tlv = LVtoTLV(leptonMinus);
     TLorentzVector met_tlv = LVtoTLV(*met);
-            
+    
     std::vector<TLorentzVector> jets_tlv;
-    for (const auto& jet : *jets) jets_tlv.push_back(LVtoTLV(jet));
+    for (const auto& jet : *jets) {
+        if(jet.pt() > JetPtCut) jets_tlv.push_back(LVtoTLV(jet));
+    }
+    
+    size_t max_jets = jets_tlv.size(); //run over all 'googd' jets
     
     // consider all permutations
     for (size_t ib = 0; ib < max_jets; ++ib) {

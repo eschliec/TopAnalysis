@@ -471,7 +471,6 @@ void Analysis::SlaveBegin ( TTree * )
     CreateBinnedControlPlots(h_HypTopRapidity, h_MET);
     CreateBinnedControlPlots(h_HypTopRapidity, h_diLepMassFull);
     
-
     //btagSF
     const int PtMax = 11;
     const int EtaMax = 5;
@@ -724,11 +723,13 @@ Bool_t Analysis::Process ( Long64_t entry )
     
     double BtagWP = 0.244; //CSV Loose working point
     vector<int> BJetIndex;
+    int nbjets = 0;
     for ( vector<double>::iterator it = jetBTagCSV->begin(); it<jetBTagCSV->end(); it++ ) {
-        if ( *it > BtagWP ) {
+        if ( *it > BtagWP && jets->at(nbjets).pt() >JETPTCUT && abs(jets->at(nbjets).eta() )< 2.4) {
             //BJetIndex.push_back ( *it );
             BJetIndex.push_back((it-jetBTagCSV->begin())); //change asked by Tyler
         }
+        nbjets++;
     }
 
     LV LeadGenTop, NLeadGenTop;

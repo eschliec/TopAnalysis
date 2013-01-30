@@ -62,6 +62,7 @@ void Plotter::unfolding()
     TString sys_array[] = {"DY_","BG_","PU_", "JER", "JES", "TRIG_","MASS", "MATCH", "SCALE","BTAG_ETA_","BTAG_PT_"};
     double sys_array_flat_value[]={0, 0, 0, 0, 0, 0,0, 0, 0, 0, 0};
     TString channel_array[] = {"ee","mumu","emu","combined"};
+//     TString channel_array[] = {"emu"};
 
     vector<TString> vec_systematic (sys_array, sys_array + sizeof(sys_array)/sizeof(sys_array[0]));
     vector<double>  vec_flat_value (sys_array_flat_value, sys_array_flat_value +sizeof(sys_array_flat_value)/sizeof(sys_array_flat_value[0]));
@@ -805,7 +806,7 @@ bool Plotter::fillHisto()
     for(unsigned int i=0; i<dataset.size(); i++){
         TH1D *hist = fileReader->GetClone<TH1D>(dataset.at(i), name, true);
         if (!hist) return false;
-        if (!name.Contains("bcp_") && !name.Contains("Lead") 
+        if (!name.Contains("bcp_") && !name.Contains("Lead") && !name.EndsWith("bkr") && !name.EndsWith("akr")
             && (name.Contains("Lepton") || name.Contains("BJet") || name.Contains("Top")))
         {
             TString stemp = name;
@@ -1181,6 +1182,7 @@ void Plotter::write(TString Channel, TString Systematic) // do scaling, stacking
     TExec *setex2 = new TExec("setex2","gStyle->SetErrorX(0.)");
     setex2->Draw();
     drawhists[0]->Draw("same,e1");
+    drawhists[0]->SaveAs(outpathPlots+subfolderChannel+"/"+Systematic+"/"+name+"_data.root");
 
     DrawCMSLabels(1, 8);
     DrawDecayChLabel(channelLabel[channelType]);
@@ -1190,7 +1192,20 @@ void Plotter::write(TString Channel, TString Systematic) // do scaling, stacking
     // Create Directory for Output Plots 
     gSystem->mkdir(outpathPlots+"/"+subfolderChannel+"/"+Systematic, true);
     c->Print(outpathPlots+subfolderChannel+"/"+Systematic+"/"+name+".eps");
+    //c->Print(outpathPlots+subfolderChannel+"/"+Systematic+"/"+name+".root");
     //c->Print(outpathPlots+subfolderChannel+"/"+Systematic+"/"+name+".C");
+    
+    TH1 *sumMC = static_cast<TH1*>(drawhists[0]->Clone());
+    sumMC->Clear();
+    for (size_t i = 0; i < hists.size(); ++i) {
+        if (legends.at(i) != "Data") sumMC->Add(drawhists[i]);
+        if (legends.at(i) == "t#bar{t} Signal") {
+            drawhists[i]->SaveAs(outpathPlots+subfolderChannel+"/"+Systematic+"/"+name+"_signalmc.root");
+        }
+    }
+    sumMC->SetName(name);
+    sumMC->SaveAs(outpathPlots+subfolderChannel+"/"+Systematic+"/"+name+"_summc.root");
+    
     c->Clear();
     leg->Clear();
     delete c;

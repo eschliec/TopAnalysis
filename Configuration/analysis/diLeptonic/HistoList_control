@@ -42,3 +42,9 @@ HypToppTLead Standard Topquarks p_{T}^{Lead.t} 10 1 0 0 0 0 0 0 0 0
 HypToppTNLead Standard Topquarks p_{T}^{N.Leadl.t} 10 1 0 0 0 0 0 0 0 0
 HypLLBarpT Standard Events p_{T}^{l^{+}l^{-}} 1 1 0 0 0 0 0 0 0 0
 HypMet Standard Events E_{T}^{miss} 1 1 0 0 0 0 0 0 0 0
+
+LeptonpTbkr Standard Leptons p_{T} 2 1 0 0 0 0 20 400 0 0
+LeptonpTakr Standard Leptons p_{T} 2 1 0 0 0 0 20 400 0 0
+LeptonEtabkr Standard Leptons p_{T} 2 1 0 0 0 0 20 400 0 0
+LeptonEtaakr Standard Leptons p_{T} 2 1 0 0 0 0 20 400 0 0
+

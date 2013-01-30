@@ -159,6 +159,11 @@ void Analysis::SlaveBegin ( TTree * )
     h_ElectronpT = store(new TH1D ( "ElectronpT", "Electron pT (emu channel)", 80, 0, 400 ));
     h_ElectronEta = store(new TH1D ( "ElectronEta", "Electron Eta (emu channel)", 100, -5, 5 ));
 
+    h_leptonPtBeforeKinReco = store(new TH1D ( "LeptonpTbkr", "Lepton pT (before kin reco)", 80, 0, 400 ));
+    h_leptonPtAfterKinReco = store(new TH1D ( "LeptonpTakr", "Lepton pT (after kin reco)", 80, 0, 400 ));
+    h_leptonEtaBeforeKinReco = store(new TH1D ( "LeptonEtabkr", "Lepton #eta (before kin reco)", 80, -2.5, 2.5 ));
+    h_leptonEtaAfterKinReco = store(new TH1D ( "LeptonEtaakr", "Lepton #eta (after kin reco)", 80, -2.5, 2.5 ));
+    
     h_LeptonpT = store(new TH1D ( "LeptonpT", "Lepton pT", 80, 0, 400 ));
     h_LeptonEta = store(new TH1D ( "LeptonEta", "Lepton Eta", 100, -5, 5 ));
     h_LeptonpT_diLep = store(new TH1D ( "LeptonpT_diLep", "Lepton pT (after dilepton cut)", 80, 0, 400 ));
@@ -778,6 +783,8 @@ Bool_t Analysis::Process ( Long64_t entry )
                     h_VisGenBJetpT->Fill(allGenJets->at(BHadronIndex).Pt(), trueLevelWeight );
                     h_VisGenAntiBJetpT->Fill(allGenJets->at(AntiBHadronIndex).Pt(), trueLevelWeight );
                     h_VisGenMet->Fill(GenMet->Pt(), trueLevelWeight);
+                    
+                    //for HT, count only >= JETPTCUT
                     genHT = getJetHT(*allGenJets, JETPTCUT);
                     h_VisGenHT->Fill(genHT, trueLevelWeight);
 
@@ -1077,8 +1084,10 @@ Bool_t Analysis::Process ( Long64_t entry )
     h_BjetMulti->Fill(BJetIndex.size(), weight);
     h_jetMulti->Fill(jets->size(), weight);
     
-    //for HT, count only >= 30 GeV jets
-
+    h_leptonPtBeforeKinReco->Fill(leptonMinus.Pt(), weight);
+    h_leptonPtBeforeKinReco->Fill(leptonPlus.Pt(), weight);
+    h_leptonEtaBeforeKinReco->Fill(leptonMinus.Eta(), weight);
+    h_leptonEtaBeforeKinReco->Fill(leptonPlus.Eta(), weight);
 
     //=== CUT ===
     //Require at least one solution for the kinematic event reconstruction
@@ -1089,6 +1098,11 @@ Bool_t Analysis::Process ( Long64_t entry )
     h_jetMultiXSec->Fill(jets->size(), weight);
     h_jetMultiNoPU->Fill(jets->size(), weight / weightPU );
     h_diLepMassFull_fullSel->Fill(dilepton.M(), weight);
+    
+    h_leptonPtAfterKinReco->Fill(leptonMinus.Pt(), weight);
+    h_leptonPtAfterKinReco->Fill(leptonPlus.Pt(), weight);
+    h_leptonEtaAfterKinReco->Fill(leptonMinus.Eta(), weight);
+    h_leptonEtaAfterKinReco->Fill(leptonPlus.Eta(), weight);
     
     //create helper variables
     
@@ -1480,8 +1494,7 @@ void Analysis::Terminate()
     TObjString(isSignal ? "1" : "0").Write("isSignal");
     TObjString(isMC ? "1" : "0").Write("isMC");
     f.Close();
-    
-    cout<<"Created: "<<f_savename<<endl;
+    cout<<"Created: \033[1;1m"<<f_savename<<"\033[1;m\n\n";
     
     if (isSignal) {
         cout << "Signal sample, writing out btag efficiencies\n";
@@ -1565,6 +1578,7 @@ void Analysis::Terminate()
         h_ltaggedjets->Write("LEffPerJet");
         
         fbtag.Close();
+        cout << "Done.\n\n\n";
     }
     fOutput->SetOwner();
     fOutput->Clear();
@@ -2022,14 +2036,25 @@ bool Analysis::getLeptonPair(size_t &LeadLeptonNumber, size_t &NLeadLeptonNumber
 {
     //find opposite-charge leading two leptons
     //the first lepton is always at index 0 because we only have two different charges
-    for (size_t i = 1; i < leptons->size(); ++i) {
+    
+    // ---> this would be true if the electrons and muons had all cuts applied
+    auto leptonPassesCut = [](const LV &lep){ return abs(lep.eta()) < 2.4 && lep.pt() > 20;};
+    
+    //find first lepton:
+    for (LeadLeptonNumber = 0; LeadLeptonNumber < leptons->size(); ++LeadLeptonNumber) {
+        if (leptonPassesCut(leptons->at(LeadLeptonNumber))) break;
+    }
+    
+    //find second lepton
+    for (size_t i = LeadLeptonNumber + 1; i < leptons->size(); ++i) {
+        if (!leptonPassesCut(leptons->at(i))) continue;
         int product = lepPdgId->at(0) * lepPdgId->at(i);
         if (product < 0) {
-            LeadLeptonNumber = 0;
             NLeadLeptonNumber = i;
             return product == channelPdgIdProduct;
         }            
     }
+    
     return false;
 }
 
@@ -2191,7 +2216,6 @@ void Analysis::prepareTriggerSF()
     trigEfficiencies.Close();
 }
 
-
 double Analysis::getTriggerSF(const LV& lep1, const LV& lep2) {
     
     //For 'ee' and 'mumu' channels Xaxis of the 2D plots is the highest pT lepton
@@ -2208,7 +2232,7 @@ double Analysis::getLeptonIDSF(const LV& lep1, const LV& lep2, int lep1pdgId, in
     else if (abs(lep1pdgId)==13 && abs(lep2pdgId)== 11) return get2DSF(h_MuonIDSFpteta, lep1.Eta(), lep1.pt()) * get2DSF(h_ElectronIDSFpteta, lep2.Eta(), lep2.pt());
     else return get2DSF(h_ElectronIDSFpteta, lep1.Eta(), lep1.pt())
         * get2DSF(h_MuonIDSFpteta, lep2.Eta(), lep2.pt());
-  }
+}
 
 void Analysis::prepareLeptonIDSF() {
     h_MuonIDSFpteta = nullptr; h_ElectronIDSFpteta = nullptr;
@@ -2262,7 +2286,7 @@ void Analysis::prepareLeptonIDSF() {
     ElecEfficiencies.Close();
 
 
-  }
+}
 
 
 void Analysis::prepareBtagSF()
@@ -2386,5 +2410,19 @@ void Analysis::calculateKinReco(const LV& leptonMinus, const LV& leptonPlus, dou
         HypAntiNeutrino->clear(); HypAntiNeutrino->push_back(TLVtoLV(sol.neutrinoBar));
         HypJet0index->clear(); HypJet0index->push_back(sol.jetB_index);
         HypJet1index->clear(); HypJet1index->push_back(sol.jetBbar_index);
+    }
+    //check for strange events
+    if (false && HypTop->size()) {
+        double Ecm = (HypTop->at(0) + HypAntiTop->at(0) 
+                        + HypLepton->at(0) + HypAntiLepton->at(0)
+                        + HypNeutrino->at(0) + HypAntiNeutrino->at(0)).E();
+        //does event's CM energy exceed LHC's energy?
+        if (Ecm > 8000) {
+            static int seCounter = 0;
+            cout << "\n" << ++seCounter << " - Strange event: " << runNumber<<":"<<lumiBlock<<":"<<eventNumber
+            << "\ntop:  " << HypTop->at(0) << " tbar: " << HypAntiTop->at(0)
+            << "\nNeutrino:  " << HypNeutrino->at(0) << " NeutrinoBar: " << HypAntiNeutrino->at(0)
+            <<"\n";
+        }
     }
 }

@@ -520,6 +520,14 @@ Bool_t Analysis::Process ( Long64_t entry )
     
     if ( ++EventCounter % 100000 == 0 ) cout << "Event Counter: " << EventCounter << endl;
     
+    for (size_t i = 0; i < jets->size(); ++i) {
+        if (jets->at(i).pt() < JETPTCUT) {
+            jets->erase(jets->begin() + i, jets->end());
+            jetBTagCSV->erase(jetBTagCSV->begin() + i, jetBTagCSV->end());
+            break;
+        }
+    }
+    
     //do we have a DY true level cut?
     if (checkZDecayMode && !checkZDecayMode(entry)) return kTRUE;
     
@@ -728,13 +736,11 @@ Bool_t Analysis::Process ( Long64_t entry )
     
     double BtagWP = 0.244; //CSV Loose working point
     vector<int> BJetIndex;
-    int nbjets = 0;
     for ( vector<double>::iterator it = jetBTagCSV->begin(); it<jetBTagCSV->end(); it++ ) {
-        if ( *it > BtagWP && jets->at(nbjets).pt() >JETPTCUT && abs(jets->at(nbjets).eta() )< 2.4) {
+        if ( *it > BtagWP) {
             //BJetIndex.push_back ( *it );
             BJetIndex.push_back((it-jetBTagCSV->begin())); //change asked by Tyler
         }
-        nbjets++;
     }
 
     LV LeadGenTop, NLeadGenTop;

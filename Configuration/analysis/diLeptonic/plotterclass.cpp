@@ -26,7 +26,7 @@
 
 using namespace std;
 
-const double Plotter::topxsec = 238.1; //again changes with normalization, must be set outside of the class
+const double Plotter::topxsec = 234; //again changes with normalization, must be set outside of the class
 
 void Plotter::setLumi(double newLumi)
 {
@@ -1709,8 +1709,8 @@ double Plotter::CalcXSec(std::vector<TString> datasetVec, double InclusiveXsecti
         TString Dummy="";
 
         ResultsEE>>Dummy>>Dummy>>Dummy>>Dummy>>Dummy>>InclusiveXsectionVec[0]>>Dummy>>InclusiveXsectionStatErrorVec[0];
-        ResultsMuMu>>Dummy>>Dummy>>Dummy>>Dummy>>Dummy>>InclusiveXsectionVec[1]>>Dummy>>InclusiveXsectionStatErrorVec[2];
-        ResultsEMu>>Dummy>>Dummy>>Dummy>>Dummy>>Dummy>>InclusiveXsectionVec[2]>>Dummy>>InclusiveXsectionStatErrorVec[1];
+        ResultsMuMu>>Dummy>>Dummy>>Dummy>>Dummy>>Dummy>>InclusiveXsectionVec[1]>>Dummy>>InclusiveXsectionStatErrorVec[1];
+        ResultsEMu>>Dummy>>Dummy>>Dummy>>Dummy>>Dummy>>InclusiveXsectionVec[2]>>Dummy>>InclusiveXsectionStatErrorVec[2];
 //         SystErrEE>>Dummy>>Dummy>>Dummy>>Dummy>>Dummy>perChannelDiffXSecSystError[0];
 //         SystErrMuMu>>Dummy>>Dummy>>Dummy>>Dummy>>Dummy>>perChannelDiffXSecSystError[1];
 //         SystErrEMu>>Dummy>>Dummy>>Dummy>>Dummy>>Dummy>>perChannelDiffXSecSystError[2];
@@ -3139,7 +3139,7 @@ double Plotter::SampleXSection(const TString& filename){
     //  AN-12/194    AN-12/228
     
     if(filename.Contains("run"))              {return 1;}
-    else if(filename.Contains("ttbar"))       {return 238.1;}
+    else if(filename.Contains("ttbar"))       {return topxsec;}
     else if(filename.Contains("single"))      {return 11.1;}
     else if(filename.Contains("ww"))          {return 54.838;}
     else if(filename.Contains("wz"))          {return 33.21;}

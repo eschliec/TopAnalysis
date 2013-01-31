@@ -986,8 +986,9 @@ Bool_t Analysis::Process ( Long64_t entry )
     double weightKinFit = 1;
     double weightBtagSF = -1; //trick: initialize to -1 to avoid calculation of the btagSF twice
     
-    if (kinRecoOnTheFly || true) calculateKinReco(leptonMinus, leptonPlus, JETPTCUT);
     bool hasSolution = HypTop->size() > 0;
+    if (kinRecoOnTheFly || true) 
+        hasSolution = calculateKinReco(leptonMinus, leptonPlus, JETPTCUT);
     
     if ( isZregion ) {
         Looseh1->Fill(dilepton.M(), weight);
@@ -2401,21 +2402,21 @@ void Analysis::CreateBinnedControlPlots(TH1* h_differential, TH1* h_control)
     }
 }
 
-void Analysis::calculateKinReco(const LV& leptonMinus, const LV& leptonPlus, double JETPTCUT)
+bool Analysis::calculateKinReco(const LV& leptonMinus, const LV& leptonPlus, double JETPTCUT)
 {
     auto sols = GetKinSolutions(leptonMinus, leptonPlus, jets, jetBTagCSV, met, JETPTCUT);
     if (sols.size()) {
         const TtDilepEvtSolution &sol = sols[0];
-        HypTop->clear(); HypTop->push_back(TLVtoLV(sol.top));
-        HypAntiTop->clear(); HypAntiTop->push_back(TLVtoLV(sol.topBar));
-        HypLepton->clear(); HypLepton->push_back(TLVtoLV(sol.lm));
+        HypTop->clear();        HypTop->push_back(TLVtoLV(sol.top));
+        HypAntiTop->clear();    HypAntiTop->push_back(TLVtoLV(sol.topBar));
+        HypLepton->clear();     HypLepton->push_back(TLVtoLV(sol.lm));
         HypAntiLepton->clear(); HypAntiLepton->push_back(TLVtoLV(sol.lp));
-        HypBJet->clear(); HypBJet->push_back(TLVtoLV(sol.jetB));
-        HypAntiBJet->clear(); HypAntiBJet->push_back(TLVtoLV(sol.jetBbar));
-        HypNeutrino->clear(); HypNeutrino->push_back(TLVtoLV(sol.neutrino));
+        HypBJet->clear();       HypBJet->push_back(TLVtoLV(sol.jetB));
+        HypAntiBJet->clear();   HypAntiBJet->push_back(TLVtoLV(sol.jetBbar));
+        HypNeutrino->clear();   HypNeutrino->push_back(TLVtoLV(sol.neutrino));
         HypAntiNeutrino->clear(); HypAntiNeutrino->push_back(TLVtoLV(sol.neutrinoBar));
-        HypJet0index->clear(); HypJet0index->push_back(sol.jetB_index);
-        HypJet1index->clear(); HypJet1index->push_back(sol.jetBbar_index);
+        HypJet0index->clear();  HypJet0index->push_back(sol.jetB_index);
+        HypJet1index->clear();  HypJet1index->push_back(sol.jetBbar_index);
     }
     //check for strange events
     if (false && HypTop->size()) {
@@ -2431,4 +2432,5 @@ void Analysis::calculateKinReco(const LV& leptonMinus, const LV& leptonPlus, dou
             <<"\n";
         }
     }
+    return sols.size() > 0;
 }

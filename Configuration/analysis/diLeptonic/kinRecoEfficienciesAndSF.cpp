@@ -58,7 +58,7 @@ int main() {
         TCanvas c;
         dataRatio->Draw();
         dataRatio->SetTitle(ch + " channel: " + plot + " - Kin. Reco. behaviour");
-        dataRatio->GetYaxis()->SetRangeUser(0.6, 1.1);
+        dataRatio->GetYaxis()->SetRangeUser(0.5, 1.2);
         dataRatio->GetYaxis()->SetTitleOffset(1.1);
         mcallRatio->SetMarkerColor(kRed);
         mcallRatio->SetLineColor(kRed);

@@ -26,7 +26,7 @@ const std::vector<const char*> VectorOfValidSystematics
     "SCALE_UP", "SCALE_DOWN", 
     "POWHEG", "MCATNLO", "SPINCORR"};
     
-void Histo(bool doControlPlots, bool doPreunfold, bool doUnfold, 
+void Histo(bool doControlPlots, bool doUnfold, 
            std::vector<std::string> plots, 
            std::vector<std::string> systematics, 
            std::vector<std::string> channels) 
@@ -74,9 +74,7 @@ void Histo(bool doControlPlots, bool doPreunfold, bool doUnfold,
         h_generalPlot.DYScaleFactor();
         for (auto channel : channels) {
             for (auto systematic : systematics) {
-                if (doPreunfold || doControlPlots || doUnfold) {
-                    h_generalPlot.preunfolding(channel, systematic);
-                }
+                h_generalPlot.preunfolding(channel, systematic);
                 if (doControlPlots) {
                     h_generalPlot.MakeTable();
                 }
@@ -105,8 +103,8 @@ std::function<bool(const std::string &s)> makeStringChecker(const std::vector<co
 }
 
 int main(int argc, char** argv) {
-    CLParameter<std::string> opt_type("t", "cp|preunfold|unfold|p+u - required, cp=contol plots, p+u = preunfold+unfold", true, 1, 1,
-        makeStringChecker({"cp", "preunfold", "unfold", "p+u"}));    
+    CLParameter<std::string> opt_type("t", "cp|unfold - required, cp=contol plots, unfold", true, 1, 1,
+        makeStringChecker({"cp", "unfold"}));
     CLParameter<std::string> opt_plots("p", "Name (pattern) of plot; multiple patterns possible", false, 1, 100);
     CLParameter<std::string> opt_channel("c", "Specify channel(s), valid: emu, ee, mumu, combined. Default: all channels", false, 1, 4,
         makeStringChecker({"ee", "emu", "mumu", "combined"}));
@@ -128,7 +126,6 @@ int main(int argc, char** argv) {
     if (opt_plots.isSet()) plots = opt_plots.getArguments();
 
     bool doControlPlots = opt_type[0] == "cp";
-    bool doPreunfold = opt_type[0] == "preunfold" || opt_type[0] == "p+u";
-    bool doUnfold = opt_type[0] == "unfold" || opt_type[0] == "p+u";
-    Histo(doControlPlots, doPreunfold, doUnfold, plots, systematics, channels);
+    bool doUnfold = opt_type[0] == "unfold";
+    Histo(doControlPlots, doUnfold, plots, systematics, channels);
 }

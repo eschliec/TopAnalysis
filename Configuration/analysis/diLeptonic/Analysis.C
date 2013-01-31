@@ -983,7 +983,7 @@ Bool_t Analysis::Process ( Long64_t entry )
     bool hasJets = jets->size() > 1 && jets->at(1).Pt() > JETPTCUT;
     bool hasMetOrEmu = channel == "emu" || met->Pt() > 40;
     bool hasBtag = BJetIndex.size() > 0;
-    double weightKinFit = 1;
+    double weightKinFit = isMC ? 0.9866 : 1;
     double weightBtagSF = -1; //trick: initialize to -1 to avoid calculation of the btagSF twice
     
     bool hasSolution = HypTop->size() > 0;

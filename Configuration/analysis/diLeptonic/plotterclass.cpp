@@ -1182,7 +1182,6 @@ void Plotter::write(TString Channel, TString Systematic) // do scaling, stacking
     TExec *setex2 = new TExec("setex2","gStyle->SetErrorX(0.)");
     setex2->Draw();
     drawhists[0]->Draw("same,e1");
-    drawhists[0]->SaveAs(outpathPlots+subfolderChannel+"/"+Systematic+"/"+name+"_data.root");
 
     DrawCMSLabels(1, 8);
     DrawDecayChLabel(channelLabel[channelType]);
@@ -1195,16 +1194,27 @@ void Plotter::write(TString Channel, TString Systematic) // do scaling, stacking
     //c->Print(outpathPlots+subfolderChannel+"/"+Systematic+"/"+name+".root");
     //c->Print(outpathPlots+subfolderChannel+"/"+Systematic+"/"+name+".C");
     
-    TH1 *sumMC = static_cast<TH1*>(drawhists[0]->Clone());
-    sumMC->Clear();
+    TH1 *sumMC = 0; 
+    TH1 *sumttbar = 0;
     for (size_t i = 0; i < hists.size(); ++i) {
-        if (legends.at(i) != "Data") sumMC->Add(drawhists[i]);
+        if (legends.at(i) != "Data") {
+            if (sumMC) sumMC->Add(drawhists[i]);
+            else sumMC = static_cast<TH1*>(drawhists[i]->Clone());
+        }
         if (legends.at(i) == "t#bar{t} Signal") {
-            drawhists[i]->SaveAs(outpathPlots+subfolderChannel+"/"+Systematic+"/"+name+"_signalmc.root");
+            if (sumttbar) sumttbar->Add(drawhists[i]);
+            else sumttbar = static_cast<TH1*>(drawhists[i]->Clone());
         }
     }
     sumMC->SetName(name);
-    sumMC->SaveAs(outpathPlots+subfolderChannel+"/"+Systematic+"/"+name+"_summc.root");
+    
+    //save Canvas AND sources in a root file
+    TFile out_root(outpathPlots+subfolderChannel+"/"+Systematic+"/"+name+"_source.root", "RECREATE");
+    drawhists[0]->Write(name+"_data");
+    sumttbar->Write(name+"_signalmc");
+    sumMC->Write(name+"_allmc");
+    c->Write(name + "_canvas");
+    out_root.Close();
     
     c->Clear();
     leg->Clear();

@@ -5,6 +5,7 @@
 #include <Rtypes.h>
 #include <TAxis.h>
 #include <TLegend.h>
+#include <string>
 #include "utils.h"
 
 TH1 *getRatio(TH1 *bkr, TH1 *akr) {
@@ -30,16 +31,16 @@ int main() {
     for (TString plot : {"LeptonpT", "LeptonEta"})
     {
         TString source("Plots/");
-        source.Append(ch).Append("/Nominal/").Append(plot);
+        source.Append(ch).Append("/Nominal/");
         
-        TH1 *dataRatio = getRatio(reader->GetClone<TH1>(source + "bkr_data.root", plot + "bkr"),
-                                  reader->GetClone<TH1>(source + "akr_data.root", plot + "akr"));
+        TH1 *dataRatio = getRatio(reader->GetClone<TH1>(source + plot + "bkr_source.root", plot + "bkr" + "_data"),
+                                  reader->GetClone<TH1>(source + plot + "akr_source.root", plot + "akr" + "_data"));
 
-        TH1 *mcsignalRatio = getRatio(reader->GetClone<TH1>(source + "bkr_signalmc.root", plot + "bkr"),
-                                      reader->GetClone<TH1>(source + "akr_signalmc.root", plot + "akr"));
+        TH1 *mcsignalRatio = getRatio(reader->GetClone<TH1>(source + plot + "bkr_source.root", plot + "bkr" + "_signalmc"),
+                                      reader->GetClone<TH1>(source + plot + "akr_source.root", plot + "akr" + "_signalmc"));
         
-        TH1 *mcallRatio = getRatio(reader->GetClone<TH1>(source + "bkr_summc.root", plot + "bkr"),
-                                   reader->GetClone<TH1>(source + "akr_summc.root", plot + "akr"));
+        TH1 *mcallRatio = getRatio(reader->GetClone<TH1>(source + plot + "bkr_source.root", plot + "bkr" + "_allmc"),
+                                   reader->GetClone<TH1>(source + plot + "akr_source.root", plot + "akr" + "_allmc"));
         
         auto sf = static_cast<TH1*>(dataRatio->Clone());
         sf->Divide(mcsignalRatio);
@@ -65,10 +66,19 @@ int main() {
         sfall->SetMarkerColor(kBlue);
         sfall->Draw("same");
         //sfall->Fit("pol0", "", "same");
-        TLegend l(0.78, 0.95, 0.99, 0.7);
-        l.AddEntry(dataRatio, "eff. in data");
-        l.AddEntry(mcallRatio, "eff. in MC");
-        l.AddEntry(sfall, "SF");
+        
+        double dataEff = reader->Get<TH1>(source + "step9_source.root", "step9_data")->GetBinContent(2) / 
+                         reader->Get<TH1>(source + "step8_source.root", "step8_data")->GetBinContent(2);
+        double allmcEff = reader->Get<TH1>(source + "step9_source.root", "step9_allmc")->GetBinContent(2) / 
+                          reader->Get<TH1>(source + "step8_source.root", "step8_allmc")->GetBinContent(2);
+        char dataEffString[100]; sprintf(dataEffString, "%.2f%%", 100*dataEff);
+        char allmcEffString[100]; sprintf(allmcEffString, "%.2f%%", 100*allmcEff);
+        char sfString[100]; sprintf(sfString, "%.2f%%", 100*dataEff/allmcEff);
+        
+        TLegend l(0.73, 0.95, 0.99, 0.7);
+        l.AddEntry(dataRatio, TString("eff data: ") + dataEffString);
+        l.AddEntry(mcallRatio, TString("eff MC: ") + allmcEffString);
+        l.AddEntry(sfall, TString("SF: ") + sfString);
         l.Draw("same");
         c.SaveAs("Plots/kinReco/" + ch + "_" + plot + "_3in1.eps");
     }

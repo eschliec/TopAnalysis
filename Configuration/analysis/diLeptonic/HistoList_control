@@ -1,3 +1,5 @@
+# Name, Extra, axis labels (y,x), rebin, do_dyscale, logx, logy, ymin, ymax, xmin, xmax, nbins, xbins, bcs
+
 HypjetMultiXSec Standard N_{Events} N_{jets} 1 1 0 0 0 0 0 0 0 0
 vertMulti Standard Events N_{vtx} 1 0 0 0 0 0 0 0 0 0
 vertMulti_noPU Standard Events N_{vtx} 1 0 0 0 0 0 0 0 0 0
@@ -43,8 +45,12 @@ HypToppTNLead Standard Topquarks p_{T}^{N.Leadl.t} 10 1 0 0 0 0 0 0 0 0
 HypLLBarpT Standard Events p_{T}^{l^{+}l^{-}} 1 1 0 0 0 0 0 0 0 0
 HypMet Standard Events E_{T}^{miss} 1 1 0 0 0 0 0 0 0 0
 
-LeptonpTbkr Standard Leptons p_{T} 2 1 0 0 0 0 20 400 0 0
-LeptonpTakr Standard Leptons p_{T} 2 1 0 0 0 0 20 400 0 0
-LeptonEtabkr Standard Leptons p_{T} 2 1 0 0 0 0 20 400 0 0
-LeptonEtaakr Standard Leptons p_{T} 2 1 0 0 0 0 20 400 0 0
+LeptonpTbkr Standard Leptons p_{T} 4 1 0 0 0 0 20 250 0 0
+LeptonpTakr Standard Leptons p_{T} 4 1 0 0 0 0 20 250 0 0
+LeptonEtabkr Standard Leptons #eta 8 1 0 0 0 0 -2.4 2.4 0 0
+LeptonEtaakr Standard Leptons #eta 8 1 0 0 0 0 -2.4 2.4 0 0
 
+step8 Standard Events - 1 1 0 0 0 0 0 0 0 0
+step9 Standard Events - 1 1 0 0 0 0 0 0 0 0
+
+# Name, Extra, axis labels (y,x), rebin, do_dyscale, logx, logy, ymin, ymax, xmin, xmax, nbins, xbins, bcs

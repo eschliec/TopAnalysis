@@ -400,9 +400,9 @@ GetKinSolutions(const LV& leptonMinus, const LV& leptonPlus,
             TtDilepEvtSolution best;
             double weightBest = 0;
             
-//             for(double topMass = 100; topMass < 300.5; topMass += 1) 
-//             for(double topMass = 150; topMass < 210.5; topMass += 1) 
-            double topMass = 173;
+            for(double topMass = 100; topMass < 300.5; topMass += 1) 
+//             for(double topMass = 163; topMass < 183.5; topMass += 1) 
+//             double topMass = 173;
             {
 //                 std::cout << "input = " << x(leptonPlus_tlv) << x(leptonMinus_tlv) 
 //                         << x(jets_tlv.at(ib)) << x(jets_tlv.at(ibbar)) << "\n";
@@ -429,6 +429,11 @@ GetKinSolutions(const LV& leptonMinus, const LV& leptonPlus,
     // - actually, we only need the best element!
     // - so using nth_element instead of sort. Use sort if you need all elements sorted
     // std::sort(begin(result), end(result),          
+//     result.erase(remove_if(begin(result), end(result), 
+//         [](const TtDilepEvtSolution &s){
+//             return abs(s.top.M() - 173) > 1;
+//         }), end(result));
+            
     std::nth_element(begin(result), begin(result), end(result),
         [](const TtDilepEvtSolution& a, const TtDilepEvtSolution& b){
             return  b.ntags < a.ntags

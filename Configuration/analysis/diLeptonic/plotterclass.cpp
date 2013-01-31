@@ -1272,8 +1272,8 @@ void Plotter::PlotXSec(){
         //Print out in screen the numerical values
         cout<<"\n********************************************************************************"<<endl;
         cout<<"Inclusive XSection Numerical Results for channel "<<vec_channel.at(j)<<endl;
-        cout<<"Nominal XSection= "<<InclusiveXsectionPlot[j]<<" Stat.Error(%%)= "<<InclusiveXsectionStatErrorPlot[j]<<endl;
-        cout<<"Relative systematic (%%) error in Inclusive XSection:"<<endl;
+        cout<<"Nominal XSection= "<<InclusiveXsectionPlot[j]<<" Stat.Error(%)= "<<InclusiveXsectionStatErrorPlot[j]<<endl;
+        cout<<"Relative systematic (%) error in Inclusive XSection:"<<endl;
         
         double syst_square_for_channel=0.0;
         
@@ -1798,6 +1798,8 @@ void Plotter::CalcDiffXSec(TString Channel, TString Systematic){
         if ( name.Contains("Rapidity")) theQuantityName = "Rapidity";
         if ( name.Contains("Mass")    ) theQuantityName = "Mass";
         TString theSpecialPostfix = "";
+        //if (name.Contains("Lead")) theSpecialPostfix = name;
+        theSpecialPostfix = name;
         if ( specialComment.CompareTo("Standard") != 0 ) {
             //theSpecialPostfix = specialComment;
         }
@@ -2724,7 +2726,7 @@ void Plotter::PlotDiffXSec(TString Channel){
     
     cout<<"*************************************************************************************************\n"<<endl;
     cout<<"Variable: "<<name<<"   Channel: "<<channelLabel.at(channelType)<<endl;
-    cout<<"BinCenter & LowXbinEdge  &  HighXbinEdge  &   DiffXSec  &  StatError(%%)  & SystError(%%)  & TotalError(%%) \\\\"<<endl;
+    cout<<"BinCenter & LowXbinEdge  &  HighXbinEdge  &   DiffXSec  &  StatError(\\%)  & SystError(\\%)  & TotalError(\\%) \\\\"<<endl;
     cout<<"\\hline"<<endl;
     for(int i=0; i<(int)tga_DiffXSecPlot->GetN(); i++){
         double DiffXSec=tga_DiffXSecPlot->GetY()[i];

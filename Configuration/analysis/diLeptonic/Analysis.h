@@ -251,7 +251,7 @@ class Analysis : public TSelector
     TH1 *h_HypAntiLeptonpT, *h_HypAntiLeptonEta;
     TH1 *h_HypLeptonpT, *h_HypLeptonEta;
 
-    TH1 *h_step5,*h_step6,*h_step7,*h_step8,*h_step9;
+    TH1 *h_step3, *h_step4, *h_step5,*h_step6,*h_step7,*h_step8,*h_step9;
 
     TH1 *h_VisGenAntiToppT, *h_VisGenAntiTopEta;
     TH1 *h_VisGenToppT, *h_VisGenTopEta;
@@ -311,7 +311,7 @@ class Analysis : public TSelector
     
     //btag calculation
     TH2 *bEff, *cEff, *lEff;
-    TH1 *h_BTagSF;
+    TH1 *h_PUSF, *h_TrigSF, *h_LepSF, *h_BTagSF, *h_KinRecoSF;
 
     // ++++ Control Plots ++++
     TH1 *h_AllLeptonEta_step0, *h_AllLeptonpT_step0, *h_AllJetsEta_step0, *h_AllJetspT_step0;

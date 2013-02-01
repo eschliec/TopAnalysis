@@ -1415,9 +1415,9 @@ void Plotter::PlotXSec(){
     delete c;
 
     cout<<"!!!!!!!!!!!!!!!!!!!!ee Cross Section: "<<InclusiveXsectionPlot[0]<<" +/- "<<InclusiveXsectionStatErrorPlot[0]<<"(stat) +/- "<<InclusiveXsectionPlot[0]*InclusiveXsectionSysErrorPlot[0]<<"(sys)"<<endl;
-    cout<<"!!!!!!!!!!!!!!!!!!!!mumu Cross Section: "<<InclusiveXsectionPlot[1]<<" +/- "<<InclusiveXsectionStatErrorPlot[1]<<"(stat) +/- "<<InclusiveXsectionPlot[0]*InclusiveXsectionSysErrorPlot[1]<<"(sys)"<<endl;
-    cout<<"!!!!!!!!!!!!!!!!!!!!emu Cross Section: "<<InclusiveXsectionPlot[2]<<" +/- "<<InclusiveXsectionStatErrorPlot[2]<<"(stat) +/- "<<InclusiveXsectionPlot[0]*InclusiveXsectionSysErrorPlot[2]<<"(sys)"<<endl;
-    cout<<"!!!!!!!!!!!!!!!!!!!!Combined Cross Section: "<<InclusiveXsectionPlot[3]<<" +/- "<<InclusiveXsectionStatErrorPlot[3]<<"(stat) +/- "<<InclusiveXsectionPlot[0]*InclusiveXsectionSysErrorPlot[3]<<"(sys)"<<endl;
+    cout<<"!!!!!!!!!!!!!!!!!!!!mumu Cross Section: "<<InclusiveXsectionPlot[1]<<" +/- "<<InclusiveXsectionStatErrorPlot[1]<<"(stat) +/- "<<InclusiveXsectionPlot[1]*InclusiveXsectionSysErrorPlot[1]<<"(sys)"<<endl;
+    cout<<"!!!!!!!!!!!!!!!!!!!!emu Cross Section: "<<InclusiveXsectionPlot[2]<<" +/- "<<InclusiveXsectionStatErrorPlot[2]<<"(stat) +/- "<<InclusiveXsectionPlot[2]*InclusiveXsectionSysErrorPlot[2]<<"(sys)"<<endl;
+    cout<<"!!!!!!!!!!!!!!!!!!!!Combined Cross Section: "<<InclusiveXsectionPlot[3]<<" +/- "<<InclusiveXsectionStatErrorPlot[3]<<"(stat) +/- "<<InclusiveXsectionPlot[3]*InclusiveXsectionSysErrorPlot[3]<<"(sys)"<<endl;
 
 }
 

@@ -86,11 +86,12 @@ void Analysis::SlaveBegin ( TTree * )
 
     binnedControlPlots = new std::map<std::string, std::pair<TH1*, std::vector<std::map<std::string, TH1*> > > >;
     
-    h_step5 = store(new TH1D ( "step5", "event count at step 5", 10, 0, 10 ));
-    h_step6 = store(new TH1D ( "step6", "event count at step 6", 10, 0, 10 ));
-    h_step7 = store(new TH1D ( "step7", "event count at step 7", 10, 0, 10 ));
-    h_step8 = store(new TH1D ( "step8", "event count at step 8", 10, 0, 10 ));
-    h_step9 = store(new TH1D ( "step9", "event count at step 9", 10, 0, 10 ));
+    h_step4 = store(new TH1D ( "step4", "event count at after 2lepton", 10, 0, 10 ));
+    h_step5 = store(new TH1D ( "step5", "event count at after Zcut", 10, 0, 10 ));
+    h_step6 = store(new TH1D ( "step6", "event count at after 2jets", 10, 0, 10 ));
+    h_step7 = store(new TH1D ( "step7", "event count at after MET", 10, 0, 10 ));
+    h_step8 = store(new TH1D ( "step8", "event count at after 1btag", 10, 0, 10 ));
+    h_step9 = store(new TH1D ( "step9", "event count at step after KinReco", 10, 0, 10 ));
 
     //h_jetMultiAll = store(new TH1D ( "HypjetMultiAll", "Jet Multiplicity (AllJets)", 10, -0.5, 9.5 ));
     h_jetMultiXSec = store(new TH1D ( "HypjetMultiXSec", "Jet Multiplicity (for cross-section)", 10, -0.5, 9.5 ));
@@ -598,8 +599,12 @@ void Analysis::SlaveBegin ( TTree * )
     h_ljets = store(new TH2D("ljets2D", "unTagged Ljets", PtMax, ptbins, EtaMax, etabins));              h_ljets->Sumw2();
     h_ltaggedjets = store(new TH2D("ljetsTagged2D", "Tagged Ljets", PtMax, ptbins, EtaMax, etabins));    h_ltaggedjets->Sumw2();
     
-    h_BTagSF = store(new TH1D ( "BTagSF", "BTagging SF per event", 200 , 0.95, 1.15 ));
+    h_PUSF = store(new TH1D("PUSF", "PU SF per event", 200, 0.5, 1.5));
+    h_TrigSF = store(new TH1D("TrigSF", "Trigger SF per event", 200, 0.5, 1.5));
+    h_LepSF = store(new TH1D("LepSF", "Lep. Id and Isol. SF per event", 200, 0.75, 1.25));
+    h_BTagSF = store(new TH1D("BTagSF", "BTagging SF per event", 200 , 0.95, 1.15 ));
     h_BTagSF->Sumw2();
+    h_KinRecoSF = store(new TH1D("KinRecoSF", "Kinematic Reco. SF per event", 200, 0.5, 1.5));
 
 }
 
@@ -1034,6 +1039,8 @@ Bool_t Analysis::Process ( Long64_t entry )
     int nbjets_step0 = NumberOfBJets(jetBTagCSV);
     h_BJetsMult_step0->Fill(nbjets_step0, 1);
     
+    h_PUSF->Fill(weightPU, 1);
+
     
     //===CUT===
     // check if event was triggered
@@ -1149,6 +1156,11 @@ Bool_t Analysis::Process ( Long64_t entry )
     
     //First control plots after dilepton selection (without Z cut)
     double weight = weightGenerator*weightTrigSF*weightLepSF;
+
+    h_step4->Fill(1, weight);
+    h_TrigSF->Fill(weightTrigSF, 1);
+    h_LepSF->Fill(weightLepSF, 1);
+    
     //weight even without PU reweighting
     h_vertMulti_noPU->Fill(vertMulti, weight);
     
@@ -1411,6 +1423,8 @@ Bool_t Analysis::Process ( Long64_t entry )
     //Require at least one solution for the kinematic event reconstruction
     if (!hasSolution) return kTRUE;
     weight *= weightKinFit;
+    
+    h_KinRecoSF->Fill(weightKinFit, 1);
     
      // ++++ Control Plots ++++
     for (int i=0; i<(int) leptons->size(); ++i){
@@ -2513,7 +2527,11 @@ double Analysis::calculateBtagSF()
     if( abs(1.-OneMinusEff) < 1e-8 || abs(1.-OneMinusSEff) < 1e-8 ) return 1;
 
     //per-event SF calculation (also the UP and DOWN variations)
-    return ( 1.-OneMinusSEff ) / ( 1.-OneMinusEff );
+    double scale_factor = ( 1.-OneMinusSEff ) / ( 1.-OneMinusEff );
+    
+    if ( abs(scale_factor - 1.)>0.05 ){scale_factor = 1;}
+    
+    return scale_factor;
 }
 
 double Analysis::getJetHT(const VLV& jet, int pt_cut)

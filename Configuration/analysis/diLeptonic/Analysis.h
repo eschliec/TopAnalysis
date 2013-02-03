@@ -234,6 +234,11 @@ class Analysis : public TSelector
     TH1 *h_LeptonpT_diLep, *h_LeptonEta_diLep;
     TH1 *h_AntiLeptonpT_diLep, *h_AntiLeptonEta_diLep;
 
+    TH1 *h_MuonpT_postMETcut, *h_MuonEta_postMETcut;
+    TH1 *h_ElectronpT_postMETcut, *h_ElectronEta_postMETcut;
+    TH1 *h_LeptonpT_postMETcut, *h_LeptonEta_postMETcut;
+    TH1 *h_AntiLeptonpT_postMETcut, *h_AntiLeptonEta_postMETcut;
+    
     TH1 *h_leptonPtBeforeKinReco, *h_leptonEtaBeforeKinReco;
     TH1 *h_leptonPtAfterKinReco, *h_leptonEtaAfterKinReco;
     

@@ -155,15 +155,24 @@ void Analysis::SlaveBegin ( TTree * )
     h_jetpT = store(new TH1D ( "jetpT", "jet pT", 80, 0, 400 ));
     h_jetHT = store(new TH1D ( "jetHT", "jet HT", 80, 0, 1000 ));
 
-    h_MuonpT = store(new TH1D ( "MuonpT", "Muon pT (emu channel)", 80, 0, 400 ));
-    h_MuonEta = store(new TH1D ( "MuonEta", "Muon Eta (emu channel)", 100, -5, 5 ));
-    h_ElectronpT = store(new TH1D ( "ElectronpT", "Electron pT (emu channel)", 80, 0, 400 ));
-    h_ElectronEta = store(new TH1D ( "ElectronEta", "Electron Eta (emu channel)", 100, -5, 5 ));
+    h_MuonpT = store(new TH1D ( "MuonpT", "Muon pT", 80, 0, 400 ));
+    h_MuonEta = store(new TH1D ( "MuonEta", "Muon Eta", 100, -5, 5 ));
+    h_ElectronpT = store(new TH1D ( "ElectronpT", "Electron pT", 80, 0, 400 ));
+    h_ElectronEta = store(new TH1D ( "ElectronEta", "Electron Eta", 100, -5, 5 ));
 
     h_leptonPtBeforeKinReco = store(new TH1D ( "LeptonpTbkr", "Lepton pT (before kin reco)", 80, 0, 400 ));
     h_leptonPtAfterKinReco = store(new TH1D ( "LeptonpTakr", "Lepton pT (after kin reco)", 80, 0, 400 ));
     h_leptonEtaBeforeKinReco = store(new TH1D ( "LeptonEtabkr", "Lepton #eta (before kin reco)", 80, -2.5, 2.5 ));
     h_leptonEtaAfterKinReco = store(new TH1D ( "LeptonEtaakr", "Lepton #eta (after kin reco)", 80, -2.5, 2.5 ));
+    
+    h_LeptonpT_postMETcut = store(new TH1D ( "LeptonpT_postMETcut", "Lepton pT (post MET cut)", 80, 0, 400 ));
+    h_LeptonEta_postMETcut = store(new TH1D ( "LeptonEta_postMETcut", "Lepton Eta (post MET cut)", 100, -5, 5 ));
+    h_AntiLeptonpT_postMETcut = store(new TH1D ( "AntiLeptonpT_postMETcut", "AntiLepton pT (post MET cut)", 80, 0, 400 ));
+    h_AntiLeptonEta_postMETcut = store(new TH1D ( "AntiLeptonEta_postMETcut", "AntiLepton Eta (post MET cut)", 100, -5, 5 ));
+    h_MuonpT_postMETcut = store(new TH1D ( "MuonpT_postMETcut", "Muon pT (post MET cut)", 80, 0, 400 ));
+    h_MuonEta_postMETcut = store(new TH1D ( "MuonEta_postMETcut", "Muon Eta (post MET cut)", 100, -5, 5 ));
+    h_ElectronpT_postMETcut = store(new TH1D ( "ElectronpT_postMETcut", "Electron pT (post MET cut)", 80, 0, 400 ));
+    h_ElectronEta_postMETcut = store(new TH1D ( "ElectronEta_postMETcut", "Electron Eta (post MET cut)", 100, -5, 5 ));
     
     h_LeptonpT = store(new TH1D ( "LeptonpT", "Lepton pT", 80, 0, 400 ));
     h_LeptonEta = store(new TH1D ( "LeptonEta", "Lepton Eta", 100, -5, 5 ));
@@ -1231,7 +1240,20 @@ Bool_t Analysis::Process ( Long64_t entry )
     h_LeptonEta_diLep->Fill(leptonMinus.Eta(), weight);
     h_AntiLeptonEta_diLep->Fill(leptonPlus.Eta(), weight);
     
-
+    h_MET->Fill(met->Pt(), weight);
+    //loop over both leptons
+    for (auto i : {LeadLeptonNumber, NLeadLeptonNumber}) {
+        if ( std::abs(lepPdgId->at(i)) == 11 ) {
+            h_ElectronpT->Fill(leptons->at(i).Pt(), weight);
+            h_ElectronEta->Fill(leptons->at(i).Eta(), weight);
+        }
+        if ( std::abs(lepPdgId->at(i)) == 13 ) {
+            h_MuonpT->Fill(leptons->at(i).Pt(), weight);
+            h_MuonEta->Fill(leptons->at(i).Eta(), weight);
+        }
+    }
+    
+    // ++++ Control Plots ++++
     for (int i=0; i<(int) leptons->size(); ++i){
         h_AllLeptonEta_step4->Fill(leptons->at(i).Eta(), weight);
         h_AllLeptonpT_step4->Fill(leptons->at(i).Pt(), weight);
@@ -1262,18 +1284,6 @@ Bool_t Analysis::Process ( Long64_t entry )
     if (! hasJets) return kTRUE;
     h_step6->Fill(1, weight);
     
-    //loop over both leptons
-    for (auto i : {LeadLeptonNumber, NLeadLeptonNumber}) {
-        if ( std::abs(lepPdgId->at(i)) == 11 ) {
-            h_ElectronpT->Fill(leptons->at(i).Pt(), weight);
-            h_ElectronEta->Fill(leptons->at(i).Eta(), weight);
-        }
-        if ( std::abs(lepPdgId->at(i)) == 13 ) {
-            h_MuonpT->Fill(leptons->at(i).Pt(), weight);
-            h_MuonEta->Fill(leptons->at(i).Eta(), weight);
-        }
-    }
-
     // ++++ Control Plots ++++
     for (int i=0; i<(int) leptons->size(); ++i){
         h_AllLeptonEta_step5->Fill(leptons->at(i).Eta(), weight);
@@ -1305,13 +1315,23 @@ Bool_t Analysis::Process ( Long64_t entry )
     if (!hasMetOrEmu) return kTRUE;
     h_step7->Fill(1, weight);
  
-    h_LeptonpT->Fill(leptonMinus.Pt(), weight);
-    h_AntiLeptonpT->Fill(leptonPlus.Pt(), weight);
-    h_LeptonEta->Fill(leptonMinus.Eta(), weight);
-    h_AntiLeptonEta->Fill(leptonPlus.Eta(), weight);
+    h_LeptonpT_postMETcut->Fill(leptonMinus.Pt(), weight);
+    h_AntiLeptonpT_postMETcut->Fill(leptonPlus.Pt(), weight);
+    h_LeptonEta_postMETcut->Fill(leptonMinus.Eta(), weight);
+    h_AntiLeptonEta_postMETcut->Fill(leptonPlus.Eta(), weight);
 
-    h_MET->Fill(met->Pt(), weight);
-
+    //loop over both leptons
+    for (auto i : {LeadLeptonNumber, NLeadLeptonNumber}) {
+        if ( std::abs(lepPdgId->at(i)) == 11 ) {
+            h_ElectronpT_postMETcut->Fill(leptons->at(i).Pt(), weight);
+            h_ElectronEta_postMETcut->Fill(leptons->at(i).Eta(), weight);
+        }
+        if ( std::abs(lepPdgId->at(i)) == 13 ) {
+            h_MuonpT_postMETcut->Fill(leptons->at(i).Pt(), weight);
+            h_MuonEta_postMETcut->Fill(leptons->at(i).Eta(), weight);
+        }
+    }
+    
     h_jetMulti_noBTag->Fill(jets->size(), weight);
     h_BjetMulti_noBTag->Fill(BJetIndex.size(), weight);
 

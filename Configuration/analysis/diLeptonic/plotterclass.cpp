@@ -59,8 +59,8 @@ void Plotter::SetOutpath(TString path)
 void Plotter::unfolding()
 {
 
-    TString sys_array[] = {"DY_","BG_","PU_", "JER", "JES", "TRIG_","MASS", "MATCH", "SCALE","BTAG_ETA_","BTAG_PT_"};
-    double sys_array_flat_value[]={0, 0, 0, 0, 0, 0,0, 0, 0, 0, 0};
+    TString sys_array[] = {"DY_","BG_","PU_", "JER_", "JES_", "TRIG_","MASS_", "MATCH_", "SCALE_", "BTAG_ETA_","BTAG_PT_", "BTAG_LJET_ETA_","BTAG_LJET_PT_"};
+    double sys_array_flat_value[]={0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
     TString channel_array[] = {"ee","mumu","emu","combined"};
 //     TString channel_array[] = {"emu"};
 
@@ -110,8 +110,8 @@ void Plotter::preunfolding(TString Channel, TString Systematic)
     //The preunfolding funtion can run now in a single channel and/or single systematic sample
     //for that in just run the Histo.C with the correct parameters. Check the 'Histo' function in Histo.C file
     
-    std::vector<TString> vec_systematic {"Nominal","DY_UP","DY_DOWN","BG_UP","BG_DOWN","PU_UP","PU_DOWN", "JERUP", "JERDOWN", "JESUP", "JESDOWN", "TRIG_UP", "TRIG_DOWN", "MASSUP", "MASSDOWN",
-                           "MATCHUP", "MATCHDOWN", "SCALEUP", "SCALEDOWN", "BTAG_ETA_UP", "BTAG_ETA_DOWN", "BTAG_PT_UP", "BTAG_PT_DOWN"};
+    std::vector<TString> vec_systematic {"Nominal","DY_UP","DY_DOWN","BG_UP","BG_DOWN","PU_UP","PU_DOWN", "JER_UP", "JER_DOWN", "JES_UP", "JES_DOWN", "TRIG_UP", "TRIG_DOWN", "MASS_UP", "MASS_DOWN",
+                           "MATCH_UP", "MATCH_DOWN", "SCALE_UP", "SCALE_DOWN", "BTAG_ETA_UP", "BTAG_ETA_DOWN", "BTAG_PT_UP", "BTAG_PT_DOWN"};
     std::vector<TString> vec_channel {"ee","mumu","emu","combined"};
 
     //Check if we run on a single channel or in all of them
@@ -453,7 +453,7 @@ void Plotter::CalcDiffSystematics(TString Channel, TString Systematic, TString S
                 cout<<"                     binCenter "<<symmSysErrors->GetBinCenter(Nbins-i+1)<<" Content "<<symmSysErrors->GetBinContent(Nbins-i+1)<<endl;
                 Sys_Error = 0.5*(symmSysErrors->GetBinContent(i+2)+symmSysErrors->GetBinContent(Nbins+1-i));
                 cout<<"Symetrized error "<<Sys_Error<<endl;
-                if(Systematic == "MASS"){
+                if(Systematic == "MASS_"){
                     Sys_Error = Sys_Error/12.;
                 }
                 // Save it
@@ -466,7 +466,7 @@ void Plotter::CalcDiffSystematics(TString Channel, TString Systematic, TString S
             // Save the shifts in Tyler's triple-matrix ...
             for(Int_t bin = 0; bin < theDataHist->GetNbinsX(); ++bin) {
                 Sys_Error = symmSysErrors->GetBinContent(bin+2); // Keep in mind the extra layer of OF bins
-                if(Systematic == "MASS"){
+                if(Systematic == "MASS_"){
                     Sys_Error = Sys_Error/12.;
                 }
                 // Save it
@@ -734,7 +734,7 @@ std::vector<TString> Plotter::InputFileList(TString mode, TString Systematic)
     
     //MC depends on the specific Systematic: Signal systematics only use different signal samples
     TString tempName;
-    if(!Systematic.CompareTo("JERUP") || !Systematic.CompareTo("JERDOWN") || !Systematic.CompareTo("JESUP") || !Systematic.CompareTo("JESDOWN") ||
+    if(!Systematic.CompareTo("JER_UP") || !Systematic.CompareTo("JER_DOWN") || !Systematic.CompareTo("JES_UP") || !Systematic.CompareTo("JES_DOWN") ||
        !Systematic.CompareTo("PU_UP") || !Systematic.CompareTo("PU_DOWN") || !Systematic.CompareTo("BTAG_UP") || !Systematic.CompareTo("BTAG_DOWN") ||
        !Systematic.CompareTo("BTAG_PT_UP") || !Systematic.CompareTo("BTAG_PT_DOWN") || !Systematic.CompareTo("BTAG_ETA_UP") || !Systematic.CompareTo("BTAG_ETA_DOWN")
     ){
@@ -767,10 +767,10 @@ std::vector<TString> Plotter::InputFileList(TString mode, TString Systematic)
 
     //Add extra filename for signal systematic filenames
     if(!Systematic.CompareTo("POWHEG") || !Systematic.CompareTo("MCATNLO") || 
-       !Systematic.CompareTo("MASSUP") || !Systematic.CompareTo("MASSDOWN") ||
+       !Systematic.CompareTo("MASS_UP") || !Systematic.CompareTo("MASS_DOWN") ||
        !Systematic.CompareTo("MATCHINGUP") || !Systematic.CompareTo("MATCHINGDOWN") ||
-       !Systematic.CompareTo("MATCHUP") || !Systematic.CompareTo("MATCHDOWN") ||
-       !Systematic.CompareTo("SCALEUP") || !Systematic.CompareTo("SCALEDOWN")){
+       !Systematic.CompareTo("MATCH_UP") || !Systematic.CompareTo("MATCH_DOWN") ||
+       !Systematic.CompareTo("SCALE_UP") || !Systematic.CompareTo("SCALE_DOWN")){
         
         if(!Systematic.CompareTo("MATCHINGUP") || !Systematic.CompareTo("MATCHINGDOWN")){ Systematic.Remove(5, 3);}
         TString tmpSyst = Systematic;
@@ -806,7 +806,7 @@ bool Plotter::fillHisto()
     for(unsigned int i=0; i<dataset.size(); i++){
         TH1D *hist = fileReader->GetClone<TH1D>(dataset.at(i), name, true);
         if (!hist) return false;
-        if (!name.Contains("bcp_") && !name.Contains("Lead") && !name.EndsWith("bkr") && !name.EndsWith("akr")
+        if (!name.Contains("_step") && !name.Contains("bcp_") && !name.Contains("Lead") && !name.EndsWith("bkr") && !name.EndsWith("akr")
             && (name.Contains("Lepton") || name.Contains("BJet") || name.Contains("Top")))
         {
             TString stemp = name;
@@ -822,10 +822,6 @@ bool Plotter::fillHisto()
         double LumiWeight = CalcLumiWeight(dataset.at(i));
         ApplyFlatWeights(hist, LumiWeight);
 
-//         //Apply any other flat weight (still to do: define the weights somewhere else)
-//         ApplyFlatWeights(hist, lepSF);
-//         ApplyFlatWeights(hist, KinRecSF);
-    
         setHHStyle(*gStyle);
 
         hists.push_back(*hist);
@@ -1046,7 +1042,7 @@ void Plotter::write(TString Channel, TString Systematic) // do scaling, stacking
         }
 
         if(i > 1){
-            if(legends.at(i) != legends[i-1]){
+            if(legends.at(i) != legends.at(i-1)){
                 legchange = i; 
                 if((legends.at(i) == DYEntry)&& DYScale[channelType] != 1) leg->AddEntry(drawhists[i], legends.at(i),"f");
                 else leg->AddEntry(drawhists[i], legends.at(i) ,"f");
@@ -1056,13 +1052,13 @@ void Plotter::write(TString Channel, TString Systematic) // do scaling, stacking
         }
 
         if(i!=(hists.size()-1)){
-            if(legends.at(i)!=legends[i+1]){
+            if(legends.at(i)!=legends.at(i+1)){
                 drawhists[i]->SetLineColor(1);
             }
         }else{
             drawhists[i]->SetLineColor(1);
         }
-        if(legends.at(i) != legends[i-1]){
+        if(legends.at(i) != legends.at(i-1)){
             drawhists[i]->SetLineColor(1);
             stack->Add(drawhists[i]); 
         }
@@ -1070,10 +1066,10 @@ void Plotter::write(TString Channel, TString Systematic) // do scaling, stacking
     else{
         if(i==0) leg->AddEntry(drawhists[i], legends.at(i) ,"pe");
         if(i>0){
-            if(legends.at(i) != legends[i-1]){
+            if(legends.at(i) != legends.at(i-1)){
                 leg->AddEntry(drawhists[i], legends.at(i) ,"pe");
             }
-            if(legends.at(i) == legends[0]){
+            if(legends.at(i) == legends.at(0)){
                 drawhists[0]->Add(drawhists[i]);
             }
         }
@@ -1256,7 +1252,7 @@ void Plotter::PlotXSec(){
     TH1::AddDirectory(kFALSE);
 
     TString channel_array[] = {"ee","mumu","emu","combined"};
-    TString sys_array[] = {"MATCH", "MASS", "SCALE", "BTAG_ETA_", "BTAG_PT_", "TRIG_", "BG_", "DY_", "PU_", "JER", "JES"};//For the time being uintil all systematics are finalished
+    TString sys_array[] = {"MATCH_", "MASS_", "SCALE_", "BTAG_","BTAG_LJET_", "TRIG_", "BG_", "DY_", "PU_", "JER_", "JES_"};//For the time being until all systematics are finalished
     vector<TString> vec_systematic (sys_array, sys_array + sizeof(sys_array)/sizeof(sys_array[0]));
     vector<TString> vec_channel (channel_array, channel_array + sizeof(channel_array)/sizeof(channel_array[0]));
     
@@ -1291,7 +1287,7 @@ void Plotter::PlotXSec(){
 
             //systematic error in %
             double sys_err=(TMath::Abs(InclusiveXsectionPlot[j]-VarUp)+TMath::Abs(InclusiveXsectionPlot[j]-VarDown))*0.5/InclusiveXsectionPlot[j];
-            if(vec_systematic.at(i).Contains("MASS")) {sys_err = sys_err/12;}
+            if(vec_systematic.at(i).Contains("MASS_")) {sys_err = sys_err/12;}
             syst_square_for_channel+=sys_err*sys_err;
             cout<<vec_systematic.at(i)<<"(%): "<<sys_err*100<<endl;
         }
@@ -1659,7 +1655,7 @@ double Plotter::CalcXSec(std::vector<TString> datasetVec, double InclusiveXsecti
         bg_num+=tmp_num;
         tmp_num=0;
     }
-    else if(legends.at(i)!=legends[i+1]){
+    else if(legends.at(i)!=legends.at(i+1)){
         EventFile<<legends.at(i)<<": "<<tmp_num<<endl;
         if(legends.at(i)!="Data")bg_num+=tmp_num;
         tmp_num=0;
@@ -2023,7 +2019,7 @@ void Plotter::PlotDiffXSec(TString Channel){
             }
 
             if(i!=(hists.size()-1)){
-                if(legends.at(i)!=legends[i+1]){
+                if(legends.at(i)!=legends.at(i+1)){
                 //cout<<legends.at(i)<<endl;
                 varhistsPlotting[i]->SetLineColor(1);
                 }
@@ -2031,12 +2027,12 @@ void Plotter::PlotDiffXSec(TString Channel){
                 varhistsPlotting[i]->SetLineColor(1);
             }
             
-            if(legends.at(i) != legends[i-1]){
+            if(legends.at(i) != legends.at(i-1)){
                 varhistsPlotting[i]->SetLineColor(1);
                 stack->Add(varhistsPlotting[i]);
             }
             if(i > 1){
-                if(legends.at(i) != legends[i-1]){
+                if(legends.at(i) != legends.at(i-1)){
                     legchange = i;
                     if( (legends.at(i) == DYEntry) && DYScale[channelType]!= 1){
                         leg->AddEntry(varhistsPlotting[i], legends.at(i), "f");
@@ -2162,12 +2158,12 @@ void Plotter::PlotDiffXSec(TString Channel){
     init = false;
 
     for (unsigned int hist =0; hist<hists.size(); hist++){
-        if(legends[hist] == "Data"){
+        if(legends.at(hist) == "Data"){
             for (Int_t bin=0; bin<bins; ++bin) {//poor for loop placement, but needed because genplot is the sum of all signal histograms
                 DataSum[bin]+=varhists[hist]->GetBinContent(bin+1);
 	    }
         }
-        else if((legends[hist] == "t#bar{t} Signal")&&init==false){
+        else if((legends.at(hist) == "t#bar{t} Signal")&&init==false){
 	  signalHist=hist;
           init=true;
             for (Int_t bin=0; bin<bins; ++bin) {//poor for loop placement, but needed because genplot is the sum of all signal histograms
@@ -2193,7 +2189,7 @@ void Plotter::PlotDiffXSec(TString Channel){
     TH1 *h_GenDiffXSec = (TH1D*)varhists[0]->Clone();   h_GenDiffXSec->Reset();
 
     //The systematic array is filled in the order in which the Stack is filled
-    TString sys_array[] = {"MATCH", "MASS", "SCALE", "BTAG_ETA_", "BTAG_PT_", "TRIG_", "BG_", "DY_", "PU_", "JER", "JES"};//For the time being uintil all systematics are finalished
+    TString sys_array[] = {"MATCH_", "MASS_", "SCALE_", "BTAG_PT_", "BTAG_ETA_", "BTAG_LJET_PT_", "BTAG_LJET_ETA_", "TRIG_", "BG_", "DY_", "PU_", "JER_", "JES_"};//For the time being uintil all systematics are finalished
     vector<TString> vec_systematic (sys_array, sys_array + sizeof(sys_array)/sizeof(sys_array[0]));
 
     double DiffXSecPlot[XAxisbinCenters.size()];
@@ -2241,9 +2237,9 @@ void Plotter::PlotDiffXSec(TString Channel){
         if(doSystematics){
             for(int syst =0; syst<(int)vec_systematic.size(); syst++){
                 syst_square += DiffXSecSysErrorbySysPlot[bin][syst]*DiffXSecSysErrorbySysPlot[bin][syst];
-                if(vec_systematic.at(syst).Contains("JER") || vec_systematic.at(syst).Contains("JES") || vec_systematic.at(syst).Contains("PU_") ||
-                   vec_systematic.at(syst).Contains("DY_") || vec_systematic.at(syst).Contains("BG_") || vec_systematic.at(syst).Contains("TRIG") ||
-                   vec_systematic.at(syst).Contains("lepton") || vec_systematic.at(syst).Contains("BTAG_") || vec_systematic.at(syst).Contains("kin fit")){
+                if(vec_systematic.at(syst).Contains("JER_") || vec_systematic.at(syst).Contains("JES_") || vec_systematic.at(syst).Contains("PU_") ||
+                   vec_systematic.at(syst).Contains("DY_") || vec_systematic.at(syst).Contains("BG_") || vec_systematic.at(syst).Contains("TRIG_") ||
+                   vec_systematic.at(syst).Contains("LEPT_") || vec_systematic.at(syst).Contains("BTAG_") || vec_systematic.at(syst).Contains("kin fit")){
                     ExpSysPlot[bin]+=DiffXSecSysErrorbySysPlot[bin][syst]*DiffXSecSysErrorbySysPlot[bin][syst];
                 }
                 else{
@@ -2306,14 +2302,14 @@ void Plotter::PlotDiffXSec(TString Channel){
         systfile = fopen(ResultsSystLaTeX.c_str(), "w");
         
         for(int systs =0; systs<(int)vec_systematic.size(); systs++){
-            if (vec_systematic.at(systs) == "BTAG_ETA_") {continue;}//Skip the BTAG_ETA systematic because it's added in quadrature to BTAG_PT
+            if (vec_systematic.at(systs) == "BTAG_ETA_" || vec_systematic.at(systs) == "BTAG_LJET_ETA_") {continue;}//Skip the BTAG_ETA systematic because it's added in quadrature to BTAG_PT
             TH1D* systtemp = (TH1D*)varhists[0]->Clone();
             systtemp->Reset();
             double TotalSyst=0.0, TotalSqSyst=0.0;
             double AvgSyst= 0.0, SqAvgSys=0.0;
             
             for (Int_t bin=0; bin<bins; bin++){//condense matrices to arrays for plotting
-                if(vec_systematic.at(systs) == "BTAG_PT_"){
+                if(vec_systematic.at(systs) == "BTAG_PT_" || vec_systematic.at(systs) == "BTAG_LJET_PT_"){
                     DiffXSecSysErrorbySysPlot[bin][systs]= TMath::Sqrt(
                         (DiffXSecSysErrorbySysPlot[bin][systs]*DiffXSecSysErrorbySysPlot[bin][systs])
                         +(DiffXSecSysErrorbySysPlot[bin][systs+1]*DiffXSecSysErrorbySysPlot[bin][systs+1])
@@ -2409,7 +2405,7 @@ void Plotter::PlotDiffXSec(TString Channel){
 
     GenPlotTheory->Scale(topxsec/(SignalEventswithWeight*GenPlotTheory->GetBinWidth(1)));
     GenPlot->Scale(topxsec/(SignalEventswithWeight*GenPlot->GetBinWidth(1)));
-    if(name.Contains("Lepton")||name.Contains("Top")||name.Contains("BJet")){
+    if( (name.Contains("Lepton")||name.Contains("Top")||name.Contains("BJet")) && !name.Contains("Lead")){
       GenPlotTheory->Scale(1./2.);
     }
     double genscale = 1./GenPlotTheory->Integral("width");
@@ -2749,7 +2745,7 @@ void Plotter::PlotDiffXSec(TString Channel){
       stacksum->Add((TH1D*)l->At(i));
     } 
     for(unsigned int i=1; i<hists.size() ; i++){ // sum all data plots to first histogram
-      if(legends.at(i) == legends[0]){
+      if(legends.at(i) == legends.at(0)){
 	varhists[0]->Add(varhists[i]);
       }
     }

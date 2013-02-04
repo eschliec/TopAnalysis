@@ -62,6 +62,10 @@ TypicalError: GetTypicalErrors.C CommandLineParameters.o
 kinRecoEfficienciesAndSF: kinRecoEfficienciesAndSF.cpp utils.o
 	g++ -o kinRecoEfficienciesAndSF kinRecoEfficienciesAndSF.cpp $(COMPFLAGS) $(ROOTLIBS) utils.o
 
+printGenXsec: printGenXsec.C utils.o
+	g++ -o printGenXsec printGenXsec.C $(COMPFLAGS) $(ROOTLIBS) utils.o
+
+
 .PHONY: clean
 clean:
 	-rm dict.cpp dict.h

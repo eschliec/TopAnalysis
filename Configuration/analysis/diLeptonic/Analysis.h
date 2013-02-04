@@ -315,6 +315,8 @@ class Analysis : public TSelector
 //     TH2 *h_GenRecoJetMultpt40, *h_GenRecoJetMultpt60, *h_GenRecoJetMultQ0, *h_GenRecoJetMultTotal;
 //     //End: Plots for Carmen
     
+    TH1 *h_ClosureTotalWeight;
+    
     // BEGIN of btag SF stuff
     TH2 *h_bjets, *h_btaggedjets;
     TH2 *h_cjets, *h_ctaggedjets;
@@ -424,11 +426,18 @@ class Analysis : public TSelector
     
     bool kinRecoOnTheFly;
     bool calculateKinReco(const LV &leptonMinus, const LV &leptonPlus, double JETPTCUT);
-    
+    double calculateClosureTestWeight();
+    bool doClosureTest;
+#ifndef __CINT__   
+    std::function<double()> closureFunction;
+#endif
+    int closureMaxEvents;
         
 public:
     Analysis ( TTree * = 0 ) : checkZDecayMode {nullptr}, 
-        runViaTau {0}, pureweighter {nullptr}, kinRecoOnTheFly {0} {};
+        runViaTau {false}, pureweighter {nullptr}, kinRecoOnTheFly {false},
+        doClosureTest {false}, closureFunction {nullptr}
+        {};
     void SetBTagFile(TString btagFile);
     void SetChannel(TString channel);
     void SetSignal(bool isSignal);
@@ -441,6 +450,7 @@ public:
     void SetRunViaTau(bool runViaTau);
     void SetPUReweighter(PUReweighter *pu);
     void SetPDF(int pdf_no);
+    void SetClosureTest(TString closure, double slope);
     ClassDef ( Analysis,0 );
 };
 

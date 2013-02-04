@@ -10,8 +10,14 @@
 #include "PUReweighter.h"
 #include "CommandLineParameters.hh"
 
-void load_Analysis(TString validFilenamePattern, TString givenChannel, TString systematic, int dy){
-   
+void load_Analysis(TString validFilenamePattern, 
+                   TString givenChannel, 
+                   TString systematic, 
+                   int dy,
+                   TString closure,
+                   double slope
+                  )
+{   
     ifstream infile ("selectionList.txt");
     if (!infile.good()) { 
         cerr << "Error! Please check the selectionList.txt file!\n" << endl; 
@@ -124,6 +130,7 @@ void load_Analysis(TString validFilenamePattern, TString givenChannel, TString s
             selector->SetSamplename(samplename->GetString());
             selector->SetOutputfilename(outputfilename);
             selector->SetRunViaTau(0);
+            selector->SetClosureTest(closure, slope);
 
             TTree *tree = dynamic_cast<TTree*>(file.Get("writeNTuple/NTuple"));
             if (! tree) { std::cerr << "Error: Tree not found!\n"; exit(854); }
@@ -147,7 +154,7 @@ void load_Analysis(TString validFilenamePattern, TString givenChannel, TString s
                 }
             } else {
                 chain.Process(selector);
-                if (isSignal) {
+                if (isSignal && closure == "") {
                     selector->SetRunViaTau(1);
                     outputfilename.ReplaceAll("signalplustau", "bgviatau");
                     selector->SetOutputfilename(outputfilename);
@@ -166,13 +173,27 @@ int main(int argc, char** argv) {
             [](const std::string &ch){return ch == "" || ch == "ee" || ch == "emu" || ch == "mumu";});
     CLParameter<int> opt_dy("d", "Drell-Yan mode (11 for ee, 13 for mumu, 15 for tautau)", false, 1, 1,
             [](int dy){return dy == 11 || dy == 13 || dy == 15;});
+    CLParameter<std::string> opt_closure("closure", "Enable the closure test. Valid: pttop|ytop", false, 1, 1,
+            [](const std::string &c){return c == "pttop" || c == "ytop";});
+    CLParameter<double> opt_closureSlope("slope", "Slope for closure test, use -0.01 to 0.01 for pt and -0.4 to 0.4", false, 1, 1,
+            [](double s){return abs(s) < 1;});
+                                         
     CLAnalyser::interpretGlobal(argc, argv);
     
     TString validFilenamePattern = opt_f.isSet() ? opt_f[0] : "";
     TString syst = opt_s.isSet() ? opt_s[0] : "";
     TString channel = opt_c.isSet() ? opt_c[0] : "";
     int dy = opt_dy.isSet() ? opt_dy[0] : 0;
+    TString closure = opt_closure.isSet() ? opt_closure[0] : "";    
+    double slope = 0;
+    if (closure != "") {
+        if (!opt_closureSlope.isSet()) {
+            cerr << "closure test: need slope!\n"; exit(1);
+        } else {
+            slope = opt_closureSlope[0];
+        }
+    }
 //     TProof* p = TProof::Open(""); // not before ROOT 5.34
-    load_Analysis(validFilenamePattern, channel, syst, dy);
+    load_Analysis(validFilenamePattern, channel, syst, dy, closure, slope);
 //     delete p;
 }

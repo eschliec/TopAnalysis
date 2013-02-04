@@ -25,14 +25,18 @@ using namespace std;
 using ROOT::Math::VectorUtil::DeltaPhi;
 using ROOT::Math::VectorUtil::DeltaR;
 
+constexpr double TOPXSEC = 234; //in pb
+constexpr double LUMI = 12.21; //in 1/fb
+
 double SampleXSection(TString sample){
     
     //MC cross sections taken from:
     //  https://twiki.cern.ch/twiki/bin/view/CMS/StandardModelCrossSectionsat8TeV
     //  AN-12/194    AN-12/228
+    // currently NOT used!!!!!!! See plotterclass!
     
     if(sample.Contains("data"))        {return 1;}
-    if(sample.Contains("ttbar"))       {return 225.197;}
+    if(sample.Contains("ttbar"))       {return TOPXSEC;}
     if(sample.Contains("single"))      {return 11.1;}
     if(sample.Contains("ww"))          {return 54.838;}
     if(sample.Contains("wz"))          {return 33.21;}
@@ -68,7 +72,7 @@ void Analysis::Begin ( TTree * )
     prepareBtagSF();
 
     //lumiWeight = 5100*SampleXSection(samplename)/weightedEvents->GetBinContent(1);
-    lumiWeight = 12100*SampleXSection(samplename)/weightedEvents->GetBinContent(1);
+    lumiWeight = LUMI*1000*SampleXSection(samplename)/weightedEvents->GetBinContent(1);
 }
 
 template<class T>
@@ -492,6 +496,8 @@ void Analysis::SlaveBegin ( TTree * )
     h_VisGenJetMultpt60  = store(new TH1D("VisGenJetMultpt60", "Jet Multiplicty (VisGEN)",10,-0.5,9.5));
     //New plots from Carmen: End
 */
+    
+    h_ClosureTotalWeight = store(new TH1D("ClosureTotalWeight", "Total Weights from closure test",1,0,2));
 
     CreateBinnedControlPlots(h_HypToppT, h_LeptonpT);
     CreateBinnedControlPlots(h_HypToppT, h_LeptonEta);
@@ -671,6 +677,7 @@ Bool_t Analysis::Process ( Long64_t entry )
     
     if ( ++EventCounter % 100000 == 0 ) cout << "Event Counter: " << EventCounter << endl;
     
+    
     //do we have a DY true level cut?
     if (checkZDecayMode && !checkZDecayMode(entry)) return kTRUE;
     
@@ -708,7 +715,13 @@ Bool_t Analysis::Process ( Long64_t entry )
         weightGenerator *= weightPDF->at(pdf_no - 1); //vector is 0 based
     }
     
-//     GetRecoBranches(entry);
+    //count events here, where no more taus are available
+    if (doClosureTest) {
+        static int closureTestEventCounter = 0;
+        if (++closureTestEventCounter > closureMaxEvents) return kTRUE;
+        weightGenerator = 1;
+    }
+    
     for (size_t i = 0; i < jets->size(); ++i) {
         if (jets->at(i).pt() < JETPTCUT) {
             jets->erase(jets->begin() + i, jets->end());
@@ -726,7 +739,7 @@ Bool_t Analysis::Process ( Long64_t entry )
             weightPU = pureweighter->getPUweight(vertMultiTrue);
         }
     }
-    
+        
     int BHadronIndex=-1;
     int AntiBHadronIndex=-1;
     
@@ -900,8 +913,9 @@ Bool_t Analysis::Process ( Long64_t entry )
     LV LeadGenBJet, NLeadGenBJet;
     double genHT = -1;
     
-    if ( isSignal ) {
     
+    if ( isSignal ) {
+        if (doClosureTest) weightGenerator *= calculateClosureTestWeight();
         double trueLevelWeight = weightGenerator * weightPU;
         h_GenAll->Fill(GenTop->M(), trueLevelWeight);
         
@@ -1912,10 +1926,23 @@ void Analysis::Terminate()
 
     std::cout<<"!!!!!!!!!!!!!!!!!!!!!!!!Finishing: "<<samplename<<"!!!!!!!!!!!!!!!!!!!!!!!!!"<<std::endl;
 
+    //calculate an overall weight due to the shape reweighting
+    double gloablNormalisationFactor = 1;
+    if (doClosureTest) {
+        TH1 *total = dynamic_cast<TH1*>(fOutput->FindObject("ClosureTotalWeight"));
+        if (!total) {
+            cerr << "ClosureTotalWeight histogram is missing!\n"; exit(1);
+        }
+        gloablNormalisationFactor = total->GetEntries() / total->GetBinContent(1);
+    }
+    
     //write stuff into file
     TFile f(f_savename.c_str(), "RECREATE");
+    if (f.IsZombie()) { std::cerr << "Cannot open " << f_savename << " for writing!\n"; exit(2); }
     TIterator* it = fOutput->MakeIterator();
     while (TObject* obj = it->Next()) {
+        TH1 *h = dynamic_cast<TH1*>(obj);
+        if (h) { h->Scale(gloablNormalisationFactor); }
         obj->Write();
         //cout << obj->GetName() << "\n";
     }
@@ -2395,10 +2422,10 @@ void Analysis::GetRecoBranches ( Long64_t & entry )
 //     b_jetBTagTCHE->GetEntry(entry); //!
     b_jetBTagCSV->GetEntry(entry); //!
 //     b_jetBTagSSVHE->GetEntry(entry); //!
-    
+    b_weightGenerator->GetEntry(entry);
+
     b_jetPartonFlavour->GetEntry(entry); //!
     b_triggerBits->GetEntry(entry); //!
-    b_weightGenerator->GetEntry(entry); //!
     b_vertMulti->GetEntry(entry); //!
     b_vertMultiTrue->GetEntry(entry); //!
 
@@ -2862,4 +2889,45 @@ bool Analysis::calculateKinReco(const LV& leptonMinus, const LV& leptonPlus, dou
         }
     }
     return sols.size() > 0;
+}
+
+double Analysis::calculateClosureTestWeight()
+{
+    double weight = closureFunction();
+    h_ClosureTotalWeight->Fill(1, weight);
+    return weight;
+}
+
+void Analysis::SetClosureTest(TString closure, double slope)
+{
+    if (closure == "") {
+        doClosureTest = false;
+    } else {
+        doClosureTest = true;
+        if (closure == "pttop") {
+            closureFunction = [&,slope](){
+                return std::max((1+(GenTop->Pt()-100)*slope)
+                               *(1+(GenAntiTop->Pt()-100)*slope) , 0.1);
+            };
+        } else if (closure == "ytop") {
+            closureFunction = [&,slope](){
+                return std::max((1+(abs(GenTop->Rapidity())-1)*slope)
+                               *(1+(abs(GenAntiTop->Rapidity()-1))*slope) , 0.1);
+            };
+        } else {
+            cerr << "invalid closure test function\n";
+            exit(1);
+        }            
+        outputfilename.ReplaceAll(".root", TString::Format("_fakerun_%s%.3f.root", closure.Data(), slope));
+        cout << "<<< Closure test. Writing to: " << outputfilename << "\n";
+        //BRANCHING FRACTION
+        double br = 0;
+        if (channelPdgIdProduct == -11*11 || channelPdgIdProduct == -13*13) br = 0.01166;
+        else if (channelPdgIdProduct == -11*13) br = 0.02332;
+        else {
+            std::cerr << "closure test channel invalid\n"; exit(1);
+        }            
+        closureMaxEvents = TOPXSEC * 1000 * LUMI * br;
+        samplename.Append("_fakedata");
+    }
 }

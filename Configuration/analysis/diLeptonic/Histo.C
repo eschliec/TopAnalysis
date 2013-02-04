@@ -24,7 +24,8 @@ const std::vector<const char*> VectorOfValidSystematics
     "BTAG_BEFF_UP", "BTAG_BEFF_DOWN", "BTAG_CEFF_UP", "BTAG_CEFF_DOWN", "BTAG_LEFF_UP", "BTAG_LEFF_DOWN",
     "MASS_UP", "MASS_DOWN", "MATCH_UP", "MATCH_DOWN",
     "SCALE_UP", "SCALE_DOWN", 
-    "POWHEG", "MCATNLO", "SPINCORR"};
+    "POWHEG", "MCATNLO", "SPINCORR", 
+    "all"};
     
 void Histo(bool doControlPlots, bool doUnfold, 
            std::vector<std::string> plots, 
@@ -44,7 +45,12 @@ void Histo(bool doControlPlots, bool doUnfold,
         cout << "checking " << p.name << endl;
         bool found = false;
         for (auto plot : plots) {
-            if (p.name.Contains(plot, TString::kIgnoreCase)) {
+            if (plot.size() && plot[0] == '+') {
+                if (p.name.CompareTo(&plot[1], TString::kIgnoreCase) == 0) {
+                    found = true;
+                    break;
+                }
+            } else if (p.name.Contains(plot, TString::kIgnoreCase)) {
                 found = true;
                 break;
             }
@@ -72,9 +78,14 @@ void Histo(bool doControlPlots, bool doUnfold,
                                     p.rebin, p.do_dyscale, p.logX, p.logY, 
                                     p.ymin, p.ymax, p.xmin, p.xmax, p.bins, p.xbinbounds, p.bincenters);
         h_generalPlot.DYScaleFactor();
+        //need preunfolding for ALL channels before unfolding!!
         for (auto channel : channels) {
             for (auto systematic : systematics) {
                 h_generalPlot.preunfolding(channel, systematic);
+            }
+        }
+        for (auto channel : channels) {
+            for (auto systematic : systematics) {
                 if (doControlPlots) {
                     h_generalPlot.MakeTable();
                 }
@@ -105,10 +116,10 @@ std::function<bool(const std::string &s)> makeStringChecker(const std::vector<co
 int main(int argc, char** argv) {
     CLParameter<std::string> opt_type("t", "cp|unfold - required, cp=contol plots, unfold", true, 1, 1,
         makeStringChecker({"cp", "unfold"}));
-    CLParameter<std::string> opt_plots("p", "Name (pattern) of plot; multiple patterns possible", false, 1, 100);
+    CLParameter<std::string> opt_plots("p", "Name (pattern) of plot; multiple patterns possible; use '+Name' to match name exactly", false, 1, 100);
     CLParameter<std::string> opt_channel("c", "Specify channel(s), valid: emu, ee, mumu, combined. Default: all channels", false, 1, 4,
         makeStringChecker({"ee", "emu", "mumu", "combined"}));
-    CLParameter<std::string> opt_sys("s", "Systematic variation - default is Nominal", false, 1, 100,
+    CLParameter<std::string> opt_sys("s", "Systematic variation - default is Nominal, use 'all' for all", false, 1, 100,
         makeStringChecker(VectorOfValidSystematics));
     CLAnalyser::interpretGlobal(argc, argv);
     
@@ -118,8 +129,16 @@ int main(int argc, char** argv) {
     for (auto ch: channels) cout << ch << " "; cout << "\n";
         
     std::vector<std::string> systematics { "Nominal" };
-    if (opt_sys.isSet()) systematics = opt_sys.getArguments();
-    std::cout << "Processing systematics: "; 
+    if (opt_sys.isSet()) {
+        systematics = opt_sys.getArguments();
+        if (systematics[0] == "all") {
+            systematics.clear();
+            for (string syst: VectorOfValidSystematics) {
+                if (syst != "all") systematics.push_back(syst);
+            }
+        }
+    }    
+    std::cout << "Processing systematics (use >>-s all<< to process all knwon systematics): "; 
     for (auto sys: systematics) cout << sys << " "; cout << "\n";
     
     std::vector<std::string> plots { "" };

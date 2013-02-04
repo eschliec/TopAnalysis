@@ -142,13 +142,30 @@ void Analysis::SlaveBegin ( TTree * )
 
     h_VisGenAll = store(new TH1D ( "VisGenAll", "All Visible Generated particles (IM)", 40, 0, 400 ));
     h_GenAll = store(new TH1D ( "GenAll", "AllGenerated particles (IM)", 40, 0, 400 ));
-    Allh1 = store(new TH1D ( "Allh1", "DiLepton Mass", 40, 0, 400 ));
+    Allh1_postKinReco = store(new TH1D ( "Allh1_postKinReco", "DiLepton Mass", 40, 0, 400 ));
     h_diLepMassFull = store(new TH1D ( "DIMFull", "DiLepton Mass (Full Range)", 100, 0, 300 ));
     h_diLepMassFull_fullSel = store(new TH1D ( "DIMFull_fullSel", "DiLepton Mass (Full Range)", 100, 0, 300 ));
     Looseh1 = store(new TH1D ( "Looseh1", "DiLepton Mass", 40, 0, 400 ));
-    Zh1 = store(new TH1D ( "Zh1", "DiLepton Mass in Z Window", 40, 0, 400 ));
-    TTh1 = store(new TH1D ( "TTh1", "DiLepton Mass out of Z Window", 40, 0, 400 ));
+    Zh1_postKinReco = store(new TH1D ( "Zh1_postKinReco", "DiLepton Mass in Z Window", 40, 0, 400 ));
+    TTh1_postKinReco = store(new TH1D ( "TTh1_postKinReco", "DiLepton Mass out of Z Window", 40, 0, 400 ));
 
+    Allh1_postZcut = store(new TH1D ( "Allh1_postZcut", "DiLepton Mass", 40, 0, 400 ));
+    Zh1_postZcut = store(new TH1D ( "Zh1_postZcut", "DiLepton Mass in Z Window", 40, 0, 400 ));
+    TTh1_postZcut = store(new TH1D ( "TTh1_postZcut", "DiLepton Mass out of Z Window", 40, 0, 400 ));
+
+    Allh1_post2jets = store(new TH1D ( "Allh1_post2jets", "DiLepton Mass", 40, 0, 400 ));
+    Zh1_post2jets = store(new TH1D ( "Zh1_post2jets", "DiLepton Mass in Z Window", 40, 0, 400 ));
+    TTh1_post2jets = store(new TH1D ( "TTh1_post2jets", "DiLepton Mass out of Z Window", 40, 0, 400 ));
+
+    Allh1_postMET = store(new TH1D ( "Allh1_postMET", "DiLepton Mass", 40, 0, 400 ));
+    Zh1_postMET = store(new TH1D ( "Zh1_postMET", "DiLepton Mass in Z Window", 40, 0, 400 ));
+    TTh1_postMET = store(new TH1D ( "TTh1_postMET", "DiLepton Mass out of Z Window", 40, 0, 400 ));
+
+    Allh1_post1btag = store(new TH1D ( "Allh1_post1btag", "DiLepton Mass", 40, 0, 400 ));
+    Zh1_post1btag = store(new TH1D ( "Zh1_post1btag", "DiLepton Mass in Z Window", 40, 0, 400 ));
+    TTh1_post1btag = store(new TH1D ( "TTh1_post1btag", "DiLepton Mass out of Z Window", 40, 0, 400 ));
+
+    
     h_vertMulti = store(new TH1D ( "vertMulti", "Primary Vertex Multiplicity", 30, 0, 30 ));
     h_vertMulti_noPU = store(new TH1D ( "vertMulti_noPU", "Primary Vertex Multiplicity (no Pileup)", 30, 0, 30 ));
     h_MET = store(new TH1D ( "MET", "Missing Transverse Energy", 80, 0, 400 ));
@@ -614,6 +631,7 @@ void Analysis::SlaveBegin ( TTree * )
     h_BTagSF = store(new TH1D("BTagSF", "BTagging SF per event", 200 , 0.95, 1.15 ));
     h_BTagSF->Sumw2();
     h_KinRecoSF = store(new TH1D("KinRecoSF", "Kinematic Reco. SF per event", 200, 0.5, 1.5));
+    h_EventWeight = store(new TH1D("EventWeight", "Event SF", 600, 0, 3));
 
 }
 
@@ -1166,16 +1184,16 @@ Bool_t Analysis::Process ( Long64_t entry )
     //First control plots after dilepton selection (without Z cut)
     double weight = weightGenerator*weightTrigSF*weightLepSF;
 
-    h_step4->Fill(1, weight);
-    h_TrigSF->Fill(weightTrigSF, 1);
-    h_LepSF->Fill(weightLepSF, 1);
-    
     //weight even without PU reweighting
     h_vertMulti_noPU->Fill(vertMulti, weight);
     
     //apply PU reweighting - continue with control plots
     weight *= weightPU;
     h_vertMulti->Fill(vertMulti, weight);
+    
+    h_step4->Fill(1, weight);
+    h_TrigSF->Fill(weightTrigSF, 1);
+    h_LepSF->Fill(weightLepSF, 1);
     
     h_jetMulti_diLep->Fill(jets->size(), weight);
     h_diLepMassFull->Fill(dilepton.M(), weight);
@@ -1196,12 +1214,32 @@ Bool_t Analysis::Process ( Long64_t entry )
         hasSolution = calculateKinReco(leptonMinus, leptonPlus, JETPTCUT);
     
     if ( isZregion ) {
-        Looseh1->Fill(dilepton.M(), weight);
-        if ( hasJets && hasMetOrEmu && hasBtag && hasSolution) {
-            weightBtagSF = isMC ? calculateBtagSF() : 1;
-            double fullWeights = weightGenerator*weightPU*weightLepSF*weightBtagSF*weightTrigSF*weightKinFit;
-            Zh1->Fill(dilepton.M(), fullWeights);
-            Allh1->Fill(dilepton.M(), fullWeights);
+        double fullWeights = weightGenerator*weightPU*weightTrigSF*weightLepSF;
+        Looseh1->Fill(dilepton.M(), fullWeights);
+        Zh1_postZcut->Fill(dilepton.M(), fullWeights);
+        Allh1_postZcut->Fill(dilepton.M(), fullWeights);
+        
+        if ( hasJets ) {
+            Zh1_post2jets->Fill(dilepton.M(), fullWeights);
+            Allh1_post2jets->Fill(dilepton.M(), fullWeights);
+            
+            if ( hasMetOrEmu ) {
+                Zh1_postMET->Fill(dilepton.M(), fullWeights);
+                Allh1_postMET->Fill(dilepton.M(), fullWeights);
+                
+                if ( hasBtag ) {
+                    weightBtagSF = isMC ? calculateBtagSF() : 1;
+                    fullWeights *= weightBtagSF;
+                    Zh1_post1btag->Fill(dilepton.M(), fullWeights);
+                    Allh1_post1btag->Fill(dilepton.M(), fullWeights);
+                    
+                    if ( hasSolution ) {
+                        fullWeights *= weightKinFit;
+                        Zh1_postKinReco->Fill(dilepton.M(), fullWeights);
+                        Allh1_postKinReco->Fill(dilepton.M(), fullWeights);
+                    }
+                }
+            }
         }
     }
     
@@ -1278,6 +1316,10 @@ Bool_t Analysis::Process ( Long64_t entry )
     int nbjets_step4 = NumberOfBJets(jetBTagCSV);
     h_BJetsMult_step4->Fill(nbjets_step4, weight);
     
+    if (!isZregion) { //also apply Z cut in emu!
+        TTh1_postZcut->Fill(dilepton.M(), weight);
+        Allh1_postZcut->Fill(dilepton.M(), weight);  //this is also filled in the Z region in the code above
+    }
     
     //=== CUT ===
     //Require at least two jets > 30 GeV (check for > 30 needed because we might have 20 GeV jets in our NTuple)
@@ -1309,6 +1351,10 @@ Bool_t Analysis::Process ( Long64_t entry )
     int nbjets_step5 = NumberOfBJets(jetBTagCSV);
     h_BJetsMult_step5->Fill(nbjets_step5, weight);
     
+    if (!isZregion) { //also apply Z cut in emu!
+        TTh1_post2jets->Fill(dilepton.M(), weight);
+        Allh1_post2jets->Fill(dilepton.M(), weight);  //this is also filled in the Z region in the code above
+    }
     
     //=== CUT ===
     //Require MET > 30 GeV in non-emu channels
@@ -1367,6 +1413,10 @@ Bool_t Analysis::Process ( Long64_t entry )
     int nbjets_step6 = NumberOfBJets(jetBTagCSV);
     h_BJetsMult_step6->Fill(nbjets_step6, weight);
     
+    if (!isZregion) { //also apply Z cut in emu!
+        TTh1_postMET->Fill(dilepton.M(), weight);
+        Allh1_postMET->Fill(dilepton.M(), weight);  //this is also filled in the Z region in the code above
+    }
     
     //=== CUT ===
     //Require at least one b tagged jet
@@ -1439,12 +1489,18 @@ Bool_t Analysis::Process ( Long64_t entry )
     int nbjets_step7 = NumberOfBJets(jetBTagCSV);
     h_BJetsMult_step7->Fill(nbjets_step7, weight);
     
+    if (!isZregion) { //also apply Z cut in emu!
+        TTh1_post1btag->Fill(dilepton.M(), weight);
+        Allh1_post1btag->Fill(dilepton.M(), weight);  //this is also filled in the Z region in the code above
+    }
+    
     //=== CUT ===
     //Require at least one solution for the kinematic event reconstruction
     if (!hasSolution) return kTRUE;
     weight *= weightKinFit;
     
     h_KinRecoSF->Fill(weightKinFit, 1);
+    h_EventWeight->Fill(weight, 1);
     
      // ++++ Control Plots ++++
     for (int i=0; i<(int) leptons->size(); ++i){
@@ -1678,12 +1734,11 @@ Bool_t Analysis::Process ( Long64_t entry )
         FillBinnedControlPlot(h_HypTopRapidity, i.Rapidity(), h_LeptonEta, leptonMinus.Eta(), weight);
         FillBinnedControlPlot(h_HypTopRapidity, i.Rapidity(), h_LeptonEta, leptonPlus.Eta(), weight);
         FillBinnedControlPlot(h_HypTopRapidity, i.Rapidity(), h_MET, met->Pt(), weight);
-        
     }
 
     if (!isZregion) { //also apply Z cut in emu!
-        TTh1->Fill(dilepton.M(), weight);
-        Allh1->Fill(dilepton.M(), weight);  //this is also filled in the Z region in the code above
+        TTh1_postKinReco->Fill(dilepton.M(), weight);
+        Allh1_postKinReco->Fill(dilepton.M(), weight);  //this is also filled in the Z region in the code above
     }
 
     //=== CUT ===
@@ -2425,7 +2480,7 @@ bool Analysis::getLeptonPair(size_t &LeadLeptonNumber, size_t &NLeadLeptonNumber
     //find second lepton
     for (size_t i = LeadLeptonNumber + 1; i < leptons->size(); ++i) {
         if (!leptonPassesCut(leptons->at(i))) continue;
-        int product = lepPdgId->at(0) * lepPdgId->at(i);
+        int product = lepPdgId->at(LeadLeptonNumber) * lepPdgId->at(i);
         if (product < 0) {
             NLeadLeptonNumber = i;
             return product == channelPdgIdProduct;

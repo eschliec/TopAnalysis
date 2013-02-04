@@ -36,7 +36,7 @@ public:
     void CalcDiffSystematics(TString, TString, TString, TString, double);
     void PlotDiffXSec(TString);
 
-    void DYScaleFactor();
+    void DYScaleFactor(TString);
 
 
     TLegend* getNewLegend();

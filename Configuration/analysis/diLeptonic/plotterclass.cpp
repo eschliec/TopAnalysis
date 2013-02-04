@@ -136,15 +136,28 @@ void Plotter::preunfolding(TString Channel, TString Systematic)
 }
 
 
-void Plotter::DYScaleFactor(){
+void Plotter::DYScaleFactor(TString SpecialComment){
 
     DYScale = {1,1,1,1}; 
 
     if(!doDYScale) return; //need to make a switch for control plots that don't want DYScale
 
-    cout<<"\n\nBegin DYSCALE FACTOR calculation"<<endl;
+    TString nameAppendix = "";
+    if ( !SpecialComment.BeginsWith("_post") &&  SpecialComment != "Standard" ){
+        cout<<"\n\n*******************************************************************"<<endl;
+        cout<<"ERROR: When calculating the DY Scale factor you must specify in which step you want to calculate the DY SF:"<<endl;
+        cout<<" '_postZcut', '_post2jets', '_postMET', '_post1btag', '_postKinReco' or 'Standard' = _postKinReco"<<endl;
+        cout<<"*******************************************************************\n\n"<<endl;
+        exit(444);
+    }
+    if (SpecialComment.BeginsWith("_post")){
+        nameAppendix = SpecialComment;
+    } else if ( SpecialComment == "Standard") {
+        nameAppendix = "_postKinReco";
+    }
 
-
+    cout<<"\n\nBegin DYSCALE FACTOR calculation at selection step "<<nameAppendix<<endl;
+    
     vector<TString> Vec_Files = InputFileList("combined", "Nominal");//Read the hardcoded list of files
     if(Vec_Files.size()<1) {cout<<"WARNING(in DYScaleFactor)!!! No datasets available to calculate DY SF. EXITING!!"<<endl; return;}
     
@@ -158,7 +171,7 @@ void Plotter::DYScaleFactor(){
         double allWeights=LumiWeight;//calculate here all the flat-weights we apply: Lumi*others*...
         if(Vec_Files.at(i).Contains("ee") || Vec_Files.at(i).Contains("mumu")){
             if(Vec_Files.at(i).Contains("run")){
-                TH1D *htemp = fileReader->GetClone<TH1D>(Vec_Files.at(i), "Zh1");
+                TH1D *htemp = fileReader->GetClone<TH1D>(Vec_Files.at(i), TString("Zh1").Append(nameAppendix));
                 TH1D *htemp1 = fileReader->GetClone<TH1D>(Vec_Files.at(i), "Looseh1");
                 ApplyFlatWeights(htemp, allWeights);
                 ApplyFlatWeights(htemp1, allWeights);
@@ -173,8 +186,8 @@ void Plotter::DYScaleFactor(){
             }
             else if(Vec_Files.at(i).Contains("dy")){
                 if(Vec_Files.at(i).Contains("50inf")){
-                    TH1D *htemp = fileReader->GetClone<TH1D>(Vec_Files.at(i), "Zh1");
-                    TH1D *htemp1 = fileReader->GetClone<TH1D>(Vec_Files.at(i), "TTh1");
+                    TH1D *htemp = fileReader->GetClone<TH1D>(Vec_Files.at(i), TString("Zh1").Append(nameAppendix));
+                    TH1D *htemp1 = fileReader->GetClone<TH1D>(Vec_Files.at(i), TString("TTh1").Append(nameAppendix));
                     ApplyFlatWeights(htemp, LumiWeight);
                     ApplyFlatWeights(htemp1, LumiWeight);
                     if(Vec_Files.at(i).Contains("ee")){
@@ -188,7 +201,7 @@ void Plotter::DYScaleFactor(){
                     delete htemp; delete htemp1;
                 }
                 else{
-                    TH1D *htemp = fileReader->GetClone<TH1D>(Vec_Files.at(i), "TTh1");
+                    TH1D *htemp = fileReader->GetClone<TH1D>(Vec_Files.at(i), TString("TTh1").Append(nameAppendix));
                     ApplyFlatWeights(htemp, LumiWeight);
                     if(Vec_Files.at(i).Contains("ee")){   NoutEEDYMC+=htemp->Integral();}
                     if(Vec_Files.at(i).Contains("mumu")){ NoutMuMuDYMC+=htemp->Integral();}
@@ -196,7 +209,7 @@ void Plotter::DYScaleFactor(){
                 }
             }
             else{
-                TH1D *htemp = fileReader->GetClone<TH1D>(Vec_Files.at(i), "Zh1");
+                TH1D *htemp = fileReader->GetClone<TH1D>(Vec_Files.at(i), TString("Zh1").Append(nameAppendix));
                 ApplyFlatWeights(htemp, LumiWeight);
                 if(Vec_Files.at(i).Contains("ee")){   NinEEMC+=htemp->Integral();   }
                 if(Vec_Files.at(i).Contains("mumu")){ NinMuMuMC+=htemp->Integral(); }
@@ -205,7 +218,7 @@ void Plotter::DYScaleFactor(){
         }
         
         if(Vec_Files.at(i).Contains("emu") && Vec_Files.at(i).Contains("run")){
-            TH1D *htemp = fileReader->GetClone<TH1D>(Vec_Files.at(i), "Zh1");
+            TH1D *htemp = fileReader->GetClone<TH1D>(Vec_Files.at(i), TString("Zh1").Append(nameAppendix));
             ApplyFlatWeights(htemp, LumiWeight);
             NinEMu+=htemp->Integral();
             delete htemp;
@@ -227,7 +240,7 @@ void Plotter::DYScaleFactor(){
 
     cout << endl;
     cout << "<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>" << endl;
-    cout << "Calculation of DY Scale Factors for '" << name << "'  " << endl;
+    cout << "Calculation of DY Scale Factors for '" << name << "'  at selection step "<<nameAppendix << endl;
 
     cout<<"DYSFEE:                 "<<DYSFEE<<endl;
     cout<<"DYSFMuMu:               "<<DYSFMuMu<<endl;
@@ -646,7 +659,9 @@ void Plotter::setDataSet(TString mode, TString Systematic)
     subfolderChannel = mode;
     subfolderChannel.Prepend("/");
     subfolderSpecial = "";
-    if ( specialComment.CompareTo("Standard") != 0 ) { subfolderSpecial = specialComment.Prepend("/");}
+    if ( specialComment.CompareTo("Standard") != 0 ) {
+        //subfolderSpecial = specialComment.Prepend("/");
+    }
 
     DYEntry = "Z / #gamma* #rightarrow ee/#mu#mu";
 

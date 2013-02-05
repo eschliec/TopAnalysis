@@ -56,10 +56,9 @@ public:
     // DAVID
     void UnfoldingOptions(bool doSVD);
     void SetOutpath(TString path); 
-    void ApplyMCATNLOWeight(TH1* hist, TString Systematic, TString Shift, TString Sample);
     TLegend* ControlLegend(int HistsSize, TH1* drawhists[], std::vector<TString> legends, TLegend *leg);
     void DrawLabel(TString text, const double x1, const double y1, const double x2, const double y2, int centering, double textSize);
-    
+
     void ListOfSystematics(std::set<TString>);
     std::set<TString> ListOfSyst;
 

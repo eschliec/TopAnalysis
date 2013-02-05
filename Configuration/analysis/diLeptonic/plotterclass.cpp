@@ -372,18 +372,10 @@ void Plotter::CalcDiffSystematics(TString Channel, TString Systematic, TString S
         theGenHistDown =  fileReader->GetClone<TH1D>(filenameDown, "aGenHist");
         theRespHistDown =  fileReader->GetClone<TH2D>(filenameDown, "aRespHist");
 
-        // Apply Scale Factor for MC@NLO 
-        /*    if ( legendsSyst.size() > 0 ) {  
-        ApplyMCATNLOWeight(theRespHistUp, legendsSyst.back(), "Up", "ttbarsignal");  
-        ApplyMCATNLOWeight(theRespHistDown, legendsSyst.back(), "Down", "ttbarsignal");  
-        ApplyMCATNLOWeight(theGenHistUp, legendsSyst.back(), "Up", "ttbarsignal");  
-        ApplyMCATNLOWeight(theGenHistDown, legendsSyst.back(), "Down", "ttbarsignal");  
-        }*/
-                    
         // Get the binning 
         double* theBins = Xbins;
         int numberBins = bins;
-                    
+
         // Names and Labels
         TString channelLabelStr(channelLabel[channelType]);
         TString theChannelName = Channel;
@@ -844,68 +836,6 @@ bool Plotter::fillHisto()
     initialized=true;
     return true;
 }
-
-
-void Plotter::ApplyMCATNLOWeight(TH1* hist, TString Systematic, TString Shift, TString Sample)
-{
-    // This Scale Factor is needed, because the lumiWeight
-    // which is stored on the Ntupels does not account
-    // for the MC weights that MC@NLO uses.
-    
-    
-    // First, we test if we need to apply the weight in the first place
-    bool doApplyMCATNLOWeight = false; 
-    if ( (Systematic == "HAD") && (Shift == "Up") && Sample.Contains("ttbar") ) doApplyMCATNLOWeight = true;
-    
-    // Exit, if nothing needs to be done
-    if ( doApplyMCATNLOWeight == false ) return;
-    
-    
-    // Here, we calculate the factor.
-    
-    // Take the number of non-weighted generated events which comes
-    // from the file unmerged/MCATNLO/ee_ttbarsignalplustau.txt
-    // which is
-    double MCATNLO_Events = 21745199.;
-    //
-    // The absolut value of the weight for all these is
-    double MCATNLO_Weight = 190.41256;
-    //
-    // There is a fraction with positive weights
-    double MCATNLO_posWeights = 0.8865;
-    //
-    // And a fraction with negative weights
-    double MCATNLO_negWeights = 0.1135;
-    //
-    // Such that the weighted number of events is 
-    double MCATNLO_Weights = MCATNLO_Weight * MCATNLO_Events * (MCATNLO_posWeights - MCATNLO_negWeights);
-    // 
-    // Therefore, the scale factor to be applied is
-    double MCATNLO_ScaleFactor = MCATNLO_Weights / MCATNLO_Events;
-    double MCATNLO_ScaleFactorInv = MCATNLO_Events / MCATNLO_Weights;
-    
-    
-    // Output
-    cout << endl; 
-    cout << endl; 
-    cout << "ATTENTION!" << endl;
-    cout << "Applying a scale factor to the MC@NLO Sample to account for MC Weights" << endl;  
-    cout << "    Histo Name:           " << hist->GetName() << endl;
-    cout << "    Histo Title:          " << hist->GetTitle() << endl;
-    cout << "    Systematic:           " << Systematic << endl;
-    cout << "    Shift:                " << Shift << endl;
-    cout << "    Sample:               " << Sample << endl;
-    //    cout << "    Channel:              " << mode << endl;
-    cout << "    Quantity:             " << name << endl; 
-    cout << "    The factor is:        " << MCATNLO_ScaleFactor << endl;
-    cout << "    The inverse of it is: " << MCATNLO_ScaleFactorInv << endl;
-    cout << endl;
-  
-    // Apply the weight
-    hist->Scale(MCATNLO_ScaleFactorInv);
-  
-}
-
 
 void Plotter::write(TString Channel, TString Systematic) // do scaling, stacking, legending, and write in file 
 {
@@ -1585,9 +1515,6 @@ double Plotter::CalcXSec(std::vector<TString> datasetVec, double InclusiveXsecti
         double LumiWeight = CalcLumiWeight(datasetVec.at(i));
         ApplyFlatWeights(hist, LumiWeight);
 
-        // Apply Scale Factor for MC@NLO
-        ApplyMCATNLOWeight(hist, Systematic, Shift,  datasetVec.at(i));
-
         numhists[i]=hist;
     }
 
@@ -1597,20 +1524,14 @@ double Plotter::CalcXSec(std::vector<TString> datasetVec, double InclusiveXsecti
         }
         else if(legends.at(i) == "t#bar{t} Signal"){
             TH1D *NoPUPlot = fileReader->GetClone<TH1D>(datasetVec.at(i), "step9");
-            
+
             double LumiWeight = CalcLumiWeight(datasetVec.at(i));
             ApplyFlatWeights(NoPUPlot, LumiWeight);
-            
-            // Apply Scale Factor for MC@NLO
-            ApplyMCATNLOWeight(NoPUPlot, Systematic, Shift,  datasetVec.at(i));
-            
+
             numbers[1]+=NoPUPlot->Integral(); 
-            
+
             TH1D *GenPlot = fileReader->GetClone<TH1D>(datasetVec.at(i), "GenAll");
             ApplyFlatWeights(GenPlot, LumiWeight);
-
-            // Apply Scale Factor for MC@NLO
-            ApplyMCATNLOWeight(GenPlot, Systematic, Shift,  datasetVec.at(i));
 
             numbers[2]+=GenPlot->Integral();
 
@@ -1693,43 +1614,29 @@ double Plotter::CalcXSec(std::vector<TString> datasetVec, double InclusiveXsecti
         InclusiveXsectionStatErrorVec[channelType] = xsecstaterror;
     }
     else{
-        
         TString eefilename="Plots/"+Systematic+"/ee/InclXSec.txt";
         TString mumufilename="Plots/"+Systematic+"/mumu/InclXSec.txt";
         TString emufilename="Plots/"+Systematic+"/emu/InclXSec.txt";
-//         TString mumuErrfilename="Plots/"+Systematic+"/mumu/InclXSec.txt";
-//         TString eeErrfilename="Plots/"+Systematic+"/ee/InclXSec.txt";
-//         TString emuErrfilename="Plots/"+Systematic+"/emu/InclXSec.txt";
-        
+
         //check the existence of the file
-        if(gSystem->AccessPathName(eefilename) || gSystem->AccessPathName(emufilename) || gSystem->AccessPathName(mumufilename)
-//            || gSystem->AccessPathName(eeErrfilename) || gSystem->AccessPathName(emuErrfilename) || gSystem->AccessPathName(mumuErrfilename)){
-        ){
+        if( gSystem->AccessPathName(eefilename) || gSystem->AccessPathName(emufilename) || gSystem->AccessPathName(mumufilename)){
             cout<<"WARNING (in CalcDiffSystematics)!!"<<endl;
             cout<<"One of the input files you use for the combined XSection measurement doesn't exist!! Exiting!!"<<endl;
             return 0;
         }
-        
+
         ifstream ResultsEE(eefilename);
         ifstream ResultsEMu(emufilename);
         ifstream ResultsMuMu(mumufilename);
-//         ifstream SystErrEE(eeErrfilename);
-//         ifstream SystErrEMu(emuErrfilename);
-//         ifstream SystErrMuMu(mumuErrfilename);
 
         TString Dummy="";
 
         ResultsEE>>Dummy>>Dummy>>Dummy>>Dummy>>Dummy>>InclusiveXsectionVec[0]>>Dummy>>InclusiveXsectionStatErrorVec[0];
         ResultsMuMu>>Dummy>>Dummy>>Dummy>>Dummy>>Dummy>>InclusiveXsectionVec[1]>>Dummy>>InclusiveXsectionStatErrorVec[1];
         ResultsEMu>>Dummy>>Dummy>>Dummy>>Dummy>>Dummy>>InclusiveXsectionVec[2]>>Dummy>>InclusiveXsectionStatErrorVec[2];
-//         SystErrEE>>Dummy>>Dummy>>Dummy>>Dummy>>Dummy>perChannelDiffXSecSystError[0];
-//         SystErrMuMu>>Dummy>>Dummy>>Dummy>>Dummy>>Dummy>>perChannelDiffXSecSystError[1];
-//         SystErrEMu>>Dummy>>Dummy>>Dummy>>Dummy>>Dummy>>perChannelDiffXSecSystError[2];
+
         ResultsEE.close(); ResultsEMu.close(); ResultsMuMu.close();
-        //SystErrEE.close(); SystErrEMu.close(); SystErrMuMu.close();
-        
-        
-        
+
         InclusiveXsectionVec[channelType] =( InclusiveXsectionVec[0]/(InclusiveXsectionStatErrorVec[0]*InclusiveXsectionStatErrorVec[0])
                                             +InclusiveXsectionVec[1]/(InclusiveXsectionStatErrorVec[1]*InclusiveXsectionStatErrorVec[1])
                                             +InclusiveXsectionVec[2]/(InclusiveXsectionStatErrorVec[2]*InclusiveXsectionStatErrorVec[2]) 
@@ -1925,7 +1832,6 @@ void Plotter::CalcDiffXSec(TString Channel, TString Systematic){
                                          ((1/(perChannelDiffXSecStatError[0][i]*perChannelDiffXSecStatError[0][i]))+
                                           (1/(perChannelDiffXSecStatError[1][i]*perChannelDiffXSecStatError[1][i]))+
                                           (1/(perChannelDiffXSecStatError[2][i]*perChannelDiffXSecStatError[2][i])));
-                        
             DiffXSecStatErrorVec[channelType][i]=1/(TMath::Sqrt((1/(perChannelDiffXSecStatError[0][i]*perChannelDiffXSecStatError[0][i]))+
                                                                 (1/(perChannelDiffXSecStatError[1][i]*perChannelDiffXSecStatError[1][i]))+
                                                                 (1/(perChannelDiffXSecStatError[2][i]*perChannelDiffXSecStatError[2][i]))));

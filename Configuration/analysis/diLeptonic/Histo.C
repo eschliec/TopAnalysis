@@ -77,7 +77,7 @@ void Histo(bool doControlPlots, bool doUnfold,
         h_generalPlot.setOptions(p.name,p.specialComment,p.ytitle,p.xtitle, 
                                     p.rebin, p.do_dyscale, p.logX, p.logY, 
                                     p.ymin, p.ymax, p.xmin, p.xmax, p.bins, p.xbinbounds, p.bincenters);
-        h_generalPlot.DYScaleFactor();
+        h_generalPlot.DYScaleFactor(p.specialComment);
         //need preunfolding for ALL channels before unfolding!!
         for (auto channel : channels) {
             for (auto systematic : systematics) {

@@ -59,7 +59,7 @@ void Plotter::SetOutpath(TString path)
 void Plotter::unfolding()
 {
 
-    TString sys_array[] = {"DY_","BG_","PU_", "JER_", "JES_", "TRIG_","MASS_", "MATCH_", "SCALE_", "BTAG_ETA_","BTAG_PT_", "BTAG_LJET_ETA_","BTAG_LJET_PT_"};
+    TString sys_array[] = {"DY_","BG_","PU_", "TRIG_","MASS_", "MATCH_", "SCALE_", "BTAG_ETA_","BTAG_PT_", "BTAG_LJET_ETA_", "BTAG_LJET_PT_", "JER_", "JES_"};
     double sys_array_flat_value[]={0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
     TString channel_array[] = {"ee","mumu","emu","combined"};
 //     TString channel_array[] = {"emu"};
@@ -2187,24 +2187,7 @@ void Plotter::PlotDiffXSec(TString Channel){
     ResultsFilestring.append(newname);
     ResultsFilestring.append("ResultsAfter.txt");
     ResultsFile.open(ResultsFilestring.c_str());
-    
-    string ResultsFilestringLatex = outpathPlots.Data();
-    ResultsFilestringLatex.append(subfolderChannel.Data());
-    ResultsFilestringLatex.append(subfolderSpecial.Data());
-    ResultsFilestringLatex.append("/");
-    ResultsFilestringLatex.append(newname);
-    ResultsFilestringLatex.append("ResultsLaTeXAfter.txt");
-    ResultsLateX.open(ResultsFilestringLatex.c_str());
-    ResultsLateX<<"Bin Center & Bin & 1/#sigma d#sigma/dX & stat(%) & syst(%) & total(%)"<<endl;
 
-    for (Int_t bin=0; bin<bins; bin++){
-      ResultsFile<<"XAxisbinCenters[bin]: "<<XAxisbinCenters[bin]<<" bin: "<<Xbins[bin]<<" to "<<Xbins[bin+1]<<" DiffXsec: "<<DiffXSecPlot[bin]<<" StatError(percent): "<<DiffXSecStatErrorPlot[bin]/DiffXSecPlot[bin]<<" SysError: "<<DiffXSecSysErrorPlot[bin]<<" TotalError: "<<DiffXSecTotalErrorPlot[bin]/DiffXSecPlot[bin]<<" GenDiffXSec: "<<GenDiffXSecPlot[bin]<<endl;
-      ResultsLateX<<"$"<<h_DiffXSec->GetBinCenter(bin+1)<<"$ & $" <<h_DiffXSec->GetBinLowEdge(bin+1)<<"$ to $"<<h_DiffXSec->GetBinLowEdge(bin+2)<<"$ & ";
-      ResultsLateX<<DiffXSecPlot[bin]<<" & "<<setprecision(3)<<DiffXSecStatErrorPlot[bin]*100./DiffXSecPlot[bin]<<" & "<<setprecision(3)<<100.*DiffXSecSysErrorPlot[bin]<<" & "<<setprecision(3)<<100.*DiffXSecTotalErrorPlot[bin]/DiffXSecPlot[bin]<< "\\\\" << endl;
-    }
-    ResultsFile.close();
-    ResultsLateX.close();
-    
     if(doSystematics){
 
         //The Markus plots
@@ -2630,35 +2613,9 @@ void Plotter::PlotDiffXSec(TString Channel){
     c->Clear();
     delete c;
     gStyle->SetEndErrorSize(0);
-    
-//     //IVAN Menuda mierda de codigo que ha hecho Tyler
-//     //Get from TGraphAssymErrors the results and save them in a LaTeX format file
-//     
-//     double number_of_points=tga_DiffXSecPlot->GetN();
-    // open file.
-    // Iterate over the bins, get the central value and statistical from tga_DiffXSecPlot
-    // Iterate over the bins, get the TOTAL error from tga_DiffXSecPlotwithSys
-    // iterate over the bins, get the syst error=sqrt(total*total/stat*stat) only if total>static
-    //save into the file and close it
-    
-    cout<<"*************************************************************************************************\n"<<endl;
-    cout<<"Variable: "<<name<<"   Channel: "<<channelLabel.at(channelType)<<endl;
-    cout<<"BinCenter & LowXbinEdge  &  HighXbinEdge  &   DiffXSec  &  StatError(\\%)  & SystError(\\%)  & TotalError(\\%) \\\\"<<endl;
-    cout<<"\\hline"<<endl;
-    for(int i=0; i<(int)tga_DiffXSecPlot->GetN(); i++){
-        double DiffXSec=tga_DiffXSecPlot->GetY()[i];
-        double RelStatErr=0, RelSysErr=0, RelTotErr=0;
-        if(DiffXSec!=0.0){
-            RelStatErr = 100*(tga_DiffXSecPlot->GetErrorY(i))/DiffXSec;
-            RelTotErr  = 100*(tga_DiffXSecPlotwithSys->GetErrorY(i))/DiffXSec;
-            if(RelTotErr>=RelStatErr) RelSysErr = TMath::Sqrt(RelTotErr*RelTotErr - RelStatErr*RelStatErr);
-        }
-        cout<<"$"<<setprecision(3)<<binCenters[i]<<"$ & $"<<XAxisbins.at(i)<<"$ to $"<<setprecision(3)<<XAxisbins.at(i+1)<<"$   &  ";
-        cout<<setprecision(5)<<DiffXSec<<"  &   "<<setprecision(3)<<RelStatErr<<" &    "<<setprecision(3)<<RelSysErr<<" &    ";
-        cout<<setprecision(3)<<RelTotErr<<" \\\\"<<endl;
-    }
-    cout<<"\n*************************************************************************************************"<<endl;
-    
+
+    PrintResultTotxtFile(binCenters, tga_DiffXSecPlot, tga_DiffXSecPlotwithSys);
+
     TCanvas * c1 = new TCanvas("DiffXS","DiffXS");
     TList* l = stack->GetHists();
     TH1D* stacksum = (TH1D*) l->At(0)->Clone();
@@ -3123,4 +3080,32 @@ void Plotter::DrawCMSLabels(int cmsprelim, double energy, double textSize) {
     if (textSize!=0) label->SetTextSize(textSize);
     label->SetTextAlign(32);
     label->Draw("same");
+}
+
+
+
+void Plotter::PrintResultTotxtFile (double binCenters[], TGraphAsymmErrors *tga_DiffXSecPlot, TGraphAsymmErrors *tga_DiffXSecPlotwithSys){
+    
+    vector<string> channels = {"emu", "ee", "mumu", "combined"};
+    
+    ofstream SavingFile;
+    string filename = string("Plots/"+channels.at(channelType)+"/"+name+"LaTeX.txt");
+    SavingFile.open(filename.c_str(), ios_base::out);
+    
+    SavingFile<<"Variable: "<<name<<"   Channel: "<<channelLabel.at(channelType)<<endl;
+    SavingFile<<"BinCenter & LowXbinEdge  &  HighXbinEdge  &   DiffXSec  &  StatError(\\%)  & SystError(\\%)  & TotalError(\\%) \\\\"<<endl;
+    SavingFile<<"\\hline"<<endl;
+    for(int i=0; i<(int)tga_DiffXSecPlot->GetN(); i++){
+        double DiffXSec=tga_DiffXSecPlot->GetY()[i];
+        double RelStatErr=0, RelSysErr=0, RelTotErr=0;
+        if(DiffXSec!=0.0){
+            RelStatErr = 100*(tga_DiffXSecPlot->GetErrorY(i))/DiffXSec;
+            RelTotErr  = 100*(tga_DiffXSecPlotwithSys->GetErrorY(i))/DiffXSec;
+            if(RelTotErr>=RelStatErr) RelSysErr = TMath::Sqrt(RelTotErr*RelTotErr - RelStatErr*RelStatErr);
+        }
+        SavingFile<<"$"<<setprecision(3)<<binCenters[i]<<"$ & $"<<XAxisbins.at(i)<<"$ to $"<<setprecision(3)<<XAxisbins.at(i+1)<<"$   &  ";
+        SavingFile<<setprecision(5)<<DiffXSec<<"  &   "<<setprecision(3)<<RelStatErr<<" &    "<<setprecision(3)<<RelSysErr<<" &    ";
+        SavingFile<<setprecision(3)<<RelTotErr<<" \\\\"<<endl;
+    }
+    SavingFile.close();
 }

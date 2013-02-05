@@ -3,7 +3,7 @@
 
 #include <TString.h>
 #include <TH1.h>
-
+#include <TGraphAsymmErrors.h>
 #include <vector>
 #include <map>
 #include <set>
@@ -38,6 +38,7 @@ public:
 
     void DYScaleFactor(TString);
 
+    void PrintResultTotxtFile(double[], TGraphAsymmErrors *, TGraphAsymmErrors *);
 
     TLegend* getNewLegend();
     TLegend* getNewLegendpre();

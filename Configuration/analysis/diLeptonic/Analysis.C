@@ -70,6 +70,7 @@ void Analysis::Begin ( TTree * )
     prepareTriggerSF();
     prepareLeptonIDSF();
     prepareBtagSF();
+    prepareKinRecoSF();
 
     //lumiWeight = 5100*SampleXSection(samplename)/weightedEvents->GetBinContent(1);
     lumiWeight = LUMI*1000*SampleXSection(samplename)/weightedEvents->GetBinContent(1);
@@ -185,6 +186,11 @@ void Analysis::SlaveBegin ( TTree * )
     h_leptonPtAfterKinReco = store(new TH1D ( "LeptonpTakr", "Lepton pT (after kin reco)", 80, 0, 400 ));
     h_leptonEtaBeforeKinReco = store(new TH1D ( "LeptonEtabkr", "Lepton #eta (before kin reco)", 80, -2.5, 2.5 ));
     h_leptonEtaAfterKinReco = store(new TH1D ( "LeptonEtaakr", "Lepton #eta (after kin reco)", 80, -2.5, 2.5 ));
+    h_METBeforeKinReco = store(new TH1D ( "METbkr", "Missing Transverse Energy (before kin reco)", 80, 0, 400 ));
+    h_METAfterKinReco = store(new TH1D ( "METakr", "Missing Transverse Energy (after kin reco)", 80, 0, 400 ));
+    h_bjetetaBeforeKinReco = store(new TH1D ( "BjetEtabkr", "b-jet eta (before kin reco)", 80, -2.5, 2.5 ));
+    h_bjetetaAfterKinReco = store(new TH1D ( "BjetEtaakr", "b-jet eta (after kin reco)", 80, -2.5, 2.5 ));
+    
     
     h_LeptonpT_postMETcut = store(new TH1D ( "LeptonpT_postMETcut", "Lepton pT (post MET cut)", 80, 0, 400 ));
     h_LeptonEta_postMETcut = store(new TH1D ( "LeptonEta_postMETcut", "Lepton Eta (post MET cut)", 100, -5, 5 ));
@@ -1220,7 +1226,6 @@ Bool_t Analysis::Process ( Long64_t entry )
     bool hasJets = jets->size() > 1 && jets->at(1).Pt() > JETPTCUT;
     bool hasMetOrEmu = channel == "emu" || met->Pt() > 40;
     bool hasBtag = BJetIndex.size() > 0;
-    double weightKinFit = isMC ? 0.9866 : 1;
     double weightBtagSF = -1; //trick: initialize to -1 to avoid calculation of the btagSF twice
     
     bool hasSolution = HypTop->size() > 0;
@@ -1477,6 +1482,9 @@ Bool_t Analysis::Process ( Long64_t entry )
     h_leptonPtBeforeKinReco->Fill(leptonPlus.Pt(), weight);
     h_leptonEtaBeforeKinReco->Fill(leptonMinus.Eta(), weight);
     h_leptonEtaBeforeKinReco->Fill(leptonPlus.Eta(), weight);
+    h_METBeforeKinReco->Fill(met->Pt(), weight);
+    for (size_t i = 0; i < BJetIndex.size(); ++i)
+        h_bjetetaBeforeKinReco->Fill(jets->at(i).Eta(), weight);
 
     // ++++ Control Plots ++++
     for (int i=0; i<(int) leptons->size(); ++i){
@@ -1513,6 +1521,14 @@ Bool_t Analysis::Process ( Long64_t entry )
     if (!hasSolution) return kTRUE;
     weight *= weightKinFit;
     
+    h_leptonPtAfterKinReco->Fill(leptonMinus.Pt(), weight);
+    h_leptonPtAfterKinReco->Fill(leptonPlus.Pt(), weight);
+    h_leptonEtaAfterKinReco->Fill(leptonMinus.Eta(), weight);
+    h_leptonEtaAfterKinReco->Fill(leptonPlus.Eta(), weight);
+    h_METAfterKinReco->Fill(met->Pt(), weight);
+    for (size_t i = 0; i < BJetIndex.size(); ++i)
+        h_bjetetaAfterKinReco->Fill(jets->at(i).Eta(), weight);
+    
     h_KinRecoSF->Fill(weightKinFit, 1);
     h_EventWeight->Fill(weight, 1);
     
@@ -1545,12 +1561,7 @@ Bool_t Analysis::Process ( Long64_t entry )
     h_jetMultiXSec->Fill(jets->size(), weight);
     h_jetMultiNoPU->Fill(jets->size(), weight / weightPU );
     h_diLepMassFull_fullSel->Fill(dilepton.M(), weight);
-    
-    h_leptonPtAfterKinReco->Fill(leptonMinus.Pt(), weight);
-    h_leptonPtAfterKinReco->Fill(leptonPlus.Pt(), weight);
-    h_leptonEtaAfterKinReco->Fill(leptonMinus.Eta(), weight);
-    h_leptonEtaAfterKinReco->Fill(leptonPlus.Eta(), weight);
-    
+        
     //create helper variables
     
     //Begin: find 1st (and 2nd) leading pT particles: Top, Lepton, BJetIndex
@@ -2930,4 +2941,16 @@ void Analysis::SetClosureTest(TString closure, double slope)
         closureMaxEvents = TOPXSEC * 1000 * LUMI * br;
         samplename.Append("_fakedata");
     }
+}
+
+void Analysis::prepareKinRecoSF() {
+    if (!isMC) { weightKinFit = 1; return; }    
+    const static std::map<TString, double> sfNominal { {"ee", 0.9779}, {"emu", 0.9871}, {"mumu", 0.9879} };
+    //need to determine the up+down SFs! Currently just ~10%
+    const static std::map<TString, double> sfUp { {"ee", 0.98}, {"emu", 0.9884}, {"mumu", 0.9891} };
+    const static std::map<TString, double> sfDown { {"ee", 0.9757}, {"emu", 0.9858}, {"mumu", 0.9868} };
+    if (systematic == "KIN_UP") weightKinFit = sfUp.at(channel);
+    else if (systematic == "KIN_DOWN") weightKinFit = sfDown.at(channel);
+    else weightKinFit = sfNominal.at(channel);
+    std::cout << "Weight for the kin reco is " << weightKinFit << "\n";
 }

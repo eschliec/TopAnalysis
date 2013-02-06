@@ -247,6 +247,8 @@ class Analysis : public TSelector
     
     TH1 *h_leptonPtBeforeKinReco, *h_leptonEtaBeforeKinReco;
     TH1 *h_leptonPtAfterKinReco, *h_leptonEtaAfterKinReco;
+    TH1 *h_METBeforeKinReco, *h_METAfterKinReco;
+    TH1 *h_bjetetaBeforeKinReco, *h_bjetetaAfterKinReco;
     
     TH1 *h_HypAntiToppT, *h_HypAntiTopEta, *h_HypAntiTopMass,*h_HypAntiTopRapidity;
     TH1 *h_HypToppT, *h_HypTopEta,*h_HypTopMass, *h_HypTopRapidity;
@@ -368,12 +370,14 @@ class Analysis : public TSelector
     
     //other SF
     double lumiWeight; //needed while using old plotterclass
+    double weightKinFit; //this is per channel and does not need to be calculated inside the event loop
     
     TH2 *h_TrigSFeta, *h_MuonIDSFpteta, *h_ElectronIDSFpteta;
     
     void prepareTriggerSF();
     void prepareBtagSF();
     void prepareLeptonIDSF();
+    void prepareKinRecoSF();
     double getTriggerSF(const LV& lep1, const LV& lep2);
     double getLeptonIDSF(const LV& lep1, const LV& lep2, int x, int y);
     double get2DSF(TH2* histo, double x, double y);

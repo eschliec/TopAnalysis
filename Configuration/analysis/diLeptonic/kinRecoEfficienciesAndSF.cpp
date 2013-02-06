@@ -6,6 +6,7 @@
 #include <TAxis.h>
 #include <TLegend.h>
 #include <string>
+#include <iostream>
 #include "utils.h"
 
 TH1 *getRatio(TH1 *bkr, TH1 *akr) {
@@ -16,7 +17,12 @@ TH1 *getRatio(TH1 *bkr, TH1 *akr) {
 }
 
 void saveRootAndEps(TH1 *h, TString name) {
+    double xmin = h->GetXaxis()->GetXmin();
+    double xmax = h->GetXaxis()->GetXmax();
+    h->GetXaxis()->SetDefaults();
+    h->GetXaxis()->SetRangeUser(xmin, xmax);
     h->Write(name);
+    
     TCanvas c;
     h->Draw();
     c.SaveAs("Plots/kinReco/" + name + ".eps");    
@@ -28,7 +34,7 @@ int main() {
     auto reader = RootFileReader::getInstance();
     
     for (TString ch : {"ee", "emu", "mumu", "combined"}) 
-    for (TString plot : {"LeptonpT", "LeptonEta"})
+    for (TString plot : {"LeptonpT", "LeptonEta", "MET", "BjetEta"})
     {
         TString source("Plots/");
         source.Append(ch).Append("/Nominal/");
@@ -83,4 +89,7 @@ int main() {
         c.SaveAs("Plots/kinReco/" + ch + "_" + plot + "_3in1.eps");
     }
     out.Write();
+    std::cout << "Just a reminder: if you include the Kin Reco SF in the Analysis.C, the results\n"
+        << "shown here should show a scale factor of 1.0 (test this, its a cross check)! To\n"
+        << "get the scale factor, set weightKinFit=1 in the Analysis.C and rerun.\n";
 }

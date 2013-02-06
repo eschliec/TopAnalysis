@@ -61,6 +61,10 @@ LeptonpTbkr Standard Leptons p_{T} 4 1 0 0 0 0 20 250 0 0
 LeptonpTakr Standard Leptons p_{T} 4 1 0 0 0 0 20 250 0 0
 LeptonEtabkr Standard Leptons #eta 8 1 0 0 0 0 -2.4 2.4 0 0
 LeptonEtaakr Standard Leptons #eta 8 1 0 0 0 0 -2.4 2.4 0 0
+METbkr Standard Events MET 8 1 0 0 0 0 0 0 0 0
+METakr Standard Events MET 8 1 0 0 0 0 0 0 0 0
+BjetEtabkr Standard b-jets #eta 8 1 0 0 0 0 -2.4 2.4 0 0
+BjetEtaakr Standard b-jets #eta 8 1 0 0 0 0 -2.4 2.4 0 0
 
 step8 Standard Events - 1 1 0 0 0 0 0 0 0 0
 step9 Standard Events - 1 1 0 0 0 0 0 0 0 0

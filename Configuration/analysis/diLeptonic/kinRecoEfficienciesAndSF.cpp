@@ -28,6 +28,8 @@ void saveRootAndEps(TH1 *h, TString name) {
     c.SaveAs("Plots/kinReco/" + name + ".eps");    
 }
 
+inline double sqr(double value) { return value*value; }
+
 int main() {
     gSystem->mkdir("Plots/kinReco", true);
     TFile out("Plots/kinRecoPlots.root", "RECREATE");
@@ -73,13 +75,21 @@ int main() {
         sfall->Draw("same");
         //sfall->Fit("pol0", "", "same");
         
-        double dataEff = reader->Get<TH1>(source + "step9_source.root", "step9_data")->GetBinContent(2) / 
-                         reader->Get<TH1>(source + "step8_source.root", "step8_data")->GetBinContent(2);
-        double allmcEff = reader->Get<TH1>(source + "step9_source.root", "step9_allmc")->GetBinContent(2) / 
-                          reader->Get<TH1>(source + "step8_source.root", "step8_allmc")->GetBinContent(2);
+        double NdataAfter = reader->Get<TH1>(source + "step9_source.root", "step9_data")->GetBinContent(2);
+        double NdataBefore = reader->Get<TH1>(source + "step8_source.root", "step8_data")->GetBinContent(2);
+        double dataEff = NdataAfter / NdataBefore;
+        double dataEffUnc = sqrt(dataEff * (1-dataEff) / NdataBefore);
+        
+        double NmcAfter = reader->Get<TH1>(source + "step9_source.root", "step9_allmc")->GetBinContent(2);
+        double NmcBefore = reader->Get<TH1>(source + "step8_source.root", "step8_allmc")->GetBinContent(2); 
+        double allmcEff =  NmcAfter / NmcBefore;
+        double allmcEffUnc = sqrt(allmcEff * (1-allmcEff) / NmcBefore);
+        
+        double sfUnc = sqrt(sqr(dataEffUnc/dataEff) + sqr(allmcEffUnc/allmcEff));
+                          
         char dataEffString[100]; sprintf(dataEffString, "%.2f%%", 100*dataEff);
         char allmcEffString[100]; sprintf(allmcEffString, "%.2f%%", 100*allmcEff);
-        char sfString[100]; sprintf(sfString, "%.2f%%", 100*dataEff/allmcEff);
+        char sfString[100]; sprintf(sfString, "%.2f%% +- %.2f", 100*dataEff/allmcEff, 100*sfUnc);
         
         TLegend l(0.73, 0.95, 0.99, 0.7);
         l.AddEntry(dataRatio, TString("eff data: ") + dataEffString);

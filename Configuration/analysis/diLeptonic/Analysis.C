@@ -2944,13 +2944,13 @@ void Analysis::SetClosureTest(TString closure, double slope)
 }
 
 void Analysis::prepareKinRecoSF() {
+    //uncomment the following line to determine the Kin Reco SFs
+    //then make && ./runNominalParallel.sh && ./Histo -t cp -p akr bkr step && ./kinRecoEfficienciesAndSF
+    // weightKinFit=1; return;
     if (!isMC) { weightKinFit = 1; return; }    
     const static std::map<TString, double> sfNominal { {"ee", 0.9779}, {"emu", 0.9871}, {"mumu", 0.9879} };
-    //need to determine the up+down SFs! Currently just ~10%
-    const static std::map<TString, double> sfUp { {"ee", 0.98}, {"emu", 0.9884}, {"mumu", 0.9891} };
-    const static std::map<TString, double> sfDown { {"ee", 0.9757}, {"emu", 0.9858}, {"mumu", 0.9868} };
-    if (systematic == "KIN_UP") weightKinFit = sfUp.at(channel);
-    else if (systematic == "KIN_DOWN") weightKinFit = sfDown.at(channel);
-    else weightKinFit = sfNominal.at(channel);
-    std::cout << "Weight for the kin reco is " << weightKinFit << "\n";
+    const static std::map<TString, double> sfUnc { {"ee", 0.0023}, {"emu", 0.0023}, {"mumu", 0.0023} };
+    weightKinFit = sfNominal.at(channel);
+    if (systematic == "KIN_UP") weightKinFit += sfUnc.at(channel);
+    else if (systematic == "KIN_DOWN") weightKinFit -= sfUnc.at(channel);
 }

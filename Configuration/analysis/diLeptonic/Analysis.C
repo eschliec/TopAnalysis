@@ -25,16 +25,25 @@ using namespace std;
 using ROOT::Math::VectorUtil::DeltaPhi;
 using ROOT::Math::VectorUtil::DeltaR;
 
-constexpr double TOPXSEC = 234; //in pb
-constexpr double LUMI = 12.21; //in 1/fb
+///top production xsec in pb
+constexpr double TOPXSEC = 234;
+/// Luminosity in 1/fb
+constexpr double LUMI = 12.21; 
 
+/**
+ * @brief Determine cross section for a given sample
+ * 
+ * @param sample The samplename as used for the ntuple production
+ * @return cross section of this sample in pb
+ * 
+ * This function is currently NOT used as the scaling is done in the plotterclass.
+ * However it is still here in case Trees for MVA analyses need to be written
+ * 
+ * MC cross sections taken from:
+ * https://twiki.cern.ch/twiki/bin/view/CMS/StandardModelCrossSectionsat8TeV
+ * AN-12/194    AN-12/228
+ */
 double SampleXSection(TString sample){
-    
-    //MC cross sections taken from:
-    //  https://twiki.cern.ch/twiki/bin/view/CMS/StandardModelCrossSectionsat8TeV
-    //  AN-12/194    AN-12/228
-    // currently NOT used!!!!!!! See plotterclass!
-    
     if(sample.Contains("data"))        {return 1;}
     if(sample.Contains("ttbar"))       {return TOPXSEC;}
     if(sample.Contains("single"))      {return 11.1;}
@@ -62,6 +71,14 @@ double SampleXSection(TString sample){
     exit(2);
 }
 
+/** Prepare some variables before going to the event loop
+ * 
+ * This function is used to calculate all scale factors and
+ * other information that is the same for each event.
+ * 
+ * For some event-dependent scale factors, histograms for a 
+ * lookup are read.
+ */
 void Analysis::Begin ( TTree * )
 {
     EventCounter = 0;
@@ -71,11 +88,18 @@ void Analysis::Begin ( TTree * )
     prepareLeptonIDSF();
     prepareBtagSF();
     prepareKinRecoSF();
-
-    //lumiWeight = 5100*SampleXSection(samplename)/weightedEvents->GetBinContent(1);
+    
     lumiWeight = LUMI*1000*SampleXSection(samplename)/weightedEvents->GetBinContent(1);
 }
 
+/** helper function to store a TObject in the output list
+ * 
+ * @param obj a pointer to a TObject (or any type inheriting from TObject)
+ * @return returns the parameter (and the same type)
+ * 
+ * This function just adds a histogram to the output list and returns 
+ * it in a typesafe way. Used to save some typing.
+ */
 template<class T>
 T* Analysis::store(T* obj)
 {
@@ -83,12 +107,12 @@ T* Analysis::store(T* obj)
     return obj;
 }
 
+/** Initialise all histograms used in the analysis
+ * 
+ * @param TTree parameter is not used!
+ */
 void Analysis::SlaveBegin ( TTree * )
 {
-    // The SlaveBegin() function is called after the Begin() function.
-    // When running with PROOF SlaveBegin() is called on each slave server.
-    // The tree argument is deprecated (on PROOF 0 is passed).
-
     binnedControlPlots = new std::map<std::string, std::pair<TH1*, std::vector<std::map<std::string, TH1*> > > >;
     
     h_step4 = store(new TH1D ( "step4", "event count at after 2lepton", 10, 0, 10 ));
@@ -659,6 +683,16 @@ double Analysis::Median(TH1 * h1)
    return TMath::Median(n, &x[0], &y[1]); 
 }
 
+/** order two LorentzVectors by pt
+ * 
+ * @param leading the LV with the higher pt (output)
+ * @param Nleading the LV with the lower pt (output)
+ * @param lv1 input LV to compare with lv2
+ * @param lv2 input LV to compare with lv1
+ * 
+ * Compare lv1 and lv2. The LV with the larger pt is copied to leading,
+ * the LV with the smaller pt is copied to Nleading
+ */
 void Analysis::orderLVByPt(LV &leading, LV &Nleading, const LV &lv1, const LV &lv2) {
     if (lv1.Pt() > lv2.Pt()) {
         leading = lv1; Nleading = lv2;

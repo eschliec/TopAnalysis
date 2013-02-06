@@ -39,6 +39,8 @@ public:
     void DYScaleFactor(TString);
 
     void PrintResultTotxtFile(double[], TGraphAsymmErrors *, TGraphAsymmErrors *);
+    void GetDiffToNominal(TString, TString, TString);
+    void CalcUpDownDifference ( TString Channel, TString Syst_Up, TString Syst_Down, TString Variable);
 
     TLegend* getNewLegend();
     TLegend* getNewLegendpre();

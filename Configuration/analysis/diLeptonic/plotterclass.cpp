@@ -59,8 +59,8 @@ void Plotter::SetOutpath(TString path)
 void Plotter::unfolding()
 {
 
-    TString sys_array[] = {"DY_","BG_","PU_", "TRIG_","MASS_", "MATCH_", "SCALE_", "BTAG_ETA_","BTAG_PT_", "BTAG_LJET_ETA_", "BTAG_LJET_PT_", "JER_", "JES_"};
-    double sys_array_flat_value[]={0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+    TString sys_array[] = {"HAD_", "DY_","BG_","PU_", "TRIG_","MASS_", "MATCH_", "SCALE_", "BTAG_ETA_","BTAG_PT_", "BTAG_LJET_ETA_", "BTAG_LJET_PT_"};//, "JER_", "JES_"};
+    double sys_array_flat_value[]={0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};//, 0, 0};
     TString channel_array[] = {"ee","mumu","emu","combined"};
 //     TString channel_array[] = {"emu"};
 
@@ -92,7 +92,15 @@ void Plotter::unfolding()
                 cout << "Starting Calculation of Differential Systematics for '" << name << "' in Channel '" << vec_channel.at(chan) << "':" << endl;
                 cout << "<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>" << endl;
                 
-                CalcDiffSystematics(vec_channel.at(chan), vec_systematic.at(sys), vec_systematic.at(sys)+"UP",vec_systematic.at(sys)+"DOWN",vec_flat_value.at(sys));
+                if (!vec_systematic.at(sys).BeginsWith("HAD_") ) {
+                    CalcDiffSystematics(vec_channel.at(chan), vec_systematic.at(sys), vec_systematic.at(sys)+"UP",vec_systematic.at(sys)+"DOWN",vec_flat_value.at(sys));
+                } else {
+                    CalcDiffXSec(vec_channel.at(chan), "POWHEG");
+                    CalcDiffXSec(vec_channel.at(chan), "MCATNLO");
+                    GetDiffToNominal(vec_channel.at(chan), TString("POWHEG"), name);
+                    GetDiffToNominal(vec_channel.at(chan), TString("MCATNLO"), name);
+                    CalcUpDownDifference(vec_channel.at(chan), "POWHEG", "MCATNLO", name);
+                }
                 
                 cout << "<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>" << endl;
                 cout << "Finished Calculation of Differential Systematics for '" << name << "' in Channel '" << vec_channel.at(chan) << endl;
@@ -106,33 +114,7 @@ void Plotter::unfolding()
 
 void Plotter::preunfolding(TString Channel, TString Systematic)
 {
-    
-    //The preunfolding funtion can run now in a single channel and/or single systematic sample
-    //for that in just run the Histo.C with the correct parameters. Check the 'Histo' function in Histo.C file
-    
-    std::vector<TString> vec_systematic {"Nominal","DY_UP","DY_DOWN","BG_UP","BG_DOWN","PU_UP","PU_DOWN", "JER_UP", "JER_DOWN", "JES_UP", "JES_DOWN", "TRIG_UP", "TRIG_DOWN", "MASS_UP", "MASS_DOWN",
-                           "MATCH_UP", "MATCH_DOWN", "SCALE_UP", "SCALE_DOWN", "BTAG_ETA_UP", "BTAG_ETA_DOWN", "BTAG_PT_UP", "BTAG_PT_DOWN"};
-    std::vector<TString> vec_channel {"ee","mumu","emu","combined"};
-
-    //Check if we run on a single channel or in all of them
-    if(Channel!=""){
-        vec_channel.clear();
-        vec_channel.push_back(Channel);
-    }
-    if (!doSystematics) {
-        vec_systematic.clear();
-        vec_systematic.push_back("Nominal");
-    }
-    if(Systematic!=""){
-        vec_systematic.clear();
-        vec_systematic.push_back(Systematic);
-    }
-
-    for(size_t i=0; i < vec_channel.size(); i++){//loop over channels
-        for(size_t j=0; j < vec_systematic.size(); j++){//loop over systematics
-            write(vec_channel.at(i),vec_systematic.at(j));
-        }//systematic loop
-    }//channel loop
+    write(Channel, Systematic);
 }
 
 
@@ -1197,7 +1179,7 @@ void Plotter::PlotXSec(){
     TH1::AddDirectory(kFALSE);
 
     TString channel_array[] = {"ee","mumu","emu","combined"};
-    TString sys_array[] = {"MATCH_", "MASS_", "SCALE_", "BTAG_","BTAG_LJET_", "TRIG_", "BG_", "DY_", "PU_", "JER_", "JES_"};//For the time being until all systematics are finalished
+    TString sys_array[] = {"HAD_", "MATCH_", "MASS_", "SCALE_", "BTAG_","BTAG_LJET_", "TRIG_", "BG_", "DY_", "PU_"};//, "JER_", "JES_"};//For the time being until all systematics are finalished
     vector<TString> vec_systematic (sys_array, sys_array + sizeof(sys_array)/sizeof(sys_array[0]));
     vector<TString> vec_channel (channel_array, channel_array + sizeof(channel_array)/sizeof(channel_array[0]));
     
@@ -2110,7 +2092,7 @@ void Plotter::PlotDiffXSec(TString Channel){
     TH1 *h_GenDiffXSec = (TH1D*)varhists[0]->Clone();   h_GenDiffXSec->Reset();
 
     //The systematic array is filled in the order in which the Stack is filled
-    TString sys_array[] = {"MATCH_", "MASS_", "SCALE_", "BTAG_PT_", "BTAG_ETA_", "BTAG_LJET_PT_", "BTAG_LJET_ETA_", "TRIG_", "BG_", "DY_", "PU_", "JER_", "JES_"};//For the time being uintil all systematics are finalished
+    TString sys_array[] = {"HAD_", "MATCH_", "MASS_", "SCALE_", "BTAG_PT_", "BTAG_ETA_", "BTAG_LJET_PT_", "BTAG_LJET_ETA_", "TRIG_", "BG_", "DY_", "PU_"};//, "JER_", "JES_"};//For the time being uintil all systematics are finalished
     vector<TString> vec_systematic (sys_array, sys_array + sizeof(sys_array)/sizeof(sys_array[0]));
 
     double DiffXSecPlot[XAxisbinCenters.size()];
@@ -3108,4 +3090,131 @@ void Plotter::PrintResultTotxtFile (double binCenters[], TGraphAsymmErrors *tga_
         SavingFile<<setprecision(3)<<RelTotErr<<" \\\\"<<endl;
     }
     SavingFile.close();
+}
+
+
+
+void Plotter::GetDiffToNominal(TString Channel, TString Systematic, TString Variable){
+    
+    //This function will read the unfolding result for Nominal and Variation1 (eg: MASS_UP) for a given variable
+    // and it will return the relative error: abs(MASS_UP-Nominal)/Nominal
+    
+
+    ifstream NominalFile, SystematicFile;
+    string nominalfilename = string ("UnfoldingResults/Nominal/"+Channel+"/"+Variable+"Results.txt");
+    string systematicfilename = string ("UnfoldingResults/"+Systematic+"/"+Channel+"/"+Variable+"Results.txt");
+
+    NominalFile.open(nominalfilename);
+    SystematicFile.open(systematicfilename);
+    
+    
+    vector <double> BinCenters, BinLowEdge, BinHigEdge;
+    vector <double> NominalValue, SystematicValue;
+    vector <double> RelativeError;
+    TString Dummy = "";
+    
+    
+    if (!NominalFile.is_open() || !SystematicFile.is_open()){
+        cout<<"The input file cannot be opened. Exiting!!"<<endl;
+        exit(4443);}
+    for (Int_t bin=0; bin<bins; bin++){
+        double XAxisbinCenters_Nom = 0, XLowEdge_Nom = 0, XHigEdge_Nom = 0;
+        double XAxisbinCenters_Sys = 0, XLowEdge_Sys = 0, XHigEdge_Sys = 0;
+        double CentralValue_Nom = 0, StatError_Nom = 0, GenXSec_Nom = 0;
+        double CentralValue_Sys = 0, StatError_Sys = 0, GenXSec_Sys = 0;
+        NominalFile>>Dummy>>XAxisbinCenters_Nom>>Dummy>>XLowEdge_Nom>>Dummy>>XHigEdge_Nom>>Dummy>>CentralValue_Nom>>Dummy>>StatError_Nom>>Dummy>>GenXSec_Nom;
+        SystematicFile>>Dummy>>XAxisbinCenters_Sys>>Dummy>>XLowEdge_Sys>>Dummy>>XHigEdge_Sys>>Dummy>>CentralValue_Sys>>Dummy>>StatError_Sys>>Dummy>>GenXSec_Sys;
+        if( abs(XAxisbinCenters_Nom-XAxisbinCenters_Sys)>1e3 || 
+            abs(XLowEdge_Nom-XLowEdge_Sys)>1e3 || abs(XHigEdge_Nom-XHigEdge_Sys)>1e3){
+                cout<<"You are trying to read Unfolding results containing different bin centers and/or bin ranges."<<endl;
+                cout<<"This is not a fatal error but you should check it"<<endl;
+                cout<<"Variable '"<<Variable<<"' in channel '"<<Channel<<"'"<<endl;
+            }
+        BinCenters.push_back(XAxisbinCenters_Nom);
+        BinLowEdge.push_back(XLowEdge_Nom);
+        BinHigEdge.push_back(XHigEdge_Nom);
+        NominalValue.push_back(CentralValue_Nom);
+        SystematicValue.push_back(CentralValue_Sys);
+
+        if(CentralValue_Nom != 0){
+            RelativeError.push_back(abs(CentralValue_Nom-CentralValue_Sys)/CentralValue_Nom);
+        }
+    }
+    NominalFile.close();
+    SystematicFile.close();
+
+    ofstream SystematicRelError;
+    SystematicRelError.open(systematicfilename, ios::trunc);
+    if(!SystematicRelError.is_open()){
+        cout<<"The output file cannot be opened. Exiting!!"<<endl;
+        exit(4444);
+    }
+    for (int bin = 0; bin<(int)SystematicValue.size(); bin++){
+        SystematicRelError<<"XAxisbinCenters[bin]: "<<BinCenters.at(bin)<<" bin: "<<BinLowEdge.at(bin)<<" to "<<BinHigEdge.at(bin)<<" SystematicRelError: "<<RelativeError.at(bin)<<endl;
+    }
+    SystematicRelError.close();
+
+}
+
+
+void Plotter::CalcUpDownDifference( TString Channel, TString Syst_Up, TString Syst_Down, TString Variable){
+    
+    //Function to get the error of a certain systematic: Err_Up - Err_Down
+    
+//This function will read the unfolding result for Nominal and Variation1 (eg: MASS_UP) for a given variable
+    // and it will return the relative error: abs(MASS_UP-Nominal)/Nominal
+    
+    ofstream DownRelError;
+    ifstream UpFile, DownFile;
+    string upfilename = string ("UnfoldingResults/"+Syst_Up+"/"+Channel+"/"+Variable+"Results.txt");
+    string downfilename = string ("UnfoldingResults/"+Syst_Down+"/"+Channel+"/"+Variable+"Results.txt");
+    
+    cout<<"\n\n\n"<<upfilename<<endl;
+    cout<<downfilename<<endl;
+    
+    UpFile.open(upfilename);
+    DownFile.open(downfilename);
+    
+    vector <double> BinCenters, BinLowEdge, BinHigEdge;
+    vector <double> UpValue, DownValue;
+    vector <double> RelativeError;
+    TString Dummy = "";
+    
+    if (!UpFile.is_open() || !DownFile.is_open()){
+        cout<<"The input file cannot be opened. Exiting!!"<<endl;
+        exit(4443);}
+    for (Int_t bin=0; bin<bins; bin++){
+        double XAxisbinCenters_Up = 0, XLowEdge_Up = 0, XHigEdge_Up = 0;
+        double XAxisbinCenters_Down = 0, XLowEdge_Down = 0, XHigEdge_Down = 0;
+        double CentralValue_Up = 0;
+        double CentralValue_Down = 0;
+        UpFile>>Dummy>>XAxisbinCenters_Up>>Dummy>>XLowEdge_Up>>Dummy>>XHigEdge_Up>>Dummy>>CentralValue_Up;
+        DownFile>>Dummy>>XAxisbinCenters_Down>>Dummy>>XLowEdge_Down>>Dummy>>XHigEdge_Down>>Dummy>>CentralValue_Down;
+
+        BinCenters.push_back(XAxisbinCenters_Up);
+        BinLowEdge.push_back(XLowEdge_Up);
+        BinHigEdge.push_back(XHigEdge_Up);
+        UpValue.push_back(CentralValue_Up);
+        DownValue.push_back(CentralValue_Down);
+
+        if(CentralValue_Up != 0){
+            RelativeError.push_back(abs(CentralValue_Up-CentralValue_Down));
+        }
+    }
+    UpFile.close();
+    DownFile.close();
+
+    ofstream SystematicRelError;
+    string systematicfilename = string ("UnfoldingResults/HAD_/"+Channel+"/"+Variable+"Results.txt");
+    gSystem->mkdir("UnfoldingResults/HAD_/"+Channel, true);
+    SystematicRelError.open(systematicfilename, ios::trunc);
+    if(!SystematicRelError.is_open()){
+        cout<<"The output file cannot be opened. Exiting!!"<<endl;
+        exit(4444);
+    }
+    for (int bin = 0; bin<(int)RelativeError.size(); bin++){
+        SystematicRelError<<"XAxisbinCenters[bin]: "<<BinCenters.at(bin)<<" bin: "<<BinLowEdge.at(bin)<<" to "<<BinHigEdge.at(bin)<<" SystematicRelError: "<<RelativeError.at(bin)<<endl;
+    }
+    SystematicRelError.close();
+
 }

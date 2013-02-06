@@ -17,14 +17,15 @@ using namespace std;
 
 const std::vector<const char*> VectorOfValidSystematics 
     {"Nominal", 
-    "JER_UP", "JER_DOWN", "JES_UP", "JES_DOWN", "PU_UP", "PU_DOWN", "TRIG_UP", "TRIG_DOWN", "LEPT_UP", "LEPT_DOWN",
+    //"JER_UP", "JER_DOWN", "JES_UP", "JES_DOWN",
+    "PU_UP", "PU_DOWN", "TRIG_UP", "TRIG_DOWN", "LEPT_UP", "LEPT_DOWN",
+    "DY_UP", "DY_DOWN", "BG_UP", "BG_DOWN", 
     "BTAG_UP", "BTAG_DOWN", "BTAG_LJET_UP", "BTAG_LJET_DOWN",
     "BTAG_PT_UP", "BTAG_PT_DOWN", "BTAG_ETA_UP", "BTAG_ETA_DOWN",
     "BTAG_LJET_PT_UP", "BTAG_LJET_PT_DOWN", "BTAG_LJET_ETA_UP", "BTAG_LJET_ETA_DOWN",
-    "BTAG_BEFF_UP", "BTAG_BEFF_DOWN", "BTAG_CEFF_UP", "BTAG_CEFF_DOWN", "BTAG_LEFF_UP", "BTAG_LEFF_DOWN",
-    "MASS_UP", "MASS_DOWN", "MATCH_UP", "MATCH_DOWN",
-    "SCALE_UP", "SCALE_DOWN", 
-    "POWHEG", "MCATNLO", "SPINCORR", 
+//     "BTAG_BEFF_UP", "BTAG_BEFF_DOWN", "BTAG_CEFF_UP", "BTAG_CEFF_DOWN", "BTAG_LEFF_UP", "BTAG_LEFF_DOWN",
+    "MASS_UP", "MASS_DOWN", "MATCH_UP", "MATCH_DOWN", "SCALE_UP", "SCALE_DOWN", 
+    "POWHEG", "MCATNLO",// "SPINCORR", 
     "all"};
     
 void Histo(bool doControlPlots, bool doUnfold, 
@@ -73,7 +74,6 @@ void Histo(bool doControlPlots, bool doUnfold,
         /////////////////////////////////////////////////////
         /////////////////////////////////////////////////////
         ///////////////////////////////////////////////////// 
-        
         h_generalPlot.setOptions(p.name,p.specialComment,p.ytitle,p.xtitle, 
                                     p.rebin, p.do_dyscale, p.logX, p.logY, 
                                     p.ymin, p.ymax, p.xmin, p.xmax, p.bins, p.xbinbounds, p.bincenters);
@@ -84,19 +84,13 @@ void Histo(bool doControlPlots, bool doUnfold,
                 h_generalPlot.preunfolding(channel, systematic);
             }
         }
-        for (auto channel : channels) {
-            for (auto systematic : systematics) {
-                if (doControlPlots) {
-                    h_generalPlot.MakeTable();
-                }
-                if (doUnfold) {
-                    h_generalPlot.unfolding();
-                    h_generalPlot.PlotDiffXSec(channel);
-                }
+        if (doUnfold) {
+            h_generalPlot.unfolding();
+            for (auto channel:channels){
+                h_generalPlot.PlotDiffXSec(channel);
             }
         }
     }
-
     cout << "Done with the unfolding\n";
 }
 

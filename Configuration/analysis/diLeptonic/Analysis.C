@@ -2949,7 +2949,7 @@ void Analysis::prepareKinRecoSF() {
     // weightKinFit=1; return;
     if (!isMC) { weightKinFit = 1; return; }    
     const static std::map<TString, double> sfNominal { {"ee", 0.9779}, {"emu", 0.9871}, {"mumu", 0.9879} };
-    const static std::map<TString, double> sfUnc { {"ee", 0.0023}, {"emu", 0.0023}, {"mumu", 0.0023} };
+    const static std::map<TString, double> sfUnc { {"ee", 0.0066}, {"emu", 0.0032}, {"mumu", 0.0056} };
     weightKinFit = sfNominal.at(channel);
     if (systematic == "KIN_UP") weightKinFit += sfUnc.at(channel);
     else if (systematic == "KIN_DOWN") weightKinFit -= sfUnc.at(channel);

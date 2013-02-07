@@ -42,9 +42,9 @@ void Plotter::UnfoldingOptions(bool doSVD)
   drawNLOCurves = true; // boolean to draw/not-draw extra theory curves in the Diff.XSection plots
 
   drawMadSpinCorr  = false;
-  drawMCATNLO      = false;
+  drawMCATNLO      = true;
   drawKidonakis    = false;
-  drawPOWHEG       = false;
+  drawPOWHEG       = true;
 
 }
 
@@ -59,8 +59,8 @@ void Plotter::SetOutpath(TString path)
 void Plotter::unfolding()
 {
 
-    TString sys_array[] = {"HAD_", "DY_","BG_","PU_", "TRIG_","MASS_", "MATCH_", "SCALE_", "BTAG_ETA_","BTAG_PT_", "BTAG_LJET_ETA_", "BTAG_LJET_PT_"};//, "JER_", "JES_"};
-    double sys_array_flat_value[]={0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};//, 0, 0};
+    TString sys_array[] = {"HAD_", "LEPT_", "DY_","BG_","PU_", "TRIG_","MASS_", "MATCH_", "SCALE_", "BTAG_ETA_","BTAG_PT_", "BTAG_LJET_ETA_", "BTAG_LJET_PT_"};//, "JER_", "JES_"};
+    double sys_array_flat_value[]={0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};//, 0, 0};
     TString channel_array[] = {"ee","mumu","emu","combined"};
 //     TString channel_array[] = {"emu"};
 
@@ -92,14 +92,19 @@ void Plotter::unfolding()
                 cout << "Starting Calculation of Differential Systematics for '" << name << "' in Channel '" << vec_channel.at(chan) << "':" << endl;
                 cout << "<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>" << endl;
                 
-                if (!vec_systematic.at(sys).BeginsWith("HAD_") ) {
+                if ( !vec_systematic.at(sys).BeginsWith("HAD_") ) {
                     CalcDiffSystematics(vec_channel.at(chan), vec_systematic.at(sys), vec_systematic.at(sys)+"UP",vec_systematic.at(sys)+"DOWN",vec_flat_value.at(sys));
                 } else {
-                    CalcDiffXSec(vec_channel.at(chan), "POWHEG");
-                    CalcDiffXSec(vec_channel.at(chan), "MCATNLO");
-                    GetDiffToNominal(vec_channel.at(chan), TString("POWHEG"), name);
-                    GetDiffToNominal(vec_channel.at(chan), TString("MCATNLO"), name);
-                    CalcUpDownDifference(vec_channel.at(chan), "POWHEG", "MCATNLO", name);
+                    if(vec_channel.at(chan) != "combined"){
+                        CalcDiffXSec(vec_channel.at(chan), "POWHEG");
+                        CalcDiffXSec(vec_channel.at(chan), "MCATNLO");
+                        GetDiffToNominal(vec_channel.at(chan), TString("POWHEG"), name);
+                        GetDiffToNominal(vec_channel.at(chan), TString("MCATNLO"), name);
+                        CalcUpDownDifference(vec_channel.at(chan), "POWHEG", "MCATNLO", name);
+                    }
+                    else if (vec_channel.at(chan) == "combined"){
+                        CalcDiffSystematics(vec_channel.at(chan), vec_systematic.at(sys), vec_systematic.at(sys), vec_systematic.at(sys),vec_flat_value.at(sys));
+                    }
                 }
                 
                 cout << "<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>" << endl;
@@ -264,14 +269,14 @@ void Plotter::CalcDiffSystematics(TString Channel, TString Systematic, TString S
     cout << "    Preparing to Calculate " << Systematic << "-Uncertainty ... " << endl;
 
     ofstream ResultsFile;
-    gSystem->mkdir("UnfoldingResults/"+Systematic+"/"+Channel, true);
-    
+
     string ResultsFilestring = outpathResults.Data();
     ResultsFilestring.append(subfolderSpecial.Data());
     ResultsFilestring.append("/");
     ResultsFilestring.append(Systematic);
     ResultsFilestring.append("/");
     ResultsFilestring.append(Channel);
+    gSystem->mkdir((char*)ResultsFilestring.c_str(), true);
     ResultsFilestring.append("/");
     ResultsFilestring.append(name);
     ResultsFilestring.append("Results.txt");
@@ -366,7 +371,7 @@ void Plotter::CalcDiffSystematics(TString Channel, TString Systematic, TString S
         //if ( channelLabelStr.Contains("ee")      ) theChannelName = "ee";
         //if ( channelLabelStr.Contains("Dilepton Combined")    ) theChannelName = "combined";
         TString theParticleName = "";
-        if ( name.Contains("Lepton") ) theParticleName = "Leptons";
+        if ( name.Contains("Lepton")  ) theParticleName = "Leptons";
         if ( name.Contains("LLBar")   ) theParticleName = "LepPair";
         if ( name.Contains("Top")     ) theParticleName = "TopQuarks";
         if ( name.Contains("TTBar")   ) theParticleName = "TtBar";
@@ -476,10 +481,11 @@ void Plotter::CalcDiffSystematics(TString Channel, TString Systematic, TString S
         TString mumuErrfilename="UnfoldingResults/"+Systematic+"/mumu/"+name+"Results.txt";
         
         //check the existence of the file
-        if(gSystem->AccessPathName(eefilename) || gSystem->AccessPathName(emufilename) || gSystem->AccessPathName(mumufilename) || gSystem->AccessPathName(eeErrfilename) || gSystem->AccessPathName(emuErrfilename) || gSystem->AccessPathName(mumuErrfilename)){
+        if(gSystem->AccessPathName(eefilename) || gSystem->AccessPathName(emufilename) || gSystem->AccessPathName(mumufilename) ||
+           gSystem->AccessPathName(eeErrfilename) || gSystem->AccessPathName(emuErrfilename) || gSystem->AccessPathName(mumuErrfilename)){
             cout<<"WARNING (in CalcDiffSystematics)!!"<<endl;
             cout<<"One of the input files you use for the combined XSection measurement doesn't exist!! Exiting!!"<<endl;
-            return;
+            exit(22);
         }
         
         ifstream ResultsEE(eefilename);
@@ -518,14 +524,14 @@ void Plotter::CalcDiffSystematics(TString Channel, TString Systematic, TString S
                     perChannelDiffXSecPlot[j][i] = 0;
                 }
             }
-            DiffXSecVecVaried[i] =((perChannelDiffXSecSystError[0][i] * perChannelDiffXSecPlot[0][i]/(perChannelDiffXSecStatError[0][i]*perChannelDiffXSecStatError[0][i]))
-                                  +(perChannelDiffXSecSystError[1][i] * perChannelDiffXSecPlot[1][i]/(perChannelDiffXSecStatError[1][i]*perChannelDiffXSecStatError[1][i]))
-                                  +(perChannelDiffXSecSystError[2][i] * perChannelDiffXSecPlot[2][i]/(perChannelDiffXSecStatError[2][i]*perChannelDiffXSecStatError[2][i])))/
+            DiffXSecVecVaried[i] =((( 1 + perChannelDiffXSecSystError[0][i]) * perChannelDiffXSecPlot[0][i]/(perChannelDiffXSecStatError[0][i]*perChannelDiffXSecStatError[0][i]))
+                                  +(( 1 + perChannelDiffXSecSystError[1][i]) * perChannelDiffXSecPlot[1][i]/(perChannelDiffXSecStatError[1][i]*perChannelDiffXSecStatError[1][i]))
+                                  +(( 1 + perChannelDiffXSecSystError[2][i]) * perChannelDiffXSecPlot[2][i]/(perChannelDiffXSecStatError[2][i]*perChannelDiffXSecStatError[2][i])))/
                                   ((1/(perChannelDiffXSecStatError[0][i]*perChannelDiffXSecStatError[0][i]))+
                                    (1/(perChannelDiffXSecStatError[1][i]*perChannelDiffXSecStatError[1][i]))+
                                    (1/(perChannelDiffXSecStatError[2][i]*perChannelDiffXSecStatError[2][i])));
             
-            double Sys_Error = 1.-(TMath::Abs(DiffXSecVecVaried[i]-perChannelDiffXSecPlot[3][i])/perChannelDiffXSecPlot[3][i]);
+            double Sys_Error = fabs(DiffXSecVecVaried[i]-perChannelDiffXSecPlot[3][i])/perChannelDiffXSecPlot[3][i];
             ResultsFile<<"XAxisbinCenters[bin]: "<<XAxisbinCenters[i]<<" bin: "<<Xbins[i]<<" to "<<Xbins[i+1]<<" SystematicRelError: "<<Sys_Error<<endl;
         }
     }
@@ -826,7 +832,7 @@ void Plotter::write(TString Channel, TString Systematic) // do scaling, stacking
 
     if (hists.size() == 0) { 
         cerr << "***ERROR! No histograms available! " << Channel << "/" << Systematic << endl; 
-        exit(1); 
+        exit(11); 
     }
         
     TCanvas * c = new TCanvas("","");
@@ -2092,7 +2098,7 @@ void Plotter::PlotDiffXSec(TString Channel){
     TH1 *h_GenDiffXSec = (TH1D*)varhists[0]->Clone();   h_GenDiffXSec->Reset();
 
     //The systematic array is filled in the order in which the Stack is filled
-    TString sys_array[] = {"HAD_", "MATCH_", "MASS_", "SCALE_", "BTAG_PT_", "BTAG_ETA_", "BTAG_LJET_PT_", "BTAG_LJET_ETA_", "TRIG_", "BG_", "DY_", "PU_"};//, "JER_", "JES_"};//For the time being uintil all systematics are finalished
+    TString sys_array[] = {"HAD_", "MATCH_", "MASS_", "SCALE_", "BTAG_PT_", "BTAG_ETA_", "BTAG_LJET_PT_", "BTAG_LJET_ETA_", "LEPT_", "TRIG_", "BG_", "DY_", "PU_"};//, "JER_", "JES_"};//For the time being uintil all systematics are finalished
     vector<TString> vec_systematic (sys_array, sys_array + sizeof(sys_array)/sizeof(sys_array[0]));
 
     double DiffXSecPlot[XAxisbinCenters.size()];
@@ -2158,17 +2164,6 @@ void Plotter::PlotDiffXSec(TString Channel){
         DiffXSecSysErrorPlot[bin]=sqrt(DiffXSecSysErrorPlot[bin])*DiffXSecPlot[bin]; //absolute systematic error in bin 'bin'
         DiffXSecTotalErrorPlot[bin]=sqrt(DiffXSecSysErrorPlot[bin]*DiffXSecSysErrorPlot[bin] + DiffXSecStatErrorPlot[bin]*DiffXSecStatErrorPlot[bin]);//absolute total error
     }
-
-    //create a file for Results!!
-    //Right now this is a check to make sure what is calculated in the unfolding step is still what we see!
-    ofstream ResultsFile, ResultsLateX;
-    string ResultsFilestring = outpathPlots.Data();
-    ResultsFilestring.append(subfolderChannel.Data());
-    ResultsFilestring.append(subfolderSpecial.Data());
-    ResultsFilestring.append("/");
-    ResultsFilestring.append(newname);
-    ResultsFilestring.append("ResultsAfter.txt");
-    ResultsFile.open(ResultsFilestring.c_str());
 
     if(doSystematics){
 
@@ -2321,7 +2316,6 @@ void Plotter::PlotDiffXSec(TString Channel){
         if (binned_theory==false) mcnlohist->Rebin(2);mcnlohist->Scale(0.5); //#####
         mcnlohist->Scale(mcnloscale);
 
-
         if(name.Contains("LeptonpT")){mcnlohistnorm = GetNloCurve("Leptons","Pt","MCatNLO");}//temprorary until I change the naming convention in the root file
         else if(name.Contains("LeptonEta")){mcnlohistnorm = GetNloCurve("Leptons","Eta","MCatNLO");}
         else if(name.Contains("LLBarpT")){mcnlohistnorm = GetNloCurve("LepPair","Pt","MCatNLO");}
@@ -2368,7 +2362,7 @@ void Plotter::PlotDiffXSec(TString Channel){
         //    if (binned_theory==false) mcnlohistdown->Rebin(5);mcnlohistdown->Scale(0.2);
         mcnlohistdownBinned    = mcnlohistdown->Rebin(bins,"genBinHist", Xbins);
 
-        mcnlohistBinned = mcnlohist->Rebin(bins,"mcnloplot",Xbins);     
+        mcnlohistBinned = mcnlohist->Rebin(bins,"mcnloplot",Xbins);
         for (Int_t bin=0; bin<bins; bin++){
             mcnlohistBinned->SetBinContent(bin+1,mcnlohistBinned->GetBinContent(bin+1)/((Xbins[bin+1]-Xbins[bin])/mcnlohist->GetBinWidth(1)));
             mcnlohistupBinned->SetBinContent(bin+1,mcnlohistupBinned->GetBinContent(bin+1)/((Xbins[bin+1]-Xbins[bin])/mcnlohistup->GetBinWidth(1)));
@@ -2596,7 +2590,7 @@ void Plotter::PlotDiffXSec(TString Channel){
     delete c;
     gStyle->SetEndErrorSize(0);
 
-    PrintResultTotxtFile(binCenters, tga_DiffXSecPlot, tga_DiffXSecPlotwithSys);
+    PrintResultTotxtFile(Channel, binCenters, tga_DiffXSecPlot, tga_DiffXSecPlotwithSys);
 
     TCanvas * c1 = new TCanvas("DiffXS","DiffXS");
     TList* l = stack->GetHists();
@@ -3066,12 +3060,10 @@ void Plotter::DrawCMSLabels(int cmsprelim, double energy, double textSize) {
 
 
 
-void Plotter::PrintResultTotxtFile (double binCenters[], TGraphAsymmErrors *tga_DiffXSecPlot, TGraphAsymmErrors *tga_DiffXSecPlotwithSys){
-    
-    vector<string> channels = {"emu", "ee", "mumu", "combined"};
+void Plotter::PrintResultTotxtFile (TString channel, double binCenters[], TGraphAsymmErrors *tga_DiffXSecPlot, TGraphAsymmErrors *tga_DiffXSecPlotwithSys){
     
     ofstream SavingFile;
-    string filename = string("Plots/"+channels.at(channelType)+"/"+name+"LaTeX.txt");
+    string filename = string("Plots/"+channel+"/"+name+"LaTeX.txt");
     SavingFile.open(filename.c_str(), ios_base::out);
     
     SavingFile<<"Variable: "<<name<<"   Channel: "<<channelLabel.at(channelType)<<endl;
@@ -3116,7 +3108,7 @@ void Plotter::GetDiffToNominal(TString Channel, TString Systematic, TString Vari
     
     if (!NominalFile.is_open() || !SystematicFile.is_open()){
         cout<<"The input file cannot be opened. Exiting!!"<<endl;
-        exit(4443);}
+        exit(443);}
     for (Int_t bin=0; bin<bins; bin++){
         double XAxisbinCenters_Nom = 0, XLowEdge_Nom = 0, XHigEdge_Nom = 0;
         double XAxisbinCenters_Sys = 0, XLowEdge_Sys = 0, XHigEdge_Sys = 0;
@@ -3147,7 +3139,7 @@ void Plotter::GetDiffToNominal(TString Channel, TString Systematic, TString Vari
     SystematicRelError.open(systematicfilename, ios::trunc);
     if(!SystematicRelError.is_open()){
         cout<<"The output file cannot be opened. Exiting!!"<<endl;
-        exit(4444);
+        exit(444);
     }
     for (int bin = 0; bin<(int)SystematicValue.size(); bin++){
         SystematicRelError<<"XAxisbinCenters[bin]: "<<BinCenters.at(bin)<<" bin: "<<BinLowEdge.at(bin)<<" to "<<BinHigEdge.at(bin)<<" SystematicRelError: "<<RelativeError.at(bin)<<endl;
@@ -3182,7 +3174,7 @@ void Plotter::CalcUpDownDifference( TString Channel, TString Syst_Up, TString Sy
     
     if (!UpFile.is_open() || !DownFile.is_open()){
         cout<<"The input file cannot be opened. Exiting!!"<<endl;
-        exit(4443);}
+        exit(433);}
     for (Int_t bin=0; bin<bins; bin++){
         double XAxisbinCenters_Up = 0, XLowEdge_Up = 0, XHigEdge_Up = 0;
         double XAxisbinCenters_Down = 0, XLowEdge_Down = 0, XHigEdge_Down = 0;
@@ -3210,7 +3202,7 @@ void Plotter::CalcUpDownDifference( TString Channel, TString Syst_Up, TString Sy
     SystematicRelError.open(systematicfilename, ios::trunc);
     if(!SystematicRelError.is_open()){
         cout<<"The output file cannot be opened. Exiting!!"<<endl;
-        exit(4444);
+        exit(434);
     }
     for (int bin = 0; bin<(int)RelativeError.size(); bin++){
         SystematicRelError<<"XAxisbinCenters[bin]: "<<BinCenters.at(bin)<<" bin: "<<BinLowEdge.at(bin)<<" to "<<BinHigEdge.at(bin)<<" SystematicRelError: "<<RelativeError.at(bin)<<endl;

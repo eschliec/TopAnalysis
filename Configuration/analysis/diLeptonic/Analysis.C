@@ -115,12 +115,12 @@ void Analysis::SlaveBegin ( TTree * )
 {
     binnedControlPlots = new std::map<std::string, std::pair<TH1*, std::vector<std::map<std::string, TH1*> > > >;
     
-    h_step4 = store(new TH1D ( "step4", "event count at after 2lepton", 10, 0, 10 ));
-    h_step5 = store(new TH1D ( "step5", "event count at after Zcut", 10, 0, 10 ));
-    h_step6 = store(new TH1D ( "step6", "event count at after 2jets", 10, 0, 10 ));
-    h_step7 = store(new TH1D ( "step7", "event count at after MET", 10, 0, 10 ));
-    h_step8 = store(new TH1D ( "step8", "event count at after 1btag", 10, 0, 10 ));
-    h_step9 = store(new TH1D ( "step9", "event count at step after KinReco", 10, 0, 10 ));
+    h_step4 = store(new TH1D ( "step4", "event count at after 2lepton", 10, 0, 10 ));       h_step4->Sumw2();
+    h_step5 = store(new TH1D ( "step5", "event count at after Zcut", 10, 0, 10 ));          h_step5->Sumw2();
+    h_step6 = store(new TH1D ( "step6", "event count at after 2jets", 10, 0, 10 ));         h_step6->Sumw2();
+    h_step7 = store(new TH1D ( "step7", "event count at after MET", 10, 0, 10 ));           h_step7->Sumw2();
+    h_step8 = store(new TH1D ( "step8", "event count at after 1btag", 10, 0, 10 ));         h_step8->Sumw2();
+    h_step9 = store(new TH1D ( "step9", "event count at step after KinReco", 10, 0, 10 ));  h_step9->Sumw2();
 
     //h_jetMultiAll = store(new TH1D ( "HypjetMultiAll", "Jet Multiplicity (AllJets)", 10, -0.5, 9.5 ));
     h_jetMultiXSec = store(new TH1D ( "HypjetMultiXSec", "Jet Multiplicity (for cross-section)", 10, -0.5, 9.5 ));
@@ -170,7 +170,7 @@ void Analysis::SlaveBegin ( TTree * )
     h_RecoAntiLeptonEta = store(new TH1D ( "RecoAntiLeptonEta","Eta of AntiLepton (HYP)",100,-5,5 ));
 
     h_VisGenAll = store(new TH1D ( "VisGenAll", "All Visible Generated particles (IM)", 40, 0, 400 ));
-    h_GenAll = store(new TH1D ( "GenAll", "AllGenerated particles (IM)", 40, 0, 400 ));
+    h_GenAll = store(new TH1D ( "GenAll", "AllGenerated particles (IM)", 40, 0, 400 ));         h_GenAll->Sumw2();
     Allh1_postKinReco = store(new TH1D ( "Allh1_postKinReco", "DiLepton Mass", 40, 0, 400 ));
     h_diLepMassFull = store(new TH1D ( "DIMFull", "DiLepton Mass (Full Range)", 100, 0, 300 ));
     h_diLepMassFull_fullSel = store(new TH1D ( "DIMFull_fullSel", "DiLepton Mass (Full Range)", 100, 0, 300 ));
@@ -1268,11 +1268,12 @@ Bool_t Analysis::Process ( Long64_t entry )
     
     if ( isZregion ) {
         double fullWeights = weightGenerator*weightPU*weightTrigSF*weightLepSF;
-        Looseh1->Fill(dilepton.M(), fullWeights);
+//         Looseh1->Fill(dilepton.M(), fullWeights);
         Zh1_postZcut->Fill(dilepton.M(), fullWeights);
         Allh1_postZcut->Fill(dilepton.M(), fullWeights);
         
         if ( hasJets ) {
+            Looseh1->Fill(dilepton.M(), fullWeights);
             Zh1_post2jets->Fill(dilepton.M(), fullWeights);
             Allh1_post2jets->Fill(dilepton.M(), fullWeights);
             

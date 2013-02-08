@@ -332,9 +332,15 @@ double DilepSVDFunctions::SVD_DoUnfoldSys(
     TH1 *NominalUp= (TH1*)unfUp->Clone("NominalUp");
     TH1 *NominalDown= (TH1*)unfDown->Clone("NominalDown");
     Nominal->SetLineColor(kBlack);
+    Nominal->SetMarkerStyle(20);
+    Nominal->SetMarkerColor(kBlack);
     NominalUp->SetLineColor(kRed);
+    NominalUp->SetMarkerStyle(22);
+    NominalUp->SetMarkerColor(kRed);
     NominalDown->SetLineColor(kBlue);
     NominalDown->SetLineStyle(2);
+    NominalDown->SetMarkerColor(kBlue);
+    NominalDown->SetMarkerStyle(23);
     leg->AddEntry(Nominal, "Nominal", "p");
     leg->AddEntry(NominalUp, "Up", "lp");
     leg->AddEntry(NominalDown, "Down", "lp");

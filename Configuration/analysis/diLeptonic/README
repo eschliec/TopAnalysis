@@ -42,6 +42,9 @@ For Nominal just do: ./runNominalParallel.sh
 
 You also need to generate the signal variations with: ./runNominalVariations.sh
 
+In addition you can also run the theory variations (mass, match, scale) and other 
+generators (powheg, mcatnlo and madgraph with spin correlations): ./runTheoryVariations.sh
+
 This runs Analysis.C on each event in the root tuple for each sample. All analysis cuts are made in Analysis.C and the output are a bunch of user specified histograms.
 Except for adding histograms or changing analysis cuts, additions to this file should be made as separate functions in the Analysis class.
 

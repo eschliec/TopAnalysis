@@ -364,7 +364,7 @@ TtFullLepKinSolver::GetKinSolution(const TLorentzVector& leptonMinus, const TLor
 std::vector<TtDilepEvtSolution> 
 GetKinSolutions(const LV& leptonMinus, const LV& leptonPlus, 
                 const VLV *jets, const std::vector<double> *btags, 
-                const LV* met, double JetPtCut)
+                const LV* met)
 {
     std::vector<TtDilepEvtSolution> result;
     //std::vector<double> nu {30.7137,56.2880,23.0744,59.1015,24.9145}; //old defaults
@@ -380,7 +380,7 @@ GetKinSolutions(const LV& leptonMinus, const LV& leptonPlus,
     
     std::vector<TLorentzVector> jets_tlv;
     for (const auto& jet : *jets) {
-        if(jet.pt() > JetPtCut) jets_tlv.push_back(LVtoTLV(jet));
+        jets_tlv.push_back(LVtoTLV(jet));
     }
     
     size_t max_jets = jets_tlv.size(); //run over all 'googd' jets

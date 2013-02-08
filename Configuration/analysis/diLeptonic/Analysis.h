@@ -68,6 +68,7 @@ class Analysis : public TSelector
     LV              *GenAntiTop;
     LV              *GenMet;
     VLV             *allGenJets;
+    VLV             *associatedGenJets;
     vector<int>     *BHadJetIndex;
     vector<int>     *AntiBHadJetIndex;
 
@@ -129,6 +130,7 @@ class Analysis : public TSelector
     TBranch        *b_GenWPlus;   //!
     TBranch        *b_GenWMinus;   //!
     TBranch        *b_allGenJets;   //!
+    TBranch        *b_associatedGenJets;   //!
     TBranch        *b_BHadJetIndex;   //!
     TBranch        *b_AntiBHadJetIndex;   //!
     TBranch        *b_GenMet;
@@ -403,6 +405,9 @@ class Analysis : public TSelector
     TH1* weightedEvents;
     PUReweighter *pureweighter;
     
+    
+    const std::string topDecayModeString();
+    
     double calculateBtagSF();
     double getJetHT(const VLV& jet, int pt_cut);
     
@@ -429,8 +434,11 @@ class Analysis : public TSelector
                                TH1 *h_control, double value, double weight);
     
     bool kinRecoOnTheFly;
-    bool calculateKinReco(const LV &leptonMinus, const LV &leptonPlus, double JETPTCUT);
+    bool calculateKinReco(const LV &leptonMinus, const LV &leptonPlus);
     double calculateClosureTestWeight();
+    
+    void cleanJetCollection();
+    
     bool doClosureTest;
 #ifndef __CINT__   
     std::function<double()> closureFunction;
@@ -457,5 +465,21 @@ public:
     void SetClosureTest(TString closure, double slope);
     ClassDef ( Analysis,0 );
 };
+
+
+/** helper function to store a TObject in the output list
+ * 
+ * @param obj a pointer to a TObject (or any type inheriting from TObject)
+ * @return returns the parameter (and the same type)
+ * 
+ * This function just adds a histogram to the output list and returns 
+ * it in a typesafe way. Used to save some typing.
+ */
+template<class T>
+inline T* Analysis::store(T* obj)
+{
+    fOutput->Add(obj);
+    return obj;
+}
 
 #endif

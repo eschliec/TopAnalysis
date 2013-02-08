@@ -30,6 +30,14 @@ constexpr double TOPXSEC = 234;
 /// Luminosity in 1/fb
 constexpr double LUMI = 12.21; 
 
+///do we want to run the sync excercise?
+constexpr bool RUNSYNC = false;
+
+
+constexpr double JETPTCUT = 30;
+constexpr double JETETACUT = 2.4;
+
+
 /**
  * @brief Determine cross section for a given sample
  * 
@@ -90,21 +98,6 @@ void Analysis::Begin ( TTree * )
     prepareKinRecoSF();
     
     lumiWeight = LUMI*1000*SampleXSection(samplename)/weightedEvents->GetBinContent(1);
-}
-
-/** helper function to store a TObject in the output list
- * 
- * @param obj a pointer to a TObject (or any type inheriting from TObject)
- * @return returns the parameter (and the same type)
- * 
- * This function just adds a histogram to the output list and returns 
- * it in a typesafe way. Used to save some typing.
- */
-template<class T>
-T* Analysis::store(T* obj)
-{
-    fOutput->Add(obj);
-    return obj;
 }
 
 /** Initialise all histograms used in the analysis
@@ -701,6 +694,7 @@ void Analysis::orderLVByPt(LV &leading, LV &Nleading, const LV &lv1, const LV &l
     }
 }
 
+//this should actually return BJetIndex.size()
 int Analysis::NumberOfBJets(vector<double> *bjets){
     
     int nbjets = 0;
@@ -710,11 +704,20 @@ int Analysis::NumberOfBJets(vector<double> *bjets){
     return nbjets;
 }
 
+///apply pT and eta cuts on our jets
+void Analysis::cleanJetCollection() {
+    for (int i = jets->size() - 1; i >= 0; --i) {
+        if (jets->at(i).pt() < JETPTCUT || abs(jets->at(i).eta()) > JETETACUT) {
+            jets->erase(begin(*jets) + i);
+            jetBTagCSV->erase(begin(*jetBTagCSV) + i);
+            if (isMC) associatedGenJets->erase(begin(*associatedGenJets) + i);
+        }        
+    }
+}
+
 
 Bool_t Analysis::Process ( Long64_t entry )
-{
-    static const double JETPTCUT = 30;
-    
+{    
     if ( ++EventCounter % 100000 == 0 ) cout << "Event Counter: " << EventCounter << endl;
     
     
@@ -729,9 +732,17 @@ Bool_t Analysis::Process ( Long64_t entry )
         bool isViaTau = topDecayMode > 40 || ( topDecayMode % 10 > 4 );
         bool isCorrectChannel = false;
         switch (channelPdgIdProduct) {
-            case -11*13: isCorrectChannel = topDecayMode == 23 || topDecayMode == 32; break;
-            case -11*11: isCorrectChannel = topDecayMode == 22; break;
-            case -13*13: isCorrectChannel = topDecayMode == 33; break;
+            case -11*13: isCorrectChannel = topDecayMode == 23 || topDecayMode == 32 //emu prompt
+                            || topDecayMode == 53 || topDecayMode == 35 //e via tau, mu prompt
+                            || topDecayMode == 26 || topDecayMode == 62 //e prompt, mu via tau
+                            || topDecayMode == 56 || topDecayMode == 65; //both via tau
+                            break;
+            case -11*11: isCorrectChannel = topDecayMode == 22  //ee prompt
+                            || topDecayMode == 52 || topDecayMode == 25 //e prompt, e via tau
+                            || topDecayMode == 55; break; //both via tau
+            case -13*13: isCorrectChannel = topDecayMode == 33
+                            || topDecayMode == 36 || topDecayMode == 63
+                            || topDecayMode == 66; break;
             default: cerr << "Invalid channel! Product = " << channelPdgIdProduct << "\n";
         };
         bool isBackgroundInSignalSample = !isCorrectChannel || isViaTau;
@@ -762,19 +773,13 @@ Bool_t Analysis::Process ( Long64_t entry )
         weightGenerator = 1;
     }
     
-    for (size_t i = 0; i < jets->size(); ++i) {
-        if (jets->at(i).pt() < JETPTCUT) {
-            jets->erase(jets->begin() + i, jets->end());
-            jetBTagCSV->erase(jetBTagCSV->begin() + i, jetBTagCSV->end());
-            break;
-        }
-    }
+    // apply all jet cuts
+    cleanJetCollection();
 
     double weightPU = 1;
     if (isMC) { 
         //still have lumi weights for old plotterclass
-//         weightGenerator *= lumiWeight;
-        
+        //weightGenerator *= lumiWeight;        
         if (pureweighter) {
             weightPU = pureweighter->getPUweight(vertMultiTrue);
         }
@@ -1166,8 +1171,6 @@ Bool_t Analysis::Process ( Long64_t entry )
     //===CUT===
     // we need an OS lepton pair
     if (! hasLeptonPair) return kTRUE;
-    // lepton pt cut > 20, sufficient to test the second leading lepton
-    if (leptons->at(NLeadLeptonNumber).pt() <= 20) return kTRUE; 
     
     LV dilepton = leptons->at(LeadLeptonNumber) + leptons->at(NLeadLeptonNumber);
     
@@ -1257,14 +1260,14 @@ Bool_t Analysis::Process ( Long64_t entry )
     //handle inverted Z cut
     // Fill loose dilepton mass histogram before any jet cuts
     bool isZregion = dilepton.M() > 76 && dilepton.M() < 106;
-    bool hasJets = jets->size() > 1 && jets->at(1).Pt() > JETPTCUT;
+    bool hasJets = jets->size() > 1;
     bool hasMetOrEmu = channel == "emu" || met->Pt() > 40;
     bool hasBtag = BJetIndex.size() > 0;
     double weightBtagSF = -1; //trick: initialize to -1 to avoid calculation of the btagSF twice
     
     bool hasSolution = HypTop->size() > 0;
     if (kinRecoOnTheFly || true) 
-        hasSolution = calculateKinReco(leptonMinus, leptonPlus, JETPTCUT);
+        hasSolution = calculateKinReco(leptonMinus, leptonPlus);
     
     if ( isZregion ) {
         double fullWeights = weightGenerator*weightPU*weightTrigSF*weightLepSF;
@@ -1509,7 +1512,21 @@ Bool_t Analysis::Process ( Long64_t entry )
     weight *= weightBtagSF;
     h_BTagSF->Fill(weightBtagSF );
     h_step8->Fill(1, weight );
-
+    
+    if (RUNSYNC) {
+        static int fullSelectionCounter = 0;
+        if (fullSelectionCounter == 0)
+            std::cout << "Selected#\tRun\tEvent\tlep+\tlep-\tMll\tNJets\tjet0\tjet1\tNTags\tGenJet1\tGenJet2\tMet\tGenMet\tt/tbar_decay\n"
+            << std::setprecision(2) << std::fixed;
+        std::cout << "Event#" << ++fullSelectionCounter << ":\t" << runNumber << "\t" << eventNumber << "\t" << leptonPlus << "\t" << leptonMinus << "\t"
+            << dilepton.M() << "\t" << jets->size() << "\t"
+            << jets->at(0) << "\t" << jets->at(1) << "\t" << BJetIndex.size() << "\t"
+            << associatedGenJets->at(0) << "\t" << associatedGenJets->at(1) << "\t"
+            << met->Pt() << "\t" << GenMet->Pt() << "\t"
+            << topDecayModeString()
+            << "\n";
+    }
+    
     h_BjetMulti->Fill(BJetIndex.size(), weight);
     h_jetMulti->Fill(jets->size(), weight);
     
@@ -2344,6 +2361,7 @@ void Analysis::Init ( TTree *tree )
     //for the signal
 //     genJets = 0;
     allGenJets = 0;
+    associatedGenJets = 0;
     BHadrons = 0;
     GenWPlus = 0;
     GenWMinus = 0;
@@ -2391,6 +2409,7 @@ void Analysis::Init ( TTree *tree )
 
 
     fChain->SetBranchAddress("allGenJets", &allGenJets, &b_allGenJets );
+    fChain->SetBranchAddress("associatedGenJet", &associatedGenJets, &b_associatedGenJets);
     fChain->SetBranchAddress("HypTop", &HypTop, &b_HypTop );
     fChain->SetBranchAddress("HypAntiTop", &HypAntiTop, &b_HypAntiTop );
     fChain->SetBranchAddress("HypLepton", &HypLepton, &b_HypLepton );
@@ -2477,6 +2496,7 @@ void Analysis::GetRecoBranches ( Long64_t & entry )
 
     //b_genJet->GetEntry(entry); //!
     b_allGenJets->GetEntry(entry); //!
+    b_associatedGenJets->GetEntry(entry);
 
     b_HypTop->GetEntry(entry); //!
     b_HypAntiTop->GetEntry(entry); //!
@@ -2876,6 +2896,7 @@ void Analysis::FillBinnedControlPlot(TH1* h_differential, double binvalue,
     h->Fill(value, weight);
 }
 
+///create control plots for the h_control distribution in bins of h_differential
 void Analysis::CreateBinnedControlPlots(TH1* h_differential, TH1* h_control)
 {
     HistoListReader histoList("HistoList");
@@ -2904,9 +2925,9 @@ void Analysis::CreateBinnedControlPlots(TH1* h_differential, TH1* h_control)
     }
 }
 
-bool Analysis::calculateKinReco(const LV& leptonMinus, const LV& leptonPlus, double JETPTCUT)
+bool Analysis::calculateKinReco(const LV& leptonMinus, const LV& leptonPlus)
 {
-    auto sols = GetKinSolutions(leptonMinus, leptonPlus, jets, jetBTagCSV, met, JETPTCUT);
+    auto sols = GetKinSolutions(leptonMinus, leptonPlus, jets, jetBTagCSV, met);
     if (sols.size()) {
         const TtDilepEvtSolution &sol = sols[0];
         HypTop->clear();        HypTop->push_back(TLVtoLV(sol.top));
@@ -2978,14 +2999,40 @@ void Analysis::SetClosureTest(TString closure, double slope)
     }
 }
 
+
+/** Set up the SF for the Kin Reco
+ * 
+ * Currently a flat per-channel SF is used. For the systematic KIN_UP and KIN_DOWN,
+ * the SF is modified by its uncertainty.
+ * 
+ * To calculate the SF, you need to set the SF to 1 and rerun. Then determine the
+ * SF with kinRecoEfficienciesAndSF
+ */
 void Analysis::prepareKinRecoSF() {
     //uncomment the following line to determine the Kin Reco SFs
     //then make && ./runNominalParallel.sh && ./Histo -t cp -p akr bkr step && ./kinRecoEfficienciesAndSF
-    // weightKinFit=1; return;
+    //weightKinFit=1; return;
     if (!isMC) { weightKinFit = 1; return; }    
     const static std::map<TString, double> sfNominal { {"ee", 0.9779}, {"emu", 0.9871}, {"mumu", 0.9879} };
     const static std::map<TString, double> sfUnc { {"ee", 0.0066}, {"emu", 0.0032}, {"mumu", 0.0056} };
     weightKinFit = sfNominal.at(channel);
     if (systematic == "KIN_UP") weightKinFit += sfUnc.at(channel);
     else if (systematic == "KIN_DOWN") weightKinFit -= sfUnc.at(channel);
+}
+
+/** return a string describing the true level W+/W- decays from the ttbar system
+ * 
+ * @return a string like e/tau->mu describing the decay to the W+/W- from the top/tbar decay
+ * 
+ * Possible strings are:
+ *   e/e  for the ee channel
+ *   e/tau->mu for the W+ -> e+ decay and the W- -> tau- -> mu- decay
+ *   ... and so on. The first part is from the top/W+, the second from the tbar/W-
+ */
+const std::string Analysis::topDecayModeString() {
+    std::vector<std::string> WMode { "unknown", "hadronic", "e", "mu", "tau->hadron", "tau->e", "tau->mu" };
+    int top = topDecayMode / 10;
+    int antitop = topDecayMode % 10;
+    std::string result = WMode[top] + "/" + WMode[antitop];
+    return result;    
 }

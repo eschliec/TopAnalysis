@@ -71,3 +71,5 @@ clean:
 	-rm dict.cpp dict.h
 	-rm *.o
 	-rm load_Analysis 
+	-rm Histo kinRecoEfficienciesAndSF printGenXsec
+

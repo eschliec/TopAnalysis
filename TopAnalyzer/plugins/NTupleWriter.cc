@@ -13,7 +13,7 @@ Implementation:
 //
 // Original Author:  Jan Kieseler,,,DESY
 //         Created:  Thu Aug 11 16:37:05 CEST 2011
-// $Id: NTupleWriter.cc,v 1.30.2.10 2013/01/23 10:58:35 wbehrenh Exp $
+// $Id: NTupleWriter.cc,v 1.30.2.11 2013/02/08 18:40:34 tdorland Exp $
 //
 //
 
@@ -478,7 +478,7 @@ NTupleWriter::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup )
             {
                 const pat::Jet &jet1 = jets->at(FullLepEvt->jetLeptonCombination(hypoKey,i)[0]);
                 const pat::Jet &jet2 = jets->at(FullLepEvt->jetLeptonCombination(hypoKey,i)[1]);
-                if (jet1.pt() <= 30 || jet2.pt() <= 30) continue;
+                if (jet1.pt() <= 30 || jet2.pt() <= 30 || abs(jet1.eta()) > 2.4 || abs(jet2.eta()) > 2.4 ) continue;
                 bool jet1tagged = jet1.bDiscriminator("combinedSecondaryVertexBJetTags")>0.244;
                 bool jet2tagged = jet2.bDiscriminator("combinedSecondaryVertexBJetTags")>0.244;
                 if (jet1tagged && jet2tagged) { best = i; break; }
@@ -805,9 +805,6 @@ NTupleWriter::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup )
     double jetEMLimitForMET_ = 0.9;
     for ( edm::View<pat::Jet>::const_iterator ajet  = jets->begin() ; ajet != jets->end(); ++ajet )
     {
-      if(ajet->correctedJet("Uncorrected").pt() > jetPTThresholdForMET_
-	 && ((!ajet->isPFJet() && ajet->emEnergyFraction() < jetEMLimitForMET_) ||
-	     ( ajet->isPFJet() && ajet->neutralEmEnergyFraction() + ajet->chargedEmEnergyFraction() < jetEMLimitForMET_))) {
         Vjet.push_back(ajet->polarP4());
         VjetJERSF.push_back(ajet->userFloat("jerSF"));
 	if (! iEvent.isRealData()) {
@@ -827,7 +824,7 @@ NTupleWriter::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup )
         VjetBTagSSVHP.push_back(ajet->bDiscriminator("simpleSecondaryVertexHighPurBJetTags"));
         VjetBTagCSV.push_back(ajet->bDiscriminator("combinedSecondaryVertexBJetTags"));
         VjetBTagCSVMVA.push_back(ajet->bDiscriminator("combinedSecondaryVertexMVABJetTags"));
-      }
+
     }
 
     //Here I create a separate jet collection needed for the on-the-fly calculation of jet uncertainties

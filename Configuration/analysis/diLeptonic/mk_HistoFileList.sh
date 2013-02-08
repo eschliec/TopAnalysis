@@ -10,6 +10,7 @@ foreach sample (run qcd dyee dymumu dytautau ww wz zz wtolnu single ttbarbg ttba
       foreach Syst  (Nominal \
                      PU_UP PU_DOWN TRIG_UP TRIG_DOWN \
                      LEPT_UP LEPT_DOWN \
+                     KIN_UP KIN_DOWN \
                      SCALE_UP SCALE_DOWN MATCH_UP MATCH_DOWN MASS_UP MASS_DOWN POWHEG MCATNLO HAD_UP HAD_DOWN \
                      BTAG_UP BTAG_DOWN BTAG_LJET_UP BTAG_LJET_DOWN \
                      BTAG_PT_UP BTAG_PT_DOWN BTAG_ETA_UP BTAG_ETA_DOWN \

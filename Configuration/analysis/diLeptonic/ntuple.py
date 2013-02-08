@@ -269,7 +269,7 @@ topfilter = False
 signal = False
 higgsSignal = False
 alsoViaTau = False
-useGenCutsInTopSignal = True
+ttbarV = False
 
 if options.samplename == 'ttbarsignal':
     topfilter = True
@@ -288,12 +288,18 @@ elif options.samplename == 'ttbarbg':
     topfilter = True
 elif options.samplename == 'dy1050' or options.samplename == 'dy50inf':
     zproducer = True
-elif options.samplename == 'ttbarhiggstobbar' or options.samplename == 'ttbarhiggsinclusive':
+elif options.samplename == 'ttbarhiggstobbbar' or options.samplename == 'ttbarhiggsinclusive':
     topfilter = True
     signal = True
     viaTau = False
     alsoViaTau = True
     higgsSignal = True
+elif options.samplename == 'ttbarw' or options.samplename == 'ttbarz':
+    topfilter = True
+    signal = True
+    viaTau = False
+    alsoViaTau = True
+    ttbarV = True
 elif options.samplename in ['data', 'singletop', 'singleantitop','ww',
         'wz','zz','wjets',
         'qcdmu15','qcdem2030','qcdem3080','qcdem80170',
@@ -330,7 +336,7 @@ metCollection = "scaledJetEnergy:patMETs"
 
 if topfilter:
     process.load("TopAnalysis.TopFilter.filters.GeneratorTopFilter_cfi")
-    if higgsSignal:
+    if higgsSignal or ttbarV:
         process.generatorTopFilter.invert_selection = True
         process.generatorTopFilter.channels = ["none"] #empty array would use some defaults
     else:

@@ -78,5 +78,8 @@
 ################################################################
 ############# Higgs samples ####################################
 ################################################################
-50   Summer12.TTH_HToBB_M125_8TeV_pythia6_Summer12_DR53X_PU_S10_START53_V7A_v1_cff         ttbarH125tobbbar.root        ttbarhiggstobbar
+50   Summer12.TTH_HToBB_M125_8TeV_pythia6_Summer12_DR53X_PU_S10_START53_V7A_v1_cff         ttbarH125tobbbar.root        ttbarhiggstobbbar
 50   Summer12.TTH_Inclusive_M125_8TeV_pythia6_Summer12_DR53X_PU_S10_START53_V7A_v1_cff     ttbarH125inclusive.root      ttbarhiggsinclusive
+
+30   Summer12.TTWJets_8TeV_madgraph_Summer12_DR53X_PU_S10_START53_V7A_v1_cff               ttbarW.root                  ttbarw
+30   Summer12.TTZJets_8TeV_madgraph_v2_Summer12_DR53X_PU_S10_START53_V7A_v1_cff            ttbarZ.root                  ttbarz

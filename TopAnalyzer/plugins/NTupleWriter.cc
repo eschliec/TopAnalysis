@@ -13,7 +13,7 @@ Implementation:
 //
 // Original Author:  Jan Kieseler,,,DESY
 //         Created:  Thu Aug 11 16:37:05 CEST 2011
-// $Id: NTupleWriter.cc,v 1.30.2.9 2013/01/22 18:51:43 hauk Exp $
+// $Id: NTupleWriter.cc,v 1.30.2.10 2013/01/23 10:58:35 wbehrenh Exp $
 //
 //
 
@@ -21,6 +21,7 @@ Implementation:
 // system include files
 #include <memory>
 #include <string>
+#include <map>
 #include <boost/lexical_cast.hpp>
 
 // user include files
@@ -93,6 +94,8 @@ private:
     edm::InputTag inTag_PUSource;
     edm::InputTag elecs_, muons_;
     edm::InputTag jets_;
+    edm::InputTag jetsForMET_;
+    edm::InputTag jetsForMETuncorr_;
     edm::InputTag met_;
     edm::InputTag vertices_, genEvent_ ;
     edm::InputTag FullLepEvt_, hypoKey_;
@@ -193,7 +196,11 @@ private:
 
     std::vector<LV> VallGenJets;
     std::vector<LV> VassociatedGenJet;
+    std::vector<LV> VassociatedGenJetForMET;
     std::vector<LV> Vjet;
+    std::vector<LV> VjetForMET;
+    std::vector<double> VjetJERSF;
+    std::vector<double> VjetForMETJERSF;
     std::vector<int> VjetPartonFlavour;
     std::vector<double> VjetBTagTCHE;
     std::vector<double> VjetBTagTCHP;
@@ -238,7 +245,7 @@ void NTupleWriter::AssignLeptonAndTau(const reco::GenParticle* lepton, LV& GenLe
         finalLepton = getTauDaughter(lepton);
     } else {
         GenTau = nullP4;
-        finalLepton = lepton;
+       finalLepton = lepton;
     }
     if (!isTau(finalLepton)) {
         GenLepton = finalLepton->polarP4();
@@ -258,6 +265,8 @@ NTupleWriter::NTupleWriter(const edm::ParameterSet& iConfig):
     elecs_(iConfig.getParameter<edm::InputTag>("elecs")),
     muons_(iConfig.getParameter<edm::InputTag>("muons")),
     jets_(iConfig.getParameter<edm::InputTag>("jets")),
+    jetsForMET_(iConfig.getParameter<edm::InputTag>("jetsForMET")),
+    jetsForMETuncorr_(iConfig.getParameter<edm::InputTag>("jetsForMETuncorr")),
     met_(iConfig.getParameter<edm::InputTag>("met")),
 
     vertices_(iConfig.getParameter<edm::InputTag>("vertices")),
@@ -444,6 +453,13 @@ NTupleWriter::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup )
     
     edm::Handle<edm::View< pat::Jet > > jets;
     iEvent.getByLabel(jets_, jets);
+
+    edm::Handle<edm::View< pat::Jet > > jetsForMET;
+    iEvent.getByLabel(jetsForMET_, jetsForMET);
+
+    edm::Handle<edm::View< pat::Jet > > jetsForMETuncorr;
+    iEvent.getByLabel(jetsForMETuncorr_, jetsForMETuncorr);
+
 
     if (! hypoKeyHandle.failedToGet()) 
     {
@@ -785,17 +801,23 @@ NTupleWriter::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup )
 
     ///////////////////////////////////Jet properties/////////////////////////
 
+    double jetPTThresholdForMET_ =10.;
+    double jetEMLimitForMET_ = 0.9;
     for ( edm::View<pat::Jet>::const_iterator ajet  = jets->begin() ; ajet != jets->end(); ++ajet )
     {
+      if(ajet->correctedJet("Uncorrected").pt() > jetPTThresholdForMET_
+	 && ((!ajet->isPFJet() && ajet->emEnergyFraction() < jetEMLimitForMET_) ||
+	     ( ajet->isPFJet() && ajet->neutralEmEnergyFraction() + ajet->chargedEmEnergyFraction() < jetEMLimitForMET_))) {
         Vjet.push_back(ajet->polarP4());
-        if (! iEvent.isRealData()) {
-            VjetPartonFlavour.push_back( ajet->partonFlavour());
-                        
-            if (ajet->genJet()) {
-                VassociatedGenJet.push_back(ajet->genJet()->polarP4());
-            } else {
-                VassociatedGenJet.push_back(nullP4);
-            }
+        VjetJERSF.push_back(ajet->userFloat("jerSF"));
+	if (! iEvent.isRealData()) {
+	  VjetPartonFlavour.push_back( ajet->partonFlavour());
+	  
+	  if (ajet->genJet()) {
+	    VassociatedGenJet.push_back(ajet->genJet()->polarP4());
+	  } else {
+	    VassociatedGenJet.push_back(nullP4);
+	  }
         }
         VjetBTagTCHE.push_back(ajet->bDiscriminator("trackCountingHighEffBJetTags"));
         VjetBTagTCHP.push_back(ajet->bDiscriminator("trackCountingHighPurBJetTags"));
@@ -805,6 +827,30 @@ NTupleWriter::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup )
         VjetBTagSSVHP.push_back(ajet->bDiscriminator("simpleSecondaryVertexHighPurBJetTags"));
         VjetBTagCSV.push_back(ajet->bDiscriminator("combinedSecondaryVertexBJetTags"));
         VjetBTagCSVMVA.push_back(ajet->bDiscriminator("combinedSecondaryVertexMVABJetTags"));
+      }
+    }
+
+    //Here I create a separate jet collection needed for the on-the-fly calculation of jet uncertainties
+    //because even bad-id jets are used for the MET
+
+    //    for ( edm::View<pat::Jet>::const_iterator ajet  = jetsForMETuncorr->begin() ; ajet != jetsForMETuncorr->end(); ++ajet )
+    for ( size_t jet_it =  0 ; jet_it < jetsForMETuncorr->size(); ++jet_it )
+    {
+      if(jetsForMETuncorr->at(jet_it).correctedJet("Uncorrected").pt() > jetPTThresholdForMET_
+	 && ((!jetsForMETuncorr->at(jet_it).isPFJet() && jetsForMETuncorr->at(jet_it).emEnergyFraction() < jetEMLimitForMET_) ||
+	     ( jetsForMETuncorr->at(jet_it).isPFJet() && jetsForMETuncorr->at(jet_it).neutralEmEnergyFraction() + jetsForMETuncorr->at(jet_it).chargedEmEnergyFraction() < jetEMLimitForMET_))) {
+          VjetForMET.push_back(jetsForMET->at(jet_it).polarP4());
+          VjetForMETJERSF.push_back(jetsForMET->at(jet_it).userFloat("jerSF"));
+	  if (! iEvent.isRealData()) {
+	    VjetPartonFlavour.push_back( jetsForMET->at(jet_it).partonFlavour());
+	    
+	    if (jetsForMET->at(jet_it).genJet()) {
+	      VassociatedGenJetForMET.push_back(jetsForMET->at(jet_it).genJet()->polarP4());
+	    } else {
+	      VassociatedGenJetForMET.push_back(nullP4);
+	    }
+	  }
+      }
     }
 
     ///////////////////////////////////Met properties///////////////////////////
@@ -935,6 +981,9 @@ NTupleWriter::beginJob()
 
     /////////////jet properties////////////
     Ntuple->Branch("jets", &Vjet);
+    Ntuple->Branch("jetJERSF", &VjetJERSF);
+    Ntuple->Branch("jetsForMET", &VjetForMET);
+    Ntuple->Branch("jetForMETJERSF", &VjetForMETJERSF);
     Ntuple->Branch("jetBTagTCHE", &VjetBTagTCHE);
     Ntuple->Branch("jetBTagTCHP", &VjetBTagTCHP);
     Ntuple->Branch("jetBTagSSVHE", &VjetBTagSSVHE);
@@ -947,6 +996,7 @@ NTupleWriter::beginJob()
     Ntuple->Branch("jetPartonFlavour", &VjetPartonFlavour);
     Ntuple->Branch("allGenJets", &VallGenJets);
     Ntuple->Branch("associatedGenJet", &VassociatedGenJet);
+    Ntuple->Branch("associatedGenJetForMET", &VassociatedGenJetForMET);
 
     /////////////met properties///////////
     Ntuple->Branch("met", &met);
@@ -1098,6 +1148,9 @@ void NTupleWriter::clearVariables()
 
     /////////jets///////////
     Vjet.clear();
+    VjetJERSF.clear();
+    VjetForMET.clear();
+    VjetForMETJERSF.clear();
     VjetPartonFlavour.clear();
     VjetBTagTCHE.clear();
     VjetBTagTCHP.clear();
@@ -1110,6 +1163,7 @@ void NTupleWriter::clearVariables()
     VPdfWeights.clear();
     VallGenJets.clear();
     VassociatedGenJet.clear();
+    VassociatedGenJetForMET.clear();
 
     VBHadJetIdx.clear();
     VAntiBHadJetIdx.clear();

@@ -20,6 +20,7 @@ const std::vector<const char*> VectorOfValidSystematics
     //"JER_UP", "JER_DOWN", "JES_UP", "JES_DOWN",
     "PU_UP", "PU_DOWN", "TRIG_UP", "TRIG_DOWN", "LEPT_UP", "LEPT_DOWN",
     "DY_UP", "DY_DOWN", "BG_UP", "BG_DOWN", 
+    "KIN_UP", "KIN_DOWN",
     "BTAG_UP", "BTAG_DOWN", "BTAG_LJET_UP", "BTAG_LJET_DOWN",
     "BTAG_PT_UP", "BTAG_PT_DOWN", "BTAG_ETA_UP", "BTAG_ETA_DOWN",
     "BTAG_LJET_PT_UP", "BTAG_LJET_PT_DOWN", "BTAG_LJET_ETA_UP", "BTAG_LJET_ETA_DOWN",

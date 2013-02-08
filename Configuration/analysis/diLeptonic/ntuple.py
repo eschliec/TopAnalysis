@@ -325,6 +325,8 @@ isolatedElecCollection = "selectedPatElectronsAfterScaling"
 
 jetCollection = "hardJets"
 
+jetForMETCollection = "scaledJetEnergy:selectedPatJets"
+
 metCollection = "scaledJetEnergy:patMETs"
 
 
@@ -460,6 +462,10 @@ process.writeNTuple = writeNTuple.clone(
     met=metCollection,
     genMET="genMetTrue",
 )
+
+process.writeNTuple.jetsForMET    = cms.InputTag("scaledJetEnergy:selectedPatJets")
+process.writeNTuple.jetsForMETuncorr    = cms.InputTag("selectedPatJets")
+
 
 if options.includePDFWeights:
     if not signal:
@@ -729,7 +735,7 @@ if signal:
 process.scaledJetEnergy.inputElectrons       = "selectedPatElectrons"
 process.scaledJetEnergy.inputJets            = "selectedPatJets"
 process.scaledJetEnergy.inputMETs            = "patMETs"
-process.scaledJetEnergy.JECUncSrcFile        = cms.FileInPath("TopAnalysis/TopUtils/data/Fall12_V6_DATA_UncertaintySources_AK5PFchs.txt")
+process.scaledJetEnergy.JECUncSrcFile        = cms.FileInPath("TopAnalysis/TopUtils/data/Fall12_V7_DATA_UncertaintySources_AK5PFchs.txt")
 process.scaledJetEnergy.scaleType = "abs"   #abs = 1, jes:up, jes:down
 
 if options.runOnMC:

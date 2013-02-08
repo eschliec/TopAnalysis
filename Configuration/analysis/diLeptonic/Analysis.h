@@ -26,6 +26,9 @@
 #include <TROOT.h>
 #include <TGraphAsymmErrors.h>
 
+#include "JetCorrectorParameters.h"
+#include "JetCorrectionUncertainty.h"
+
 #include "classes.h"
 #include "PUReweighter.h"
 
@@ -41,6 +44,11 @@ class Analysis : public TSelector
     vector<double>  *lepCombIso;
     vector<double>  *lepDxyVertex0;
     VLV             *jets;
+    VLV             *jetsForMET;
+    VLV             *associatedGenJet;
+    VLV             *associatedGenJetForMET;
+    vector<double>  *jetJERSF;
+    vector<double>  *jetForMETJERSF;
     vector<double>  *jetBTagTCHE;
     vector<double>  *jetBTagCSV;
     vector<double>  *jetBTagSSVHE;
@@ -56,6 +64,8 @@ class Analysis : public TSelector
     Int_t           vertMulti;
     Int_t           vertMultiTrue;
 
+    JetCorrectionUncertainty *unc;
+
     LV              *GenWPlus;
     LV              *GenWMinus;
     LV              *GenNeutrino;
@@ -68,7 +78,6 @@ class Analysis : public TSelector
     LV              *GenAntiTop;
     LV              *GenMet;
     VLV             *allGenJets;
-    VLV             *associatedGenJets;
     vector<int>     *BHadJetIndex;
     vector<int>     *AntiBHadJetIndex;
 
@@ -103,7 +112,12 @@ class Analysis : public TSelector
     TBranch        *b_lepPfIso;   //!
     TBranch        *b_lepCombIso;   //!
     TBranch        *b_lepDxyVertex0;
+    TBranch        *b_associatedGenJet;   //!
+    TBranch        *b_associatedGenJetForMET;
     TBranch        *b_jet;   //!
+    TBranch        *b_jetJERSF;   //!
+    TBranch        *b_jetForMET;   //!
+    TBranch        *b_jetForMETJERSF;   //!
     TBranch        *b_jetBTagTCHE;   //!
     TBranch        *b_jetBTagCSV;   //!
     TBranch        *b_jetBTagSSVHE;   //!
@@ -130,7 +144,6 @@ class Analysis : public TSelector
     TBranch        *b_GenWPlus;   //!
     TBranch        *b_GenWMinus;   //!
     TBranch        *b_allGenJets;   //!
-    TBranch        *b_associatedGenJets;   //!
     TBranch        *b_BHadJetIndex;   //!
     TBranch        *b_AntiBHadJetIndex;   //!
     TBranch        *b_GenMet;

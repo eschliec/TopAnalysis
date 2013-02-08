@@ -96,7 +96,10 @@ void Analysis::Begin ( TTree * )
     prepareLeptonIDSF();
     prepareBtagSF();
     prepareKinRecoSF();
-    
+    std::string pathToFile = "Fall12_V7_DATA_UncertaintySources_AK5PFchs.txt";
+
+    unc = new JetCorrectionUncertainty(JetCorrectorParameters(pathToFile.data(), "Total"));
+
     lumiWeight = LUMI*1000*SampleXSection(samplename)/weightedEvents->GetBinContent(1);
 }
 
@@ -710,7 +713,7 @@ void Analysis::cleanJetCollection() {
         if (jets->at(i).pt() < JETPTCUT || abs(jets->at(i).eta()) > JETETACUT) {
             jets->erase(begin(*jets) + i);
             jetBTagCSV->erase(begin(*jetBTagCSV) + i);
-            if (isMC) associatedGenJets->erase(begin(*associatedGenJets) + i);
+            if (isMC) associatedGenJet->erase(begin(*associatedGenJet) + i);
         }        
     }
 }
@@ -772,7 +775,99 @@ Bool_t Analysis::Process ( Long64_t entry )
         if (++closureTestEventCounter > closureMaxEvents) return kTRUE;
         weightGenerator = 1;
     }
+    //For now, I'll do the jet energy scale variation here. A little messy but it works
+
+    if(systematic == "JER_UP" || systematic == "JER_DOWN"){
+
+      double ResolutionEtaRange[5] = {0.5, 1.1, 1.7, 2.3, 10};
+      double ResolutionEtaScaleFactor[5];//nom = {1.052, 1.057, 1.096, 1.134, 1.288};
+
+      
+      if(systematic == "JER_UP"){
+	ResolutionEtaScaleFactor[0] = 1.115;
+	ResolutionEtaScaleFactor[1] = 1.114;
+	ResolutionEtaScaleFactor[2] = 1.161;
+	ResolutionEtaScaleFactor[3] = 1.228;
+	ResolutionEtaScaleFactor[4] = 1.488;
+      }
+      if(systematic == "JER_DOWN"){
+	ResolutionEtaScaleFactor[0] = 0.990;
+	ResolutionEtaScaleFactor[1] = 1.001;
+	ResolutionEtaScaleFactor[2] = 1.032;
+	ResolutionEtaScaleFactor[3] = 1.042;
+	ResolutionEtaScaleFactor[4] = 1.089;
+      }
+
+      size_t jetEtaBin = 0;
+
+      double factor = 0;
+
+      for (size_t i = 0; i < jetsForMET->size(); ++i) {
+
+	for (size_t j = 0; j < 5; ++j){
+
+	  if (abs(jetsForMET->at(i).eta()) < ResolutionEtaRange[j]){
+	    jetEtaBin = j;
+	    break;
+	  }
+
+	}
+
+	if (jetForMETJERSF->at(i) != 0.0){
+	  jetsForMET->at(i) = jetsForMET->at(i)*(1.0/jetForMETJERSF->at(i));
+	  
+	  if ( associatedGenJetForMET->at(i).pt() != 0.0)  factor = 1.0 + (ResolutionEtaScaleFactor[jetEtaBin] - 1.0)*(1.0 - (associatedGenJetForMET->at(i).pt()/jetsForMET->at(i).pt()));
+	  
+	  if (jetForMETJERSF->at(i) == 1.0) factor = 1.0;
+	  
+	  //	  if(abs(factor - jetForMETJERSF->at(i)) > 0.1){
+	  //cout<<"Scale Factor is: "<<factor<<endl;
+	  // cout<<"JERSF is       : "<<jetForMETJERSF->at(i)<<endl<<endl;
+	  //}
+	}
+      }
+    }
+
+    //cout<<"before: "<<met->pt()<<endl;
+    if(systematic == "JES_UP" || systematic == "JES_DOWN"){
+        double JEC_dpX =0;
+	double JEC_dpY =0;
+
+        for (size_t i = 0; i < jetsForMET->size(); ++i) {
+	
+	    bool up = true;
+	    if (systematic == "JES_DOWN") up = false;
+	    
+	    //cout<<"Jet before: "<<jetsForMET->at(i)<<endl;
+
+	    //	    cout<<"before: "<<jets->at(i)<<endl;
+	    double dpX = jetsForMET->at(i).px();
+	    double dpY = jetsForMET->at(i).py();
+
+	    unc->setJetPt(jetsForMET->at(i).pt()); 
+	    unc->setJetEta(jetsForMET->at(i).eta());
+	    
+	    double dunc= unc->getUncertainty(true);
+	    
+	    if (up == true) {jetsForMET->at(i) = jetsForMET->at(i)*(1+dunc);
+	    }else{jetsForMET->at(i) = jetsForMET->at(i)*(1-dunc);}
+
+	    JEC_dpX += jetsForMET->at(i).px() - dpX;
+	    JEC_dpY += jetsForMET->at(i).py() - dpY;
+	    //cout<<"after : "<<jets->at(i)<<endl;
+	    	    
+	    //cout<<"Jet after:  "<<jetsForMET->at(i)<<endl;
+	}
+	double scaledMETPx = met->px() - JEC_dpX;
+	double scaledMETPy = met->py() - JEC_dpY;
+	
+	met->SetPt(sqrt(scaledMETPx*scaledMETPx + scaledMETPy*scaledMETPy));
+    }
+    //cout<<"after : "<<met->pt()<<endl;
+    //cout<<"&%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%&&&&&&&&&&&&&&&&&&&&&"<<endl;
     
+
+
     // apply all jet cuts
     cleanJetCollection();
 
@@ -1521,7 +1616,7 @@ Bool_t Analysis::Process ( Long64_t entry )
         std::cout << "Event#" << ++fullSelectionCounter << ":\t" << runNumber << "\t" << eventNumber << "\t" << leptonPlus << "\t" << leptonMinus << "\t"
             << dilepton.M() << "\t" << jets->size() << "\t"
             << jets->at(0) << "\t" << jets->at(1) << "\t" << BJetIndex.size() << "\t"
-            << associatedGenJets->at(0) << "\t" << associatedGenJets->at(1) << "\t"
+            << associatedGenJet->at(0) << "\t" << associatedGenJet->at(1) << "\t"
             << met->Pt() << "\t" << GenMet->Pt() << "\t"
             << topDecayModeString()
             << "\n";
@@ -2361,7 +2456,8 @@ void Analysis::Init ( TTree *tree )
     //for the signal
 //     genJets = 0;
     allGenJets = 0;
-    associatedGenJets = 0;
+    associatedGenJet = 0;
+    associatedGenJetForMET = 0;
     BHadrons = 0;
     GenWPlus = 0;
     GenWMinus = 0;
@@ -2391,6 +2487,11 @@ void Analysis::Init ( TTree *tree )
     fChain->SetBranchAddress("lepPfIso", &lepPfIso, &b_lepPfIso );
     fChain->SetBranchAddress("lepCombIso", &lepCombIso, &b_lepCombIso );
     fChain->SetBranchAddress("lepDxyVertex0", &lepDxyVertex0, &b_lepDxyVertex0);
+    fChain->SetBranchAddress("associatedGenJet", &associatedGenJet, &b_associatedGenJet );
+    fChain->SetBranchAddress("associatedGenJetForMET", &associatedGenJetForMET, &b_associatedGenJetForMET );
+    fChain->SetBranchAddress("jetsForMET", &jetsForMET, &b_jetForMET );
+    fChain->SetBranchAddress("jetJERSF", &jetJERSF, &b_jetJERSF );
+    fChain->SetBranchAddress("jetForMETJERSF", &jetForMETJERSF, &b_jetForMETJERSF );
     fChain->SetBranchAddress("jets", &jets, &b_jet );
     fChain->SetBranchAddress("jetBTagTCHE", &jetBTagTCHE, &b_jetBTagTCHE );
     fChain->SetBranchAddress("jetBTagCSV", &jetBTagCSV, &b_jetBTagCSV );
@@ -2409,7 +2510,6 @@ void Analysis::Init ( TTree *tree )
 
 
     fChain->SetBranchAddress("allGenJets", &allGenJets, &b_allGenJets );
-    fChain->SetBranchAddress("associatedGenJet", &associatedGenJets, &b_associatedGenJets);
     fChain->SetBranchAddress("HypTop", &HypTop, &b_HypTop );
     fChain->SetBranchAddress("HypAntiTop", &HypAntiTop, &b_HypAntiTop );
     fChain->SetBranchAddress("HypLepton", &HypLepton, &b_HypLepton );
@@ -2472,11 +2572,14 @@ void Analysis::GetRecoBranches ( Long64_t & entry )
     b_lepPdgId->GetEntry(entry); //!
     b_jet->GetEntry(entry); //!
     b_met->GetEntry(entry); //!
-    
+    b_associatedGenJet->GetEntry(entry); //!
+    b_associatedGenJetForMET->GetEntry(entry); //!
+    b_jetForMET->GetEntry(entry); //!
     b_eventNumber->GetEntry(entry); //!
     b_runNumber->GetEntry(entry); //!
     b_lumiBlock->GetEntry(entry); //!
-    
+    b_jetJERSF->GetEntry(entry); //!
+    b_jetForMETJERSF->GetEntry(entry); //!
     //special variables, not used currently
 //     b_lepPfIso->GetEntry(entry); //!
 //     b_lepCombIso->GetEntry(entry); //!
@@ -2496,7 +2599,6 @@ void Analysis::GetRecoBranches ( Long64_t & entry )
 
     //b_genJet->GetEntry(entry); //!
     b_allGenJets->GetEntry(entry); //!
-    b_associatedGenJets->GetEntry(entry);
 
     b_HypTop->GetEntry(entry); //!
     b_HypAntiTop->GetEntry(entry); //!

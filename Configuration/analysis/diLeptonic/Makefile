@@ -5,7 +5,7 @@ COMPFLAGS=`root-config --cflags` -Wall -Wextra -pedantic -Wno-vla -O2 -g -std=c+
 
 all: load_Analysis Histo
 
-load_Analysis: dict.o Analysis.o load_Analysis.o PUReweighter.o utils.o HistoListReader.o KinReco.o CommandLineParameters.o
+load_Analysis: dict.o Analysis.o load_Analysis.o PUReweighter.o utils.o HistoListReader.o KinReco.o CommandLineParameters.o JetCorrUncertainty.o  JetCorrParameters.o SimpleJetCorrUncert.o
 	g++ -o $@ $^ $(ROOTLIBS)
 
 load_Analysis.o: load_Analysis.C
@@ -49,6 +49,15 @@ TopSVDUnfold.o: ../unfolding/TopSVDUnfold.C
 
 BaseSVDUnfold.o: ../unfolding/BaseSVDUnfold.C
 	g++ -c -o BaseSVDUnfold.o $(COMPFLAGS) ../unfolding/BaseSVDUnfold.C
+
+JetCorrUncertainty.o: JetCorrectionUncertainty.cc JetCorrParameters.o SimpleJetCorrUncert.o
+	g++ -c -o $@ $(COMPFLAGS) JetCorrectionUncertainty.cc
+
+JetCorrParameters.o:  JetCorrectorParameters.cc
+	g++ -c -o $@ $(COMPFLAGS) JetCorrectorParameters.cc
+
+SimpleJetCorrUncert.o: SimpleJetCorrectionUncertainty.cc
+	g++ -c -o $@ $(COMPFLAGS) SimpleJetCorrectionUncertainty.cc
 
 plotterclass.o: plotterclass.cpp plotterclass.h utils.o
 	g++ -c -o plotterclass.o $(COMPFLAGS) plotterclass.cpp

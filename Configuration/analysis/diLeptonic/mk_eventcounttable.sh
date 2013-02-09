@@ -91,8 +91,10 @@ echo "           \\\ttbar\\\ other  &     $ttbgcombined5   &       $ttbgcombined
 echo "           tW                 &     $tWcombined5   &       $tWcombined6    &       $tWcombined7    &       $tWcombined8    &       $tWcombined9   \\\\\\"
 echo "           diboson            &     $VVcombined5   &       $VVcombined6    &       $VVcombined7    &       $VVcombined8    &       $VVcombined9   \\\\\\"
 echo "           W                  &     $nucombined5   &       $nucombined6    &       $nucombined7    &       $nucombined8    &       $nucombined9   \\\\\\"
-echo "           DY$\\\rightarrow\\\tau\\\tau$ &     $tauee5   &       $taucombined6    &       $taucombined7    &       $taucombined8    &       $taucombined9\\\\\\"
-echo "           DY$\\\rightarrow\\\ell^+\\\ell^-$ &     $muee5   &       $mucombined6    &       $mucombined7    &       $mucombined8    &       $mucombined9\\\\\\"
+echo "           DY$\\\rightarrow\\\tau\\\tau$ &     $taucombined5   &       $taucombined6    &       $taucombined7    &       $taucombined8    &       
+$taucombined9\\\\\\"
+echo "           DY$\\\rightarrow\\\ell^+\\\ell^-$ &     $mucombined5   &       $mucombined6    &       $mucombined7    &       $mucombined8    &       
+$mucombined9\\\\\\"
 echo "           QCD                  &   $QCDcombined5   &       $QCDcombined6    &       $QCDcombined7    &       $QCDcombined8    &      $QCDcombined9\\\\\\"
 echo "\\\hline"
 echo "           Sum MC             &     $bgtotalcombined5   &       $bgtotalcombined6    &       $bgtotalcombined7    &       $bgtotalcombined8    &       $bgtotalcombined9   \\\\\\"

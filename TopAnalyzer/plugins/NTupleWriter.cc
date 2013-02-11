@@ -13,7 +13,7 @@ Implementation:
 //
 // Original Author:  Jan Kieseler,,,DESY
 //         Created:  Thu Aug 11 16:37:05 CEST 2011
-// $Id: NTupleWriter.cc,v 1.30.2.11 2013/02/08 18:40:34 tdorland Exp $
+// $Id: NTupleWriter.cc,v 1.30.2.12 2013/02/08 18:45:48 tdorland Exp $
 //
 //
 
@@ -762,7 +762,6 @@ NTupleWriter::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup )
 
             Vlep.push_back(anelectron->polarP4());
             VlepPdgId.push_back(anelectron->pdgId());
-            VlepPfIso.push_back(((anelectron->chargedHadronIso() +anelectron->neutralHadronIso() +anelectron->photonIso())/ anelectron->pt()));
 
             if ( fabs(anelectron->superCluster()->eta()) <= 1.479 ) //barrel region
             {

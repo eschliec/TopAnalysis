@@ -65,6 +65,7 @@ class Analysis : public TSelector
     Int_t           vertMultiTrue;
 
     JetCorrectionUncertainty *unc;
+    bool            doJesJer;
 
     LV              *GenWPlus;
     LV              *GenWMinus;
@@ -393,6 +394,7 @@ class Analysis : public TSelector
     void prepareBtagSF();
     void prepareLeptonIDSF();
     void prepareKinRecoSF();
+    void prepareJER_JES();
     double getTriggerSF(const LV& lep1, const LV& lep2);
     double getLeptonIDSF(const LV& lep1, const LV& lep2, int x, int y);
     double get2DSF(TH2* histo, double x, double y);
@@ -451,6 +453,7 @@ class Analysis : public TSelector
     double calculateClosureTestWeight();
     
     void cleanJetCollection();
+    void applyJER_JES();
     
     bool doClosureTest;
 #ifndef __CINT__   
@@ -459,7 +462,8 @@ class Analysis : public TSelector
     int closureMaxEvents;
         
 public:
-    Analysis ( TTree * = 0 ) : checkZDecayMode {nullptr}, 
+    Analysis ( TTree * = 0 ) : unc {nullptr}, doJesJer {false},
+        checkZDecayMode {nullptr}, 
         runViaTau {false}, pureweighter {nullptr}, kinRecoOnTheFly {false},
         doClosureTest {false}, closureFunction {nullptr}
         {};

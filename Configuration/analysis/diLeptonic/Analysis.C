@@ -779,9 +779,11 @@ Bool_t Analysis::Process ( Long64_t entry )
 
     if(systematic == "JER_UP" || systematic == "JER_DOWN"){
 
+      double JEC_dpX =0;
+      double JEC_dpY =0;
+      
       double ResolutionEtaRange[5] = {0.5, 1.1, 1.7, 2.3, 10};
       double ResolutionEtaScaleFactor[5];//nom = {1.052, 1.057, 1.096, 1.134, 1.288};
-
       
       if(systematic == "JER_UP"){
 	ResolutionEtaScaleFactor[0] = 1.115;
@@ -802,8 +804,37 @@ Bool_t Analysis::Process ( Long64_t entry )
 
       double factor = 0;
 
+      //this first loop will correct the jet collection that is used for kinematic reconstruction
+
+      for (size_t i = 0; i < jets->size(); ++i) {
+
+	for (size_t j = 0; j < 5; ++j){
+
+	  if (abs(jets->at(i).eta()) < ResolutionEtaRange[j]){
+	    jetEtaBin = j;
+	    break;
+	  }
+
+	}
+
+	if (jetJERSF->at(i) != 0.0){
+	  jets->at(i) = jets->at(i)*(1.0/jetJERSF->at(i));
+	  
+	  if ( associatedGenJet->at(i).pt() != 0.0)  factor = 1.0 + (ResolutionEtaScaleFactor[jetEtaBin] - 1.0)*(1.0 - (associatedGenJet->at(i).pt()/jets->at(i).pt()));
+	  
+	  if (jetJERSF->at(i) == 1.0) factor = 1.0;
+
+	  jets->at(i) = jets->at(i)*factor;
+	}
+      }
+
+      //this second loop will correct the jet collection that is used to modify the MET
+
       for (size_t i = 0; i < jetsForMET->size(); ++i) {
 
+	double dpX = jetsForMET->at(i).px();
+	double dpY = jetsForMET->at(i).py();
+	
 	for (size_t j = 0; j < 5; ++j){
 
 	  if (abs(jetsForMET->at(i).eta()) < ResolutionEtaRange[j]){
@@ -819,19 +850,50 @@ Bool_t Analysis::Process ( Long64_t entry )
 	  if ( associatedGenJetForMET->at(i).pt() != 0.0)  factor = 1.0 + (ResolutionEtaScaleFactor[jetEtaBin] - 1.0)*(1.0 - (associatedGenJetForMET->at(i).pt()/jetsForMET->at(i).pt()));
 	  
 	  if (jetForMETJERSF->at(i) == 1.0) factor = 1.0;
-	  
+
+	  jetsForMET->at(i) = jetsForMET->at(i)*factor;
+
+	  JEC_dpX += jetsForMET->at(i).px() - dpX;
+	  JEC_dpY += jetsForMET->at(i).py() - dpY;
 	  //	  if(abs(factor - jetForMETJERSF->at(i)) > 0.1){
 	  //cout<<"Scale Factor is: "<<factor<<endl;
 	  // cout<<"JERSF is       : "<<jetForMETJERSF->at(i)<<endl<<endl;
 	  //}
 	}
       }
+
+      double scaledMETPx = met->px() - JEC_dpX;
+      double scaledMETPy = met->py() - JEC_dpY;
+      
+      met->SetPt(sqrt(scaledMETPx*scaledMETPx + scaledMETPy*scaledMETPy));
+
     }
 
     //cout<<"before: "<<met->pt()<<endl;
     if(systematic == "JES_UP" || systematic == "JES_DOWN"){
         double JEC_dpX =0;
 	double JEC_dpY =0;
+
+      //this first loop will correct the jet collection that is used for kinematic reconstruction
+
+        for (size_t i = 0; i < jets->size(); ++i) {
+	
+	    bool up = true;
+	    if (systematic == "JES_DOWN") up = false;
+	    
+	    //cout<<"Jet before: "<<jetsForMET->at(i)<<endl;
+
+	    //	    cout<<"before: "<<jets->at(i)<<endl;
+	    unc->setJetPt(jets->at(i).pt()); 
+	    unc->setJetEta(jets->at(i).eta());
+	    
+	    double dunc= unc->getUncertainty(true);
+	    
+	    if (up == true) {jets->at(i) = jets->at(i)*(1+dunc);
+	    }else{jets->at(i) = jets->at(i)*(1-dunc);}
+	}
+
+      //this second loop will correct the jet collection that is used for modifying MET
 
         for (size_t i = 0; i < jetsForMET->size(); ++i) {
 	

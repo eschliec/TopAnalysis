@@ -205,6 +205,8 @@ class Analysis : public TSelector
     }
     virtual void    SlaveTerminate();
     virtual void    Terminate();
+    
+    virtual bool produceBtagEfficiencies();
 
     void GetRecoBranches ( Long64_t & );
     void GetSignalBranches ( Long64_t & );

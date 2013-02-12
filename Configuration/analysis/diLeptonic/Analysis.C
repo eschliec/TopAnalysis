@@ -2022,7 +2022,7 @@ void Analysis::Terminate()
     f.Close();
     cout<<"Created: \033[1;1m"<<f_savename<<"\033[1;m\n\n";
     
-    if (isSignal) {
+    if (produceBtagEfficiencies()) {
         cout << "Signal sample, writing out btag efficiencies\n";
         f_savename = "selectionRoot/BTagEff";
         gSystem->MakeDirectory(f_savename.c_str());
@@ -3240,3 +3240,8 @@ void Analysis::applyJER_JES()
     
 }
 
+
+
+bool Analysis::produceBtagEfficiencies(){
+    return isSignal;
+}

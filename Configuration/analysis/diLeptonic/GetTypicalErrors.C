@@ -18,7 +18,7 @@ using namespace std;
 
 vector<TString> Channels(){
     
-    vector<TString> channel {"ee", "emu", "mumu"};
+  vector<TString> channel {"ee", "emu", "mumu", "combined"};
     
     return channel;
 }
@@ -38,10 +38,10 @@ vector<TString> Variables(){
 
 vector<TString> Systematics (){
 
-    vector<TString> systematics {"BTAG_", "BTAG_LJET_", "BTAG_BEFF_", "BTAG_CEFF_", "BTAG_LEFF_",
+  vector<TString> systematics {"BTAG_", "BTAG_LJET_", "BTAG_BEFF_",
                                  "BTAG_PT_", "BTAG_ETA_", "BTAG_LJET_PT_", "BTAG_LJET_ETA_", 
-                                 "MASS_", "SCALE_", "MATCH_",
-                                 "JES_", "JER_", "PU_", "TRIG_", "DY_"
+      "MASS_", "SCALE_", "MATCH_", "HAD_", "KIN_", "LEPT_",
+      "JES_", "JER_", "PU_", "TRIG_", "DY_", "BG_"
                                 };
 
     return systematics;
@@ -187,7 +187,7 @@ int main(int argc, char** argv) {
     CLParameter<std::string> opt_v("v", "Return the typical error for certain variable, e.g. 'ToppTLead', 'LLBarMass', ...", false, 1, 1);
     CLParameter<std::string> opt_s("s", "Return the typical systematic uncertainty for a certain systematic variation, e.g. 'PU_', 'TRIG_', 'BTAG_LJET_ETA_', 'BTAG_PT_', ...", false, 1, 1);
     CLParameter<std::string> opt_c("c", "Return the typical systematic uncertainty for an specific channel (ee, emu, mumu). No channel specified = run on all channels", false, 1, 1,
-            [](const std::string &ch){return ch == "" || ch == "ee" || ch == "emu" || ch == "mumu";});
+            [](const std::string &ch){return ch == "" || ch == "ee" || ch == "emu" || ch == "mumu" || ch == "combined";});
     CLAnalyser::interpretGlobal(argc, argv);
     
     TString ValidSystematics = opt_s.isSet() ? opt_s[0] : "";

@@ -1587,7 +1587,8 @@ double Plotter::CalcXSec(std::vector<TString> datasetVec, double InclusiveXsecti
     EventFile<<"BrancRatio= "<<BranchingFraction[channelType]<<endl;
 
     double xsec = ( (numbers[0]-numbers[4]) * (numbers[1]/(numbers[1]+numbers[3])) ) / ( (numbers[1]/numbers[2])*BranchingFraction[channelType]*lumi);
-    double xsecstaterror = xsec * ( TMath::Sqrt(error_numbers[0]) + TMath::Sqrt(error_numbers[4]) ) / (numbers[0] - numbers[4]);  //relative statistical error
+    //    double xsecstaterror = xsec * ( TMath::Sqrt(error_numbers[0]) + TMath::Sqrt(error_numbers[4]) ) / (numbers[0] - numbers[4]);  //relative statistical error
+    double xsecstaterror = TMath::Sqrt(error_numbers[0]) * (numbers[1]/(numbers[1]+numbers[3])) / ( (numbers[1]/numbers[2])*BranchingFraction[channelType]*lumi);
 
     if(channelType!=3){
         InclusiveXsectionVec[channelType] = xsec;

@@ -2332,7 +2332,6 @@ void Analysis::SetPUReweighter(PUReweighter* pu)
 
 void Analysis::Init ( TTree *tree )
 {
-    cout << "Called init\n";
     // The Init() function is called when the selector needs to initialize
     // a new tree or chain. Typically here the branch addresses and branch
     // pointers of the tree will be set.
@@ -2998,11 +2997,17 @@ void Analysis::SetClosureTest(TString closure, double slope)
                 return std::max((1+(abs(GenTop->Rapidity())-1)*slope)
                                *(1+(abs(GenAntiTop->Rapidity()-1))*slope) , 0.1);
             };
+        } if (closure == "nominal") {
+            closureFunction = [](){return 1.;};
         } else {
             cerr << "invalid closure test function\n";
             exit(1);
         }            
-        outputfilename.ReplaceAll(".root", TString::Format("_fakerun_%s%.3f.root", closure.Data(), slope));
+        if (closure != "nominal") {
+            outputfilename.ReplaceAll(".root", TString::Format("_fakerun_%s%.3f.root", closure.Data(), slope));
+        } else {
+            outputfilename.ReplaceAll(".root", TString::Format("_fakerun_%s.root", closure.Data()));
+        }
         cout << "<<< Closure test. Writing to: " << outputfilename << "\n";
         //BRANCHING FRACTION
         double br = 0;

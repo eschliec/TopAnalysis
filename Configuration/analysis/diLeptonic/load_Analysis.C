@@ -198,7 +198,7 @@ int main(int argc, char** argv) {
     int dy = opt_dy.isSet() ? opt_dy[0] : 0;
     TString closure = opt_closure.isSet() ? opt_closure[0] : "";    
     double slope = 0;
-    if (closure != "") {
+    if (closure != "" && closure != "nominal") {
         if (!opt_closureSlope.isSet()) {
             cerr << "closure test: need slope!\n"; exit(1);
         } else {

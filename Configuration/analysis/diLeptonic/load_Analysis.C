@@ -10,6 +10,32 @@
 #include "PUReweighter.h"
 #include "CommandLineParameters.hh"
 
+///determine the path to the PU distribution files, depending on systematic
+const std::string getPUPath(TString systematic) {
+    const char *cmssw_base = getenv("CMSSW_BASE");
+    if (!cmssw_base) {
+        std::cerr << "Error! Environmental variable CMSSW_BASE not set!\n"
+                  << "Please run cmsenv first.\n"
+                  << "When running without CMSSW, you still need this variable so that the\n"
+                  << "PU distribution files can be found.\n";
+        std::exit(1);            
+    }
+    std::string pu_path(cmssw_base);
+    if (systematic == "PU_UP") {
+        pu_path.append("/src/TopAnalysis/TopUtils/data/Data_PUDist_12fb_sysUp.root");
+        cout << "using pilup-up distribution\n";
+    } else if (systematic == "PU_DOWN") {
+        pu_path.append("/src/TopAnalysis/TopUtils/data/Data_PUDist_12fb_sysDown.root");
+        cout << "using pilup-down distribution\n";
+    } else {
+        pu_path.append("/src/TopAnalysis/TopUtils/data/Data_PUDist_12fb.root");
+        if (systematic != "") {
+            cout << "Using Nominal PU distribution for " << systematic << " systematic!\n";
+        }
+    }
+    return pu_path;
+}
+
 void load_Analysis(TString validFilenamePattern, 
                    TString givenChannel, 
                    TString systematic, 
@@ -27,21 +53,7 @@ void load_Analysis(TString validFilenamePattern,
     Analysis *selector = new Analysis();
     PUReweighter *pu = new PUReweighter();
     pu->setMCDistrSum12("S10");
-    std::string pu_path(getenv("CMSSW_BASE"));
-    if (systematic == "PU_UP") {
-        pu_path.append("/src/TopAnalysis/TopUtils/data/Data_PUDist_12fb_sysUp.root");
-        cout << "using pilup-up distribution\n";
-    } else if (systematic == "PU_DOWN") {
-        pu_path.append("/src/TopAnalysis/TopUtils/data/Data_PUDist_12fb_sysDown.root");
-        cout << "using pilup-down distribution\n";
-    } else {
-        pu_path.append("/src/TopAnalysis/TopUtils/data/Data_PUDist_12fb.root");
-        if (systematic != "") {
-            cout << "Using Nominal PU distribution for " << systematic << " systematic!\n";
-        }
-    }
-    
-    pu->setDataTruePUInput(pu_path.c_str());
+    pu->setDataTruePUInput(getPUPath(systematic).c_str());
     selector->SetPUReweighter(pu);
 
     int filecounter = 0;
@@ -173,8 +185,8 @@ int main(int argc, char** argv) {
             [](const std::string &ch){return ch == "" || ch == "ee" || ch == "emu" || ch == "mumu";});
     CLParameter<int> opt_dy("d", "Drell-Yan mode (11 for ee, 13 for mumu, 15 for tautau)", false, 1, 1,
             [](int dy){return dy == 11 || dy == 13 || dy == 15;});
-    CLParameter<std::string> opt_closure("closure", "Enable the closure test. Valid: pttop|ytop", false, 1, 1,
-            [](const std::string &c){return c == "pttop" || c == "ytop";});
+    CLParameter<std::string> opt_closure("closure", "Enable the closure test. Valid: pttop|ytop|nominal", false, 1, 1,
+            [](const std::string &c){return c == "pttop" || c == "ytop" || c == "nominal";});
     CLParameter<double> opt_closureSlope("slope", "Slope for closure test, use -0.01 to 0.01 for pt and -0.4 to 0.4", false, 1, 1,
             [](double s){return abs(s) < 1;});
                                          

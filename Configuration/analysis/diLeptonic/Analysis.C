@@ -522,6 +522,7 @@ void Analysis::SlaveBegin ( TTree * )
 */
     
     h_ClosureTotalWeight = store(new TH1D("ClosureTotalWeight", "Total Weights from closure test",1,0,2));
+    h_PDFTotalWeight = store(new TH1D("PDFTotalWeight", "PDF Weights",1,0,2));
 
     CreateBinnedControlPlots(h_HypToppT, h_LeptonpT);
     CreateBinnedControlPlots(h_HypToppT, h_LeptonEta);
@@ -764,7 +765,9 @@ Bool_t Analysis::Process ( Long64_t entry )
     
     if (pdf_no) {
         b_weightPDF->GetEntry(entry);
-        weightGenerator *= weightPDF->at(pdf_no - 1); //vector is 0 based
+        double pdfWeight = weightPDF->at(pdf_no - 1); //vector is 0 based
+        weightGenerator *= pdfWeight;
+        h_PDFTotalWeight->Fill(1, pdfWeight);
     }
     
     //count events here, where no more taus are available
@@ -2000,7 +2003,14 @@ void Analysis::Terminate()
         if (!total) {
             cerr << "ClosureTotalWeight histogram is missing!\n"; exit(1);
         }
-        gloablNormalisationFactor = total->GetEntries() / total->GetBinContent(1);
+        gloablNormalisationFactor *= total->GetEntries() / total->GetBinContent(1);
+    }
+    if (pdf_no) {
+        TH1 *total = dynamic_cast<TH1*>(fOutput->FindObject("PDFTotalWeight"));
+        if (!total) {
+            cerr << "PDFTotalWeight histogram is missing!\n"; exit(1);
+        }
+        gloablNormalisationFactor *= total->GetEntries() / total->GetBinContent(1);
     }
     
     //write stuff into file

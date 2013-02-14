@@ -336,6 +336,7 @@ class Analysis : public TSelector
 //     //End: Plots for Carmen
     
     TH1 *h_ClosureTotalWeight;
+    TH1 *h_PDFTotalWeight;
     
     // BEGIN of btag SF stuff
     TH2 *h_bjets, *h_btaggedjets;

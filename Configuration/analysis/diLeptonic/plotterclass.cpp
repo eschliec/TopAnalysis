@@ -26,7 +26,7 @@
 
 using namespace std;
 
-const double Plotter::topxsec = 253.849; //again changes with normalization, must be set outside of the class
+const double Plotter::topxsec = 244.849; //again changes with normalization, must be set outside of the class
 
 void Plotter::setLumi(double newLumi)
 {
@@ -59,8 +59,10 @@ void Plotter::SetOutpath(TString path)
 void Plotter::unfolding()
 {
 
-    TString sys_array[] = {"HAD_", "LEPT_", "KIN_", "DY_","BG_","PU_", "TRIG_","MASS_", "MATCH_", "SCALE_", "BTAG_ETA_","BTAG_PT_", "BTAG_LJET_ETA_", "BTAG_LJET_PT_"};//, "JER_", "JES_"};
-    double sys_array_flat_value[]={0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};//, 0, 0};
+    TString sys_array[] = {"HAD_", "LEPT_", "KIN_", "DY_","BG_","PU_", "TRIG_","MASS_", "MATCH_", "SCALE_", "BTAG_ETA_","BTAG_PT_", "BTAG_LJET_ETA_", "BTAG_LJET_PT_", "JER_", "JES_"};
+
+    double sys_array_flat_value[]={0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+    
     TString channel_array[] = {"ee","mumu","emu","combined"};
 
     vector<TString> vec_systematic (sys_array, sys_array + sizeof(sys_array)/sizeof(sys_array[0]));
@@ -1167,7 +1169,7 @@ void Plotter::PlotXSec(){
     TH1::AddDirectory(kFALSE);
 
     TString channel_array[] = {"ee","mumu","emu","combined"};
-    TString sys_array[] = {"HAD_", "MATCH_", "MASS_", "SCALE_", "BTAG_", "BTAG_LJET_", "KIN_", "LEPT_", "TRIG_", "BG_", "DY_", "PU_"};//, "JER_", "JES_"};//For the time being uintil all systematics are finalished
+    TString sys_array[] = {"HAD_", "MATCH_", "MASS_", "SCALE_", "BTAG_", "BTAG_LJET_", "KIN_", "LEPT_", "TRIG_", "BG_", "DY_", "PU_", "JER_", "JES_"};//For the time being uintil all systematics are finalished
     vector<TString> vec_systematic (sys_array, sys_array + sizeof(sys_array)/sizeof(sys_array[0]));
     vector<TString> vec_channel (channel_array, channel_array + sizeof(channel_array)/sizeof(channel_array[0]));
 
@@ -2091,7 +2093,7 @@ void Plotter::PlotDiffXSec(TString Channel){
     TH1 *h_GenDiffXSec = (TH1D*)varhists[0]->Clone();   h_GenDiffXSec->Reset();
 
     //The systematic array is filled in the order in which the Stack is filled
-    TString sys_array[] = {"HAD_", "MATCH_", "MASS_", "SCALE_", "BTAG_PT_", "BTAG_ETA_", "BTAG_LJET_PT_", "BTAG_LJET_ETA_", "KIN_", "LEPT_", "TRIG_", "BG_", "DY_", "PU_"};//, "JER_", "JES_"};//For the time being uintil all systematics are finalished
+    TString sys_array[] = {"HAD_", "MATCH_", "MASS_", "SCALE_", "BTAG_PT_", "BTAG_ETA_", "BTAG_LJET_PT_", "BTAG_LJET_ETA_", "KIN_", "LEPT_", "TRIG_", "BG_", "DY_", "PU_", "JER_", "JES_"};//For the time being uintil all systematics are finalished
     vector<TString> vec_systematic (sys_array, sys_array + sizeof(sys_array)/sizeof(sys_array[0]));
 
     double DiffXSecPlot[XAxisbinCenters.size()];

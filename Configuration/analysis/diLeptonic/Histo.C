@@ -17,7 +17,7 @@ using namespace std;
 
 const std::vector<const char*> VectorOfValidSystematics 
     {"Nominal", 
-    //"JER_UP", "JER_DOWN", "JES_UP", "JES_DOWN",
+    "JER_UP", "JER_DOWN", "JES_UP", "JES_DOWN",
     "PU_UP", "PU_DOWN", "TRIG_UP", "TRIG_DOWN", "LEPT_UP", "LEPT_DOWN",
     "DY_UP", "DY_DOWN", "BG_UP", "BG_DOWN", 
     "KIN_UP", "KIN_DOWN",

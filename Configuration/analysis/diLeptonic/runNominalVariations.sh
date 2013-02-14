@@ -4,7 +4,8 @@ w() { while [ `ps ax | grep load_Analysis | wc -l` -gt 10 ]; do sleep 1; done }
 
 # be careful when using this script, you will submit a lot of jobs at the same. You may slow down the work group server performance for a while
 
-for sys in PU_UP PU_DOWN \
+for sys in JES_UP JES_DOWN JER_UP JER_DOWN \
+           PU_UP PU_DOWN \
            TRIG_UP TRIG_DOWN \
            LEPT_UP LEPT_DOWN \
            KIN_UP KIN_DOWN \

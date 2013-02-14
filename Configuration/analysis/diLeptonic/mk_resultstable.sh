@@ -8,27 +8,27 @@ echo "		\\\begin{tabular}{c|c||c|c|c|c}"
 echo "			\\\hline "
 echo "			\\\hline            bin-center [GeV]     & bin [GeV] & $ 1/\\\sigma d\\\sigma/dp_T^{Lead.l}$ & stat. [\\\%] & sys. [\\\%] & total [\\\%] \\\\\\"
 echo "		\\\hline"
-tail -n +2  combined/LeptonpTLeadResultsLaTeXAfter.txt
+tail -n +2  combined/HypLeptonpTLeadLaTeX.txt
 echo "			\\\hline "
 echo "			\\\hline            bin-center [GeV]     & bin [GeV] & $ 1/\\\sigma d\\\sigma/dp_T^{NLead.l}$ & stat. [\\\%] & sys. [\\\%] & total [\\\%] \\\\\\"
 echo "		\\\hline"
-tail -n +2  combined/LeptonpTNLeadResultsLaTeXAfter.txt
+tail -n +2  combined/HypLeptonpTNLeadLaTeX.txt
 echo "			\\\hline"
 echo "			\\\hline            bin-center       & bin  & $ 1/\\\sigma d\\\sigma/d\\\eta^{Lead.l}$ & stat. [\\\%] & sys. [\\\%] & total [\\\%] \\\\\\"
 echo "			\\\hline"
-tail -n +2 combined/LeptonEtaLeadResultsLaTeXAfter.txt
+tail -n +2 combined/HypLeptonEtaLeadLaTeX.txt
 echo "			\\\hline"
 echo "			\\\hline            bin-center       & bin  & $ 1/\\\sigma d\\\sigma/d\\\eta^{NLead.l}$ & stat. [\\\%] & sys. [\\\%] & total [\\\%] \\\\\\"
 echo "			\\\hline"
-tail -n +2 combined/LeptonEtaNLeadResultsLaTeXAfter.txt
+tail -n +2 combined/HypLeptonEtaNLeadLaTeX.txt
 echo "			\\\hline"
 echo "			\\\hline            bin-center [GeV]      & bin [GeV] & $ 1/\\\sigma d\\\sigma/dp_T^{\\\ell\\\ell}$ & stat. [\\\%] & sys. [\\\%] & total [\\\%] \\\\\\"
 echo "			\\\hline "
-tail -n +2 combined/LLBarpTResultsLaTeXAfter.txt
+tail -n +2 combined/HypLLBarpTLaTeX.txt
 echo "			\\\hline"
 echo "			\\\hline            bin-center [GeV]      & bin [GeV] & $ 1/\\\sigma d\\\sigma/dm^{\\\ell\\\ell}$ & stat. [\\\%] & sys. [\\\%] & total [\\\%] \\\\\\"
 echo "			\\\hline"
-tail -n +2 combined/LLBarMassResultsLaTeXAfter.txt
+tail -n +2 combined/HypLLBarMassLaTeX.txt
 echo "		\\\hline"
 echo "  	\\\hline"
 echo "		\\\end{tabular}"
@@ -44,11 +44,11 @@ echo "		\\\begin{tabular}{c|c||c|c|c|c}"
 echo "			\\\hline"
 echo "			\\\hline            bin-center [GeV]      & bin [GeV] & $ 1/\\\sigma d\\\sigma/dp_T^{\\\ell\\\ell}$ & stat. [\\\%] & sys. [\\\%] & total [\\\%] \\\\\\"
 echo "			\\\hline "
-tail -n +2 combined/LLBarpTResultsLaTeXAfter.txt
+tail -n +2 combined/HypLLBarpTLaTeX.txt
 echo "			\\\hline"
 echo "			\\\hline            bin-center [GeV]      & bin [GeV] & $ 1/\\\sigma d\\\sigma/dm^{\\\ell\\\ell}$ & stat. [\\\%] & sys. [\\\%] & total [\\\%] \\\\\\"
 echo "			\\\hline"
-tail -n +2 combined/LLBarMassResultsLaTeXAfter.txt
+tail -n +2 combined/HypLLBarMassLaTeX.txt
 echo "		\\\hline"
 echo "  	\\\hline"
 echo "		\\\end{tabular}"
@@ -58,25 +58,25 @@ echo " "
 echo "\\\begin{table}[h]"
 echo "	\\\begin{center}"
 echo "		\\\caption{\\\small "
-echo "		Normalised differential cross section as a function of the \\\pt-ordered top-quark observables: the transverse momentum ($ p_T^{Lead.t}$, $ p_T^{NLead.t}$) and the rapidity ($y^{Lead.t}$, $y^{NLead.t}$).}"
+echo "		Normalised differential cross section as a function of the \\\pt-ordered top-quark observables: the transverse momentum ($ p_T^{Lead.t}$, $ p_T^{NLead.t}$) and the rapidity ($ y^{Lead.t}$, $ y^{NLead.t}$).}"
 echo "		\\\label{tab:diffxsecorederedtop}"
 echo "		\\\begin{tabular}{c|c||c|c|c|c} "
 echo "			\\\hline "
-echo "			\\\hline            bin-center [GeV]      & bin [GeV] & $ 1/\\\sigma d\\\sigma/p_T^{t~{Lead.t}$ & stat. [\\\%] & sys. [\\\%] & total [\\\%] \\\\\\"
+echo "			\\\hline            bin-center [GeV]      & bin [GeV] & $ 1/\\\sigma d\\\sigma/p_T^{t~{Lead.t}}$ & stat. [\\\%] & sys. [\\\%] & total [\\\%] \\\\\\"
 echo "		\\\hline"
-tail -n +2 combined/ToppTLeadResultsLaTeXAfter.txt
+tail -n +2 combined/HypToppTLeadLaTeX.txt
 echo "			\\\hline"
-echo "			\\\hline            bin-center       & bin & $ 1/\\\sigma d\\\sigma/p_T^{t~{NLead.t}$ & stat. [\\\%] & sys. [\\\%] & total [\\\%] \\\\\\"
+echo "			\\\hline            bin-center       & bin & $ 1/\\\sigma d\\\sigma/p_T^{t~{NLead.t}}$ & stat. [\\\%] & sys. [\\\%] & total [\\\%] \\\\\\"
 echo "			\\\hline"
-tail -n +2 combined/ToppTNLeadResultsLaTeXAfter.txt
+tail -n +2 combined/HypToppTNLeadLaTeX.txt
 echo "			\\\hline"
-echo "			\\\hline            bin-center       & bin & $ 1/\\\sigma d\\\sigma/y^{t~{Lead.t}$ & stat. [\\\%] & sys. [\\\%] & total [\\\%] \\\\\\"
+echo "			\\\hline            bin-center       & bin & $ 1/\\\sigma d\\\sigma/y^{t~{Lead.t}}$ & stat. [\\\%] & sys. [\\\%] & total [\\\%] \\\\\\"
 echo "			\\\hline"
-tail -n +2 combined/TopRapidityLeadResultsLaTeXAfter.txt
+tail -n +2 combined/HypTopRapidityLeadLaTeX.txt
 echo "			\\\hline"
-echo "			\\\hline            bin-center       & bin & $ 1/\\\sigma d\\\sigma/y^{t~{NLead.t}$ & stat. [\\\%] & sys. [\\\%] & total [\\\%] \\\\\\"
+echo "			\\\hline            bin-center       & bin & $ 1/\\\sigma d\\\sigma/y^{t~{NLead.t}}$ & stat. [\\\%] & sys. [\\\%] & total [\\\%] \\\\\\"
 echo "			\\\hline"
-tail -n +2 combined/TopRapidityNLeadResultsLaTeXAfter.txt
+tail -n +2 combined/HypTopRapidityNLeadLaTeX.txt
 echo "			\\\hline"
 echo "		\\\end{tabular}"
 echo "	\\\end{center}"
@@ -91,15 +91,15 @@ echo "		\\\begin{tabular}{c|c||c|c|c|c} "
 echo "			\\\hline "
 echo "			\\\hline            bin-center [GeV]      & bin [GeV] & $ 1/\\\sigma d\\\sigma/d p_T^{\\\ttbar}$ & stat. [\\\%] & sys. [\\\%] & total [\\\%] \\\\\\"
 echo "			\\\hline "
-tail -n +2 combined/TTBarpTResultsLaTeXAfter.txt
+tail -n +2 combined/HypTTBarpTLaTeX.txt
 echo "			\\\hline" 
 echo "			\\\hline            bin-center       & bin & $ 1/\\\sigma d\\\sigma/y^{\\\ttbar}$ & stat. [\\\%] & sys. [\\\%] & total [\\\%] \\\\\\"
 echo "			\\\hline"
-tail -n +2 combined/TTBarRapidityResultsLaTeXAfter.txt
+tail -n +2 combined/HypTTBarRapidityLaTeX.txt
 echo "			\\\hline" 
 echo "			\\\hline            bin-center [GeV]      & bin [GeV] & $ 1/\\\sigma d\\\sigma/dm^{\\\ttbar}$ & stat. [\\\%] & sys. [\\\%] & total [\\\%] \\\\\\"
 echo "			\\\hline"		
-tail -n +2 combined/TTBarMassResultsLaTeXAfter.txt
+tail -n +2 combined/HypTTBarMassLaTeX.txt
 echo "                  \\\hline"
 echo "  		\\\hline"
 echo "		\\\end{tabular}"
@@ -113,21 +113,21 @@ echo "                  Normalised differential cross section as a function of t
 echo "		\\\label{tab:diffxsecorderedbjet}"
 echo "		\\\begin{tabular}{c|c||c|c|c|c}"
 echo "			\\\hline" 
-echo "			\\\hline            bin-center [GeV]      & bin [GeV] & $ 1/\\\sigma d\\\sigma/p_T^{b~{Lead.b-jet}$ & stat. [\\\%] & sys. [\\\%] & total [\\\%] \\\\\\"
+echo "			\\\hline            bin-center [GeV]      & bin [GeV] & $ 1/\\\sigma d\\\sigma/p_T^{b~{Lead.b-jet}}$ & stat. [\\\%] & sys. [\\\%] & total [\\\%] \\\\\\"
 echo "		\\\hline"
-tail -n +2 combined/BJetpTLeadResultsLaTeXAfter.txt
+tail -n +2 combined/HypBJetpTLeadLaTeX.txt
 echo "			\\\hline" 
-echo "			\\\hline            bin-center [GeV]      & bin [GeV] & $ 1/\\\sigma d\\\sigma/p_T^{b~{NLead.b-jet}$ & stat. [\\\%] & sys. [\\\%] & total [\\\%] \\\\\\"
+echo "			\\\hline            bin-center [GeV]      & bin [GeV] & $ 1/\\\sigma d\\\sigma/p_T^{b~{NLead.b-jet}}$ & stat. [\\\%] & sys. [\\\%] & total [\\\%] \\\\\\"
 echo "		\\\hline"
-tail -n +2 combined/BJetpTNLeadResultsLaTeXAfter.txt
+tail -n +2 combined/HypBJetpTNLeadLaTeX.txt
 echo "			\\\hline"
 echo "			\\\hline            bin-center       & bin & $ 1/\\\sigma d\\\sigma/\\\eta^{Lead.b-jet}$ & stat. [\\\%] & sys. [\\\%] & total [\\\%] \\\\\\"
 echo "			\\\hline" 
-tail -n +2 combined/BJetEtaLeadResultsLaTeXAfter.txt
+tail -n +2 combined/HypBJetEtaLeadLaTeX.txt
 echo "			\\\hline"
 echo "			\\\hline            bin-center       & bin & $ 1/\\\sigma d\\\sigma/\\\eta^{NLead.b-jet}$ & stat. [\\\%] & sys. [\\\%] & total [\\\%] \\\\\\"
 echo "			\\\hline" 
-tail -n +2 combined/BJetEtaNLeadResultsLaTeXAfter.txt
+tail -n +2 combined/HypBJetEtaNLeadLaTeX.txt
 echo "  		\\\hline"
 echo "		\\\end{tabular}"
 echo "	\\\end{center}"

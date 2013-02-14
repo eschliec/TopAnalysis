@@ -37,7 +37,7 @@
 ################################################################
 
 # TT
-230  Summer12.TTJets_MassiveBinDECAY_TuneZ2star_8TeV_madgraph_tauola_Summer12_DR53X_PU_S10_START53_V7A_v1_cff   ttbarsignalplustau.root      ttbarsignalplustau
+230  Summer12.TTJets_MassiveBinDECAY_TuneZ2star_8TeV_madgraph_tauola_Summer12_DR53X_PU_S10_START53_V7A_v1_cff   ttbarsignalplustau.root      ttbarsignalplustau,includePDFWeights=True
 150  Summer12.TTJets_MassiveBinDECAY_TuneZ2star_8TeV_madgraph_tauola_Summer12_DR53X_PU_S10_START53_V7A_v1_cff   ttbarbg.root                 ttbarbg
 
 # Drell Yan

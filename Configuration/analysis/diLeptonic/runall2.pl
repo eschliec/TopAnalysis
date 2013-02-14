@@ -118,6 +118,7 @@ sub prepare {
     $self->createConfig($inputSample, $outputFile, $cmsRunCmdLine);
     push @{$self->{commands}}, [$self->{path},
         "-m $self->{maxEventsPerJob} -d $outputFileWithoutRoot ".
+	"-M ".($cmsRunCmdLine =~ /PDFWeight/i ? 8000 : 3700)." ".
         "-c '$cmsRunCmdLine' ".
         "$NJobs $self->{configFile}_for_$outputFileWithoutRoot.py"];
 }

@@ -40,6 +40,7 @@ HypBJetpT Standard b-jets p_{T}^{b} 2 0 0 0 0 0 0 0 0 0
 HypBJetEta Standard b-jets #eta^{b} 2 1 0 0 0 0 -2.5 2.5 0 0
 HypLeptonEta Standard Events #eta^{l} 1 1 0 0 0 0 0 0 0 0
 HypLeptonpT Standard Events p_{T}^{l} 1 1 0 0 0 0 0 0 0 0
+HypLeptonBjetMass Standard N_{Events} m^{lb} 10 1 0 0 0 0 0 300 0 0
 
 HypBJetEtaLead Standard b-jets #eta^{Lead.b-jet} 2 1 0 0 0 0 -2.5 2.5 0 0
 HypBJetEtaNLead Standard b-jets #eta^{N.Lead.b-jet} 2 1 0 0 0 0 -2.5 2.5 0 0

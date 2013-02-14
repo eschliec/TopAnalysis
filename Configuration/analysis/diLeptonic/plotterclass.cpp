@@ -97,6 +97,8 @@ void Plotter::unfolding()
                     CalcDiffSystematics(vec_channel.at(chan), vec_systematic.at(sys), vec_systematic.at(sys)+"UP",vec_systematic.at(sys)+"DOWN",vec_flat_value.at(sys));
                 } else {
                     if(vec_channel.at(chan) != "combined"){
+		        write(vec_channel.at(chan),"POWHEG");//make sure the preunfolded files exist
+		        write(vec_channel.at(chan),"MCATNLO");
                         CalcDiffXSec(vec_channel.at(chan), "POWHEG");
                         CalcDiffXSec(vec_channel.at(chan), "MCATNLO");
                         GetDiffToNominal(vec_channel.at(chan), TString("POWHEG"), name);
@@ -383,6 +385,7 @@ void Plotter::CalcDiffSystematics(TString Channel, TString Systematic, TString S
         if ( name.Contains("Rapidity")) theQuantityName = "Rapidity";
         if ( name.Contains("Mass")    ) theQuantityName = "Mass";
         TString theSpecialPostfix = "";
+        theSpecialPostfix = name;
         if ( specialComment.CompareTo("Standard") != 0 ) {
             //theSpecialPostfix = specialComment;
         } 

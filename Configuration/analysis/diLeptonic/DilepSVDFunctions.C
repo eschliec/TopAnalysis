@@ -20,7 +20,7 @@ TString DilepSVDFunctions::SVD_GetSteering(TString channel, TString particle, TS
     
     
     // Determine the Steering 
-    int flag_regmode = 1;            // Always read in tau from file (4) 
+    int flag_regmode = 4;            // Always read in tau from file (4) 
     int flag_regpar = 2;             // Always use Tau (2)
     int flag_scan = 1;               // Turn scan on (2) or off (1) 
     int flag_ps = 4;                 // Write everything to PS (4)

@@ -11,6 +11,7 @@
 
 using namespace std;
 
+//helper function to convert a TLorentzVector to a ROOT::Math::LorentzVector
 const ROOT::Math::LorentzVector<ROOT::Math::PxPyPzE4D<double> > x(const TLorentzVector &tlv) {
     ROOT::Math::LorentzVector<ROOT::Math::PxPyPzE4D<double> > res(tlv(0), tlv(1), tlv(2), tlv(3));
     return res;
@@ -399,6 +400,13 @@ GetKinSolutions(const LV& leptonMinus, const LV& leptonPlus,
             
             TtDilepEvtSolution best;
             double weightBest = 0;
+            
+            
+            //!!!!!!!!!!!!!!!!!!WARNING!!!!!!!!!!!!!!!!
+            //When changing this, please also make sure the SF for the KinReco 
+            //is using the correct values!!
+            //See prepareKinRecoSF in Analysis.C            
+            //!!!!!!!!!!!!!!!!!!WARNING!!!!!!!!!!!!!!!!
             
             for(double topMass = 100; topMass < 300.5; topMass += 1) 
 //             for(double topMass = 163; topMass < 183.5; topMass += 1) 

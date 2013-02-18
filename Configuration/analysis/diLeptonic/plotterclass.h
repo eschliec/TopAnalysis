@@ -23,6 +23,9 @@ public:
     void   setStyle(TH1*, unsigned int, bool = false);
     void   unfolding();
     void   preunfolding(TString Channel="", TString Systematic="");
+    
+    ///add addThis to addToThis (and delete it afterwards) - or assign it it to addToThis if addToThis is nullptr.
+    void   addAndDelete_or_Assign(TH1*& addToThis, TH1* addThis);
     void   write(TString, TString);
     void   setLumi(double);
     
@@ -109,6 +112,7 @@ private:
     TString subfolderSpecial;
 
     static const double topxsec;
+    static const bool doClosureTest;
     RootFileReader *fileReader;
     void DrawDecayChLabel(TString decaychannel="", double textSize=0.04);
     void DrawCMSLabels(int cmsprelim=true, double energy=8, double textSize=0.04);

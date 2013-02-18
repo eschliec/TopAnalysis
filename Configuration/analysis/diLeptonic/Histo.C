@@ -29,7 +29,7 @@ const std::vector<const char*> VectorOfValidSystematics
     "POWHEG", "MCATNLO",// "SPINCORR", 
     "all"};
     
-void Histo(bool doControlPlots, bool doUnfold, 
+void Histo(bool doControlPlots, bool doUnfold, bool doDiffXSPlotOnly,
            std::vector<std::string> plots, 
            std::vector<std::string> systematics, 
            std::vector<std::string> channels) 
@@ -86,7 +86,7 @@ void Histo(bool doControlPlots, bool doUnfold,
             }
         }
         if (doUnfold) {
-            h_generalPlot.unfolding();
+            if (!doDiffXSPlotOnly) h_generalPlot.unfolding();
             for (auto channel:channels){
                 h_generalPlot.PlotDiffXSec(channel);
             }
@@ -109,8 +109,8 @@ std::function<bool(const std::string &s)> makeStringChecker(const std::vector<co
 }
 
 int main(int argc, char** argv) {
-    CLParameter<std::string> opt_type("t", "cp|unfold - required, cp=contol plots, unfold", true, 1, 1,
-        makeStringChecker({"cp", "unfold"}));
+    CLParameter<std::string> opt_type("t", "cp|unfold|plot - required, cp=contol plots, unfold, or only plot diffXS", true, 1, 1,
+        makeStringChecker({"cp", "unfold", "plot"}));
     CLParameter<std::string> opt_plots("p", "Name (pattern) of plot; multiple patterns possible; use '+Name' to match name exactly", false, 1, 100);
     CLParameter<std::string> opt_channel("c", "Specify channel(s), valid: emu, ee, mumu, combined. Default: all channels", false, 1, 4,
         makeStringChecker({"ee", "emu", "mumu", "combined"}));
@@ -140,6 +140,7 @@ int main(int argc, char** argv) {
     if (opt_plots.isSet()) plots = opt_plots.getArguments();
 
     bool doControlPlots = opt_type[0] == "cp";
-    bool doUnfold = opt_type[0] == "unfold";
-    Histo(doControlPlots, doUnfold, plots, systematics, channels);
+    bool doDiffXSPlotOnly = opt_type[0] == "plot";
+    bool doUnfold = opt_type[0] == "unfold" || doDiffXSPlotOnly;
+    Histo(doControlPlots, doUnfold, doDiffXSPlotOnly, plots, systematics, channels);
 }

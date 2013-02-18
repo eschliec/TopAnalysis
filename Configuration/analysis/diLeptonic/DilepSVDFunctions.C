@@ -384,6 +384,16 @@ double DilepSVDFunctions::SVD_DoUnfoldSys(
         shifts->SetBinError(i, 0.);
     }
       
+    delete[] arrData;
+    delete[] arrBgr;
+    delete[] arrGen;
+    delete[] arrRec;
+    delete[] arrResp;
+    delete[] arrTtBgr;
+    delete[] arrUnfolded;
+    delete[] arrUnfoldedNorm;
+    delete leg;
+    delete c;
     
     // return best tau value
     return bestTau;

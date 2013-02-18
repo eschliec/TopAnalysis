@@ -2004,13 +2004,15 @@ void Analysis::Terminate()
             cerr << "ClosureTotalWeight histogram is missing!\n"; exit(1);
         }
         gloablNormalisationFactor *= total->GetEntries() / total->GetBinContent(1);
+        cout << "gloablNormalisationFactor = " << gloablNormalisationFactor << "\n";
     }
     if (pdf_no) {
         TH1 *total = dynamic_cast<TH1*>(fOutput->FindObject("PDFTotalWeight"));
         if (!total) {
             cerr << "PDFTotalWeight histogram is missing!\n"; exit(1);
         }
-        gloablNormalisationFactor *= total->GetEntries() / total->GetBinContent(1);
+        //gloablNormalisationFactor *= total->GetEntries() / total->GetBinContent(1);
+        cout << "PDF Weight Normalisation = " << gloablNormalisationFactor << "\n";
     }
     
     //write stuff into file

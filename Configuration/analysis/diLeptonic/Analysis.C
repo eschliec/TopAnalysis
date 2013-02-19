@@ -766,6 +766,7 @@ Bool_t Analysis::Process ( Long64_t entry )
     if (pdf_no) {
         b_weightPDF->GetEntry(entry);
         double pdfWeight = weightPDF->at(pdf_no - 1); //vector is 0 based
+//         pdfWeight = 10;
         weightGenerator *= pdfWeight;
         h_PDFTotalWeight->Fill(1, pdfWeight);
     }
@@ -2011,7 +2012,7 @@ void Analysis::Terminate()
         if (!total) {
             cerr << "PDFTotalWeight histogram is missing!\n"; exit(1);
         }
-        //gloablNormalisationFactor *= total->GetEntries() / total->GetBinContent(1);
+        gloablNormalisationFactor *= total->GetEntries() / total->GetBinContent(1);
         cout << "PDF Weight Normalisation = " << gloablNormalisationFactor << "\n";
     }
     
@@ -2021,7 +2022,12 @@ void Analysis::Terminate()
     TIterator* it = fOutput->MakeIterator();
     while (TObject* obj = it->Next()) {
         TH1 *h = dynamic_cast<TH1*>(obj);
-        if (h) { h->Scale(gloablNormalisationFactor); }
+        if (h) { 
+            h->Scale(gloablNormalisationFactor); 
+            //cout << "Scaling: " << h->GetName() << "\n";
+        } else { 
+            //cout << "Not scaling: " << obj->GetName() << "\n"; 
+        }
         obj->Write();
         //cout << obj->GetName() << "\n";
     }

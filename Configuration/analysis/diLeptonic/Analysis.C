@@ -2283,7 +2283,8 @@ void Analysis::SetSamplename(TString samplename)
 {
     this->samplename = samplename;
     isTtbarPlusTauSample = samplename.BeginsWith("ttbar") && !samplename.Contains("bg");
-    correctMadgraphBR = samplename.BeginsWith("ttbar");
+    correctMadgraphBR = samplename.BeginsWith("ttbar") && !samplename.Contains("Spin") && !samplename.Contains("ttbarH") && 
+                        !samplename.Contains("powheg") && !samplename.Contains("mcatnlo");
 }
 
 void Analysis::SetMC(bool isMC)

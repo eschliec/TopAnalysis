@@ -2334,7 +2334,13 @@ void Plotter::PlotDiffXSec(TString Channel){
         double mcnloscale = 1./mcnlohist->Integral("width");
         if (binned_theory==false) mcnlohist->Rebin(2);mcnlohist->Scale(0.5); //#####
         mcnlohist->Scale(mcnloscale);
-
+        
+        mcnlohistBinned = mcnlohist->Rebin(bins,"mcnloplot",Xbins);
+        for (Int_t bin=0; bin<bins; bin++){
+            mcnlohistBinned->SetBinContent(bin+1,mcnlohistBinned->GetBinContent(bin+1)/((Xbins[bin+1]-Xbins[bin])/mcnlohist->GetBinWidth(1)));
+        }
+        mcnlohistBinned->Scale(1./mcnlohistBinned->Integral("width"));
+        
         if(name.Contains("LeptonpT")){mcnlohistnorm = GetNloCurve("Leptons","Pt","MCatNLO");}//temprorary until I change the naming convention in the root file
         else if(name.Contains("LeptonEta")){mcnlohistnorm = GetNloCurve("Leptons","Eta","MCatNLO");}
         else if(name.Contains("LLBarpT")){mcnlohistnorm = GetNloCurve("LepPair","Pt","MCatNLO");}
@@ -2381,14 +2387,11 @@ void Plotter::PlotDiffXSec(TString Channel){
             //    if (binned_theory==false) mcnlohistdown->Rebin(5);mcnlohistdown->Scale(0.2);
             mcnlohistdownBinned    = mcnlohistdown->Rebin(bins,"genBinHist", Xbins);
 
-            mcnlohistBinned = mcnlohist->Rebin(bins,"mcnloplot",Xbins);
             for (Int_t bin=0; bin<bins; bin++){
-                mcnlohistBinned->SetBinContent(bin+1,mcnlohistBinned->GetBinContent(bin+1)/((Xbins[bin+1]-Xbins[bin])/mcnlohist->GetBinWidth(1)));
                 mcnlohistupBinned->SetBinContent(bin+1,mcnlohistupBinned->GetBinContent(bin+1)/((Xbins[bin+1]-Xbins[bin])/mcnlohistup->GetBinWidth(1)));
                 mcnlohistdownBinned->SetBinContent(bin+1,mcnlohistdownBinned->GetBinContent(bin+1)/((Xbins[bin+1]-Xbins[bin])/mcnlohistdown->GetBinWidth(1)));
                 mcnlohistnormBinned->SetBinContent(bin+1,mcnlohistnormBinned->GetBinContent(bin+1)/((Xbins[bin+1]-Xbins[bin])/mcnlohistnorm->GetBinWidth(1)));
             }
-            mcnlohistBinned->Scale(1./mcnlohistBinned->Integral("width"));
             mcnlohistupBinned->Scale(1./mcnlohistnormBinned->Integral("width"));
             mcnlohistdownBinned->Scale(1./mcnlohistnormBinned->Integral("width"));
             mcnlohistnormBinned->Scale(1./mcnlohistnormBinned->Integral("width"));
@@ -2421,7 +2424,7 @@ void Plotter::PlotDiffXSec(TString Channel){
             mcatnloBand->SetFillStyle(1001);
             mcatnloBand->SetLineColor(kBlue);
             mcatnloBand->SetLineWidth(2);
-            mcatnloBand->SetLineStyle(5);            
+            mcatnloBand->SetLineStyle(5);
         } else {
             std::cout << "\n*************************\nMC@NLO Curve not available!\n**********************\n";
             canDrawMCATNLO = false;
@@ -2451,8 +2454,6 @@ void Plotter::PlotDiffXSec(TString Channel){
         }
         spincorrhistBinned->Scale(1./spincorrhistBinned->Integral("width"));
     }
-    
-    
     
     if(drawNLOCurves && drawKidonakis && (name.Contains("ToppT") || name.Contains("TopRapidity")) && !name.Contains("Lead")){
         KidoFile=TFile::Open("dilepton_kidonakisNNLO.root");
@@ -2514,8 +2515,8 @@ void Plotter::PlotDiffXSec(TString Channel){
 
     h_GenDiffXSec->SetLineColor(kRed+1);
     h_GenDiffXSec->SetLineStyle(1);
-
-    if (drawNLOCurves && drawMCATNLO && canDrawMCATNLO) {
+    
+    if (drawNLOCurves && drawMCATNLO) {
         mcnlohist->SetLineColor(kBlue); //#####################
         mcnlohist->SetLineStyle(5);
         mcnlohistBinned->SetLineColor(kBlue); //#####################
@@ -2524,6 +2525,7 @@ void Plotter::PlotDiffXSec(TString Channel){
         if(binned_theory==false){mcnlohist->Draw("SAME,C");}
         else{mcnlohistBinned->Draw("SAME");}
     }
+
     if(drawNLOCurves && drawPOWHEG){
         powheghist->SetLineColor(kGreen+1); //#####################
         powheghist->SetLineStyle(7);
@@ -2548,7 +2550,7 @@ void Plotter::PlotDiffXSec(TString Channel){
         Kidoth1_Binned->SetLineWidth(2);
         Kidoth1_Binned->SetLineColor(kOrange-3); //########################
         Kidoth1_Binned->SetLineStyle(1);
-        Kidoth1_Binned->Draw("SAME");
+        Kidoth1_Binned->Draw("SAME][");
     }
     
     if(!name.Contains("HypLLBarpT") && !name.Contains("HypTTBarpT") && !name.Contains("HypLeptonpT") && !name.Contains("HypBJetpT")){
@@ -2579,6 +2581,7 @@ void Plotter::PlotDiffXSec(TString Channel){
     leg2.AddEntry(GenPlotTheory, "MadGraph","l");
     if (drawNLOCurves) {
         if (drawMCATNLO && canDrawMCATNLO && mcnlohistup->GetEntries() && mcnlohistdown->GetEntries())   leg2.AddEntry(mcatnloBand,      "MC@NLO",  "fl");
+        else if (drawMCATNLO && mcnlohist->GetEntries()) leg2.AddEntry(mcnlohist,      "MC@NLO",  "l");
         if (drawPOWHEG && powheghist->GetEntries())                                    leg2.AddEntry(powheghistBinned, "POWHEG",  "l");
         if (drawMadSpinCorr && spincorrhist->GetEntries())                             leg2.AddEntry(spincorrhistBinned, "MadGraph SC",  "l");
         if (drawKidonakis && !name.Contains("Lead") && (name.Contains("ToppT") || name.Contains("TopRapidity"))) leg2.AddEntry(Kidoth1_Binned,   "Approx. NNLO",  "l");

@@ -8,17 +8,17 @@ DIMFull_fullSel Standard Events m^{ll} 2 1 0 0 0 0 0 0 0 0
 Allh1 Standard Events m^{ll} 1 1 0 0 0 0 0 0 0 0
 HypjetMulti Standard Events N_{jets} 1 1 0 1 0.5 0 2 10 0 0
 HypjetMulti_diLep Standard Events N_{jets} 1 0 0 1 1.0 0 0 0 0 0
-HypjetMulti_noBTag Standard Events N_{jets} 1 1 0 1 1.0 0 0 0 0 0
+HypjetMulti_noBTag Standard Events N_{jets} 1 1 0 1 1.0 0 2 10 0 0
 HypBjetMulti_noBTag Standard Events N_{jets} 1 1 0 1 1.0 0 0 0 0 0
-MuonpT Standard Muons p_{T,#mu} 4 1 0 0 0 0 20 400 0 0
-ElectronpT Standard Electrons p_{T,e} 4 1 0 0 0 0 20 400 0 0
+MuonpT Standard Muons p_{T,#mu} 4 0 0 0 0 0 20 400 0 0
+ElectronpT Standard Electrons p_{T,e} 4 0 0 0 0 0 20 400 0 0
 LeptonpT Standard Leptons p_{T} 2 1 0 0 0 0 20 400 0 0
 MuonEta Standard Muons #eta_{#mu} 4 1 0 0 0 0 -2.5 2.5 0 0
 ElectronEta Standard Electrons #eta_{e} 4 1 0 0 0 0 -2.5 2.5 0 0
 LeptonEta Standard Leptons #eta_{l} 4 1 0 0 0 0 -2.5 2.5 0 0
 
-MuonpT_postMETcut Standard Muons p_{T,#mu} 4 1 0 0 0 0 20 400 0 0
-ElectronpT_postMETcut Standard Electrons p_{T,e} 4 1 0 0 0 0 20 400 0 0
+MuonpT_postMETcut Standard Muons p_{T,#mu} 2 1 0 0 0 0 20 400 0 0
+ElectronpT_postMETcut Standard Electrons p_{T,e} 2 1 0 0 0 0 20 400 0 0
 LeptonpT_postMETcut Standard Leptons p_{T} 2 1 0 0 0 0 20 400 0 0
 MuonEta_postMETcut Standard Muons #eta_{#mu} 4 1 0 0 0 0 -2.5 2.5 0 0
 ElectronEta_postMETcut Standard Electrons #eta_{e} 4 1 0 0 0 0 -2.5 2.5 0 0
@@ -27,8 +27,8 @@ LeptonEta_postMETcut Standard Leptons #eta_{l} 4 1 0 0 0 0 -2.5 2.5 0 0
 LeptonEta_diLep Standard Leptons #eta_{l} 4 0 0 0 0 0 -2.5 2.5 0 0
 jetpT Standard Jets p_{T} 2 1 0 1 1 1E5 30 400 0 0
 jetHT Standard Jets H_{T} 4 1 0 0 0 0 0 0 0 0
-MET Standard Events MET 4 1 0 0 0 0 0 0 0 0
-HypBjetMulti Standard Events N_{b-jets} 1 1 0 1 0.5 1E5 0 6 0 0
+MET Standard Events MET 4 0 0 0 0 0 0 0 0 0
+HypBjetMulti Standard Events N_{b-jets} 1 1 0 1 0.5 1E5 1 6 0 0
 HypBjetMulti_noBTag Standard Events N_{b-jets} 1 1 0 1 0.5 1E5 0 6 0 0
 HypTopMass Standard Topquarks m_{t} 2 1 0 0 0 0 100 300 0 0
 HypTopRapidity Standard Topquarks y^{t} 2 1 0 0 0 0 -2.5 2.5 0 0
@@ -42,9 +42,14 @@ HypLeptonEta Standard Events #eta^{l} 1 1 0 0 0 0 0 0 0 0
 HypLeptonpT Standard Events p_{T}^{l} 1 1 0 0 0 0 0 0 0 0
 HypLeptonBjetMass Standard N_{Events} m^{lb} 10 1 0 0 0 0 0 300 0 0
 
+TrigSF Standard Events SF_{Trigg.} 1 1 0 0 0 0 0 0 0 0
+LepSF Standard Events SF_{Lept.} 1 1 0 0 0 0 0 0 0 0
+BTagSF Standard Events SF_{#geq1b-tag} 1 1 0 0 0 0 0 0 0 0
+KinRecoSF Standard Events SF_{Kin.Reco.} 1 1 0 0 0 0 0 0 0 0
+EventWeight Standard Events SF_{Evt.} 1 1 0 0 0 0 0 0 0 0
+
 HypBJetEtaLead Standard b-jets #eta^{Lead.b-jet} 2 1 0 0 0 0 -2.5 2.5 0 0
 HypBJetEtaNLead Standard b-jets #eta^{N.Lead.b-jet} 2 1 0 0 0 0 -2.5 2.5 0 0
-HypLLBarpT Standard Events p_{T}^{l^{+}l^{-}} 1 1 0 0 0 0 0 0 0 0
 HypLLBarDPhi Standard Events #Delta#phi{l,#bar{l}} 11 1 0 0 0 0 -0.1 2.9 0 0
 HypBJetpTLead Standard b-jets p_{T}^{Lead.b-jet} 5 1 0 0 0 0 0 0 0 0
 HypBJetpTNLead Standard b-jets p_{T}^{N.Lead.b-jet} 5 1 0 0 0 0 0 0 0 0
@@ -58,6 +63,7 @@ HypToppTLead Standard Topquarks p_{T}^{Lead.t} 10 1 0 0 0 0 0 0 0 0
 HypToppTNLead Standard Topquarks p_{T}^{N.Leadl.t} 10 1 0 0 0 0 0 0 0 0
 HypLLBarpT Standard Events p_{T}^{l^{+}l^{-}} 1 1 0 0 0 0 0 0 0 0
 HypLLBarMass Standard Events p_{T}^{l^{+}l^{-}} 1 1 0 0 0 0 0 0 0 0
+HypLeptonBjetMass Standard Events m^{lb} 1 1 0 0 0 0 0 0 0 0
 HypMet Standard Events E_{T}^{miss} 1 1 0 0 0 0 0 0 0 0
 
 LeptonpTbkr Standard Leptons p_{T} 4 1 0 0 0 0 20 250 0 0

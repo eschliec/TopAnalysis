@@ -2279,12 +2279,12 @@ void Analysis::SetSystematic(TString systematic)
     this->systematic = systematic;
 }
 
-void Analysis::SetSamplename(TString samplename)
+void Analysis::SetSamplename(TString samplename, TString systematic_from_file)
 {
     this->samplename = samplename;
     isTtbarPlusTauSample = samplename.BeginsWith("ttbar") && !samplename.Contains("bg");
-    correctMadgraphBR = samplename.BeginsWith("ttbar") && !samplename.Contains("Spin") && !samplename.Contains("ttbarH") && 
-                        !samplename.Contains("powheg") && !samplename.Contains("mcatnlo");
+    correctMadgraphBR = samplename.BeginsWith("ttbar") && !samplename.Contains("higgs") && !systematic_from_file.Contains("SPIN") &&
+                        !systematic_from_file.Contains("POWHEG") && !systematic_from_file.Contains("MCATNLO");
 }
 
 void Analysis::SetMC(bool isMC)

@@ -474,7 +474,7 @@ public:
     void SetChannel(TString channel);
     void SetSignal(bool isSignal);
     void SetSystematic(TString systematic);
-    virtual void SetSamplename(TString samplename);
+    virtual void SetSamplename(TString samplename, TString systematic_from_file);
     void SetOutputfilename(TString outputfilename);
     void SetMC(bool isMC);
     void SetTrueLevelDYChannel(int dy);

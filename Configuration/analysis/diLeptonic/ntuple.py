@@ -586,9 +586,15 @@ else:
 
 
 if higgsSignal:
+    process.load("TopAnalysis.HiggsUtils.filters.GeneratorHiggsFilter_cfi")
+    process.generatorHiggsFilter.channels = ["none"]
+    process.generatorHiggsFilter.invert_selection = True
     process.load("TopAnalysis.HiggsUtils.sequences.higgsGenEvent_cff")
     process.decaySubsetHiggs.fillMode = "kME" # Status3, use kStable for Status2
-    process.higgssequence = cms.Sequence(process.makeGenEvtHiggs)
+    process.higgssequence = cms.Sequence(
+        process.makeGenEvtHiggs *
+        process.generatorHiggsFilter
+    )
 else:
     process.higgssequence = cms.Sequence()
 

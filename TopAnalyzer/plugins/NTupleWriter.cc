@@ -13,7 +13,7 @@ Implementation:
 //
 // Original Author:  Jan Kieseler,,,DESY
 //         Created:  Thu Aug 11 16:37:05 CEST 2011
-// $Id: NTupleWriter.cc,v 1.30.2.12 2013/02/08 18:45:48 tdorland Exp $
+// $Id: NTupleWriter.cc,v 1.30.2.13 2013/02/11 09:46:37 wbehrenh Exp $
 //
 //
 
@@ -121,7 +121,7 @@ private:
     std::string systematicsName_;
     double sampleCrossSection_;
     double dataLumi_;
-    edm::InputTag trigResults_, decayMode_;
+    edm::InputTag trigResults_, decayMode_, higgsDecayMode_;
 
     bool includeZdecay_;
     edm::InputTag zDecayTag_;
@@ -189,6 +189,7 @@ private:
 
 
     int TopDecayMode;
+    int HiggsDecayMode;
     std::vector<int> ZDecayMode;
     int recoInChannel;
 
@@ -306,6 +307,7 @@ NTupleWriter::NTupleWriter(const edm::ParameterSet& iConfig):
     
     trigResults_(iConfig.getParameter<edm::InputTag>("triggerResults")),
     decayMode_(iConfig.getParameter<edm::InputTag>("decayMode")),
+    higgsDecayMode_(iConfig.getParameter<edm::InputTag>("higgsDecayMode")),
     
     includeZdecay_(iConfig.getParameter<bool>("includeZdecay")),
     zDecayTag_(iConfig.getParameter<edm::InputTag>("Zdecay")),
@@ -647,23 +649,27 @@ NTupleWriter::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup )
         //         }
     }
 
-        if ( isHiggsSample_ ) {
-            //Generator info
-            edm::Handle<HiggsGenEvent> genEvtHiggs;
-            iEvent.getByLabel ( genEventHiggs_, genEvtHiggs );
-            if (! genEvtHiggs.failedToGet())
-            {
-                GenH = genEvtHiggs->higgs()->polarP4();
-                if(genEvtHiggs->b()) GenBFromH = genEvtHiggs->b()->polarP4(); else GenBFromH = nullP4;
-                if(genEvtHiggs->bBar()) GenAntiBFromH = genEvtHiggs->bBar()->polarP4(); else GenAntiBFromH = nullP4;
-            }
-            else
-            {
-                std::cerr << "Error: no Higgs gen event?!\n";
-                GenH = nullP4;
-                GenBFromH = nullP4; GenAntiBFromH = nullP4;
-            }
+    if ( isHiggsSample_ ) {
+        //Generator info
+        edm::Handle<HiggsGenEvent> genEvtHiggs;
+        iEvent.getByLabel ( genEventHiggs_, genEvtHiggs );
+        if (! genEvtHiggs.failedToGet())
+        {
+            GenH = genEvtHiggs->higgs()->polarP4();
+            if(genEvtHiggs->b()) GenBFromH = genEvtHiggs->b()->polarP4(); else GenBFromH = nullP4;
+            if(genEvtHiggs->bBar()) GenAntiBFromH = genEvtHiggs->bBar()->polarP4(); else GenAntiBFromH = nullP4;
         }
+        else
+        {
+            std::cerr << "Error: no Higgs gen event?!\n";
+            GenH = nullP4;
+            GenBFromH = nullP4; GenAntiBFromH = nullP4;
+        }
+        
+        edm::Handle<int> HiggsDecayModeHandle;
+        iEvent.getByLabel(higgsDecayMode_, HiggsDecayModeHandle);
+        HiggsDecayMode = HiggsDecayModeHandle.failedToGet() ? 0 : *HiggsDecayModeHandle;
+    }
              
     
     //////fill pfiso///maybe other iso??
@@ -1054,6 +1060,7 @@ NTupleWriter::beginJob()
         Ntuple->Branch("GenH", &GenH);
         Ntuple->Branch("GenBFromH", &GenBFromH);
         Ntuple->Branch("GenAntiBFromH", &GenAntiBFromH);
+        Ntuple->Branch("HiggsDecayMode", &HiggsDecayMode, "HiggsDecayMode/I");
     }
     
     //Hypothesis Info
@@ -1193,6 +1200,7 @@ void NTupleWriter::clearVariables()
 
     ZDecayMode.clear();
     TopDecayMode = 0;
+    HiggsDecayMode = 0;
 }
 
 

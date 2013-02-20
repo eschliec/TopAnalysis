@@ -36,6 +36,13 @@ const std::string getPUPath(TString systematic) {
     return pu_path;
 }
 
+const TString pdfDirName(int pdf_no) {
+    TString result("PDF_");
+    if (pdf_no == 0) result += "CENTRAL";
+    else result += TString::Format("%d", (pdf_no+1)/2) + "_" + (pdf_no % 2 ? "UP" : "DOWN");
+    return result;
+}
+
 void load_Analysis(TString validFilenamePattern, 
                    TString givenChannel, 
                    TString systematic,
@@ -155,13 +162,10 @@ void load_Analysis(TString validFilenamePattern,
             if (systematic == "PDF") {
                 TH1* pdfWeights = dynamic_cast<TH1*>(file.Get("EventsBeforeSelection/pdfEventWeights"));
                 if (!pdfWeights) { std::cerr << "Error: pdfEventWeights histo missing!\n"; exit(831); }
-                for (int pdf_no = 1; pdfWeights->GetBinContent(pdf_no) > 0; ++pdf_no) {
-                    if (specific_PDF && (pdf_no+1)/2 != specific_PDF && pdf_no != -specific_PDF) continue;
-                    TString pdfName("PDF_");
-                    pdfName += (pdf_no+1)/2;
-                    pdfName += (pdf_no % 2 ? "_UP" : "_DOWN");
-                    selector->SetSystematic(pdfName);
-                    //weightedEvents->SetBinContent(1, pdfWeights->GetBinContent(pdf_no));
+                for (int pdf_no = 0; pdfWeights->GetBinContent(pdf_no+1) > 0; ++pdf_no) {
+                    if (specific_PDF >=0 && pdf_no != specific_PDF) continue;
+                    selector->SetSystematic(pdfDirName(pdf_no));
+                    //weightedEvents->SetBinContent(1, pdfWeights->GetBinContent(pdf_no+1));
                     selector->SetWeightedEvents(weightedEvents);
                     selector->SetPDF(pdf_no);
                     chain.Process(selector);
@@ -183,7 +187,7 @@ void load_Analysis(TString validFilenamePattern,
 int main(int argc, char** argv) {
     CLParameter<std::string> opt_f("f", "Restrict to filename pattern, e.g. ttbar", false, 1, 1);
     CLParameter<std::string> opt_s("s", "Run with a systematic that runs on the nominal ntuples, e.g. 'PDF', 'PU_UP' or 'TRIG_DOWN'", false, 1, 1);
-    CLParameter<int> opt_pdfno("pdf", "Run a certain PDF systematic only, sets -s PDF. Use e.g. --pdf 1 to run PDF_1_UP/DOWN. Use negative values to select only one variation, i.e. --pdf -1 runs 1_UP, --pdf -2 runs 1_DOWN and so on. If -s PDF is specified without --pdf, run all variations", false, 1, 1);
+    CLParameter<int> opt_pdfno("pdf", "Run a certain PDF systematic only, sets -s PDF. Use e.g. --pdf n, where n=0 is central, 1=variation 1 up, 2=1down, 3=2up, 4=2down, ...", false, 1, 1);
     CLParameter<std::string> opt_c("c", "Specify a certain channel (ee, emu, mumu). No channel specified = run on all channels", false, 1, 1,
             [](const std::string &ch){return ch == "" || ch == "ee" || ch == "emu" || ch == "mumu";});
     CLParameter<int> opt_dy("d", "Drell-Yan mode (11 for ee, 13 for mumu, 15 for tautau)", false, 1, 1,
@@ -208,13 +212,11 @@ int main(int argc, char** argv) {
             slope = opt_closureSlope[0];
         }
     }
-    int pdf_no = 0;
+    int pdf_no = -1;
     if (opt_pdfno.isSet()) {
         pdf_no = opt_pdfno[0];
-        if (pdf_no < 0)
-            cout << "Running PDF variation " << -(pdf_no-1)/2 << ", only " << ((-pdf_no) % 2 ? "UP\n" : "DOWN\n");
-        else
-            cout << "Running PDF variation " << pdf_no << " (up and down)\n";
+        if (pdf_no >= 0)
+            std::cout << "Running PDF variation: " << pdfDirName(pdf_no) << "\n";
         if (!(syst == "" || syst == "PDF")) {
             cout << "Insonsistent systematic parameter: " << syst << " cannot be used with PDF systematic!\n";
             std::exit(1);

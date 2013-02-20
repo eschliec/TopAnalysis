@@ -763,9 +763,9 @@ Bool_t Analysis::Process ( Long64_t entry )
         }
     }
     
-    if (pdf_no) {
+    if (pdf_no >= 0) {
         b_weightPDF->GetEntry(entry);
-        double pdfWeight = weightPDF->at(pdf_no - 1); //vector is 0 based
+        double pdfWeight = weightPDF->at(pdf_no); //vector is 0 based
 //         pdfWeight = 10;
         weightGenerator *= pdfWeight;
         h_PDFTotalWeight->Fill(1, pdfWeight);
@@ -2007,7 +2007,7 @@ void Analysis::Terminate()
         gloablNormalisationFactor *= total->GetEntries() / total->GetBinContent(1);
         cout << "gloablNormalisationFactor = " << gloablNormalisationFactor << "\n";
     }
-    if (pdf_no) {
+    if (pdf_no >= 0) {
         TH1 *total = dynamic_cast<TH1*>(fOutput->FindObject("PDFTotalWeight"));
         if (!total) {
             cerr << "PDFTotalWeight histogram is missing!\n"; exit(1);
@@ -2435,7 +2435,7 @@ void Analysis::Init ( TTree *tree )
     fChain->SetBranchAddress("lumiBlock", &lumiBlock, &b_lumiBlock );
     fChain->SetBranchAddress("eventNumber", &eventNumber, &b_eventNumber );
     fChain->SetBranchAddress("weightGenerator", &weightGenerator, &b_weightGenerator );
-    if (pdf_no) fChain->SetBranchAddress("pdfWeights", &weightPDF, &b_weightPDF);
+    if (pdf_no >= 0) fChain->SetBranchAddress("pdfWeights", &weightPDF, &b_weightPDF);
     fChain->SetBranchAddress("vertMulti", &vertMulti, &b_vertMulti );
     fChain->SetBranchAddress("vertMultiTrue", &vertMultiTrue, &b_vertMultiTrue );
 

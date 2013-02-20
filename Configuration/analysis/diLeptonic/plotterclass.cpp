@@ -2300,7 +2300,7 @@ void Plotter::PlotDiffXSec(TString Channel){
     if( (name.Contains("Lepton")||name.Contains("Top")||name.Contains("BJet")) && !name.Contains("Lead")){
       GenPlotTheory->Scale(1./2.);
     }
-    GenPlotTheory->Rebin(2);
+//     GenPlotTheory->Rebin(2);
     double genscale = 1./GenPlotTheory->Integral("width");
     GenPlotTheory->Scale(genscale);
     
@@ -2553,24 +2553,17 @@ void Plotter::PlotDiffXSec(TString Channel){
         Kidoth1_Binned->Draw("SAME][");
     }
     
-    if(!name.Contains("HypLLBarpT") && !name.Contains("HypTTBarpT") && !name.Contains("HypLeptonpT") && !name.Contains("HypBJetpT")){
+    if(name.Contains("HypLeptonpTLead") || name.Contains("HypLeptonEta")){
         TH1D *SmoothMadgraph =(TH1D*)GenPlotTheory->Clone("SmoothMadgraph");
         SmoothMadgraph->Smooth(10);
         SmoothMadgraph->Draw("SAME, L");
     }
-    else if( !name.Contains("HypTTBarpT") && !name.Contains("HypLeptonpT")){
-        TH1D *SmoothMadgraph =(TH1D*)GenPlotTheory->Clone("SmoothMadgraph");
-        SmoothMadgraph->Smooth(4);
-        SmoothMadgraph->Draw("SAME, L");
-    }
-    else if( !name.Contains("HypTTBarpT")){
-        TH1D *SmoothMadgraph =(TH1D*)GenPlotTheory->Clone("SmoothMadgraph");
-        SmoothMadgraph->Smooth(2);
-        SmoothMadgraph->Draw("SAME, L");
+    else if(name.Contains("HypLeptonpTNLead") ){
+        GenPlotTheory->Rebin(2);
+        GenPlotTheory->Scale(1./GenPlotTheory->Integral("width"));
+        GenPlotTheory->Draw("same,c");
     }
     else {GenPlotTheory->Draw("SAME,C");} //### 150512 ### 
-
-//     GenPlotTheory->Draw("same");
 
 
     h_GenDiffXSec->Draw("SAME"); //### 150512 ###
@@ -3021,6 +3014,9 @@ double Plotter::SampleXSection(const TString& filename){
     //  AN-12/194    AN-12/228
     
     if(filename.Contains("run"))              {return 1;}
+    else if(filename.Contains("FullLept"))    {return topxsec * 0.1049;}
+    else if(filename.Contains("SemiLept"))    {return topxsec * 0.4380;}
+    else if(filename.Contains("Hadronic"))    {return topxsec * 0.4570;}
     else if(filename.Contains("ttbar"))       {return topxsec;}
     else if(filename.Contains("single"))      {return 11.1;}
     else if(filename.Contains("ww"))          {return 54.838;}

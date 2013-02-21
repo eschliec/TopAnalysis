@@ -45,41 +45,19 @@ You also need to generate the signal variations with: ./runNominalVariations.sh
 In addition you can also run the theory variations (mass, match, scale) and other 
 generators (powheg, mcatnlo and madgraph with spin correlations): ./runTheoryVariations.sh
 
-This runs Analysis.C on each event in the root tuple for each sample. All analysis cuts are made in Analysis.C and the output are a bunch of user specified histograms.
-Except for adding histograms or changing analysis cuts, additions to this file should be made as separate functions in the Analysis class.
+This runs Analysis.C on each event in the root tuple for each sample. All analysis cuts are
+made in Analysis.C and the output are a bunch of user specified histograms. Except for adding 
+histograms or changing analysis cuts, additions to this file should be made as separate 
+functions in the Analysis class.
 
 ===== Histograms!
 Once this is finished, run the command:
 
 ./lnData.sh
 ./mk_HistoFileList.sh
-./Histo (check Histo.C for options to create some of the plots, with or without unfolding etc.)
+./Histo (run ./Histo --help for options to create some of the plots, with or without unfolding etc.)
 
-This runs Histo.C which is essentially a wrapper class using plotterclass.h.
-
-For each histogram you want
-
-SetOptions will specify what variable you would like plotted
-fillHisto will fill the histogram and create the histogram stack
-setDataset list the files and whatnot
-CalcXsec explains itself
-plotDiffXsec also does
-write writes the histogram
-
-the plots will be put into a directory called Plots according to the channel in .eps format which is the best
-
-
-========
-========
-To run the new analysis:
-
-
-
-./Histo (check Histo.C for options to create some of the plots, with or without unfolding etc.)
-
-
-
-This runs Histo.C which is essentially a wrapper class using plotterclass.h.
+This runs Histo.C which essentially calls function from plotterclass.cpp.
 
 For each histogram you want
 
@@ -97,12 +75,26 @@ Once the plots has been created you can get the typical systematic errors for th
 
 ./TypicalError
 
-This runs GetTypicalErrors.C which checks for one specific systematic variation, and one specific channel (ee, emu, mumu) in all files 
-    Ploos/channel/*Systematics.txt
+This runs GetTypicalErrors.C which checks for one specific systematic variation, and one specific
+channel (ee, emu, mumu) in all files 
+    Plots/channel/*Systematics.txt
 it parses the content and for one specific systematic takes the average ('typical') systematic error.
 
 ========
-========
+PDF:
+
+If you also need PDF variations, run ./runPDFVariations.sh - it will run load_Analysis
+over the ttbar signal sample for each PDF variation (currently 1 + 44 times). The PDF_CENTRAL
+should be exactly equal to the Nominal, it is used as cross check.
+
+To unfold with the specific PDF variations, run ./unfoldPDF.sh --- this will unfold all 
+differential quantities in parallel - and this will be done 1+44 times. While this script is running,
+please do not touch your Plots/ directory and don't do anything to Plots_temp.
+
+After running the script, run ./calcPDFMasterFormula.pl to join the 44 different PDF systematics
+into one, calculated using the "master formula" as explained in AN2009-048. Files with the combined
+PDF uncertainty are written out to UnfoldingResults/PDF_/channel/ and can then be used in the 
+plotterclass.
 
 
 ========

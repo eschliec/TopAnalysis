@@ -467,7 +467,7 @@ class Analysis : public TSelector
 public:
     Analysis ( TTree * = 0 ) : unc {nullptr}, doJesJer {false},
         checkZDecayMode {nullptr}, 
-        runViaTau {false}, pureweighter {nullptr}, kinRecoOnTheFly {false},
+        runViaTau {false}, pdf_no {-1}, pureweighter {nullptr}, kinRecoOnTheFly {false},
         doClosureTest {false}, closureFunction {nullptr}
         {};
     void SetBTagFile(TString btagFile);

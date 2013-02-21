@@ -13,18 +13,25 @@
 use strict;
 use warnings;
 use List::Util qw(max);
+use File::Path qw(mkpath);
 
 use Data::Dumper;
 
+my $outputPath = "UnfoldingResults/PDF_";
+
 sub pdfSum {
-    my $quantity = shift;
-    my $nominal = UnfoldedResult->new("Plots/PDF_CENTRAL/combined/${quantity}LaTeX.txt");
+    my ($quantity, $channel) = @_;
+    my $nominal = UnfoldedResult->new("Plots/PDF_CENTRAL/$channel/${quantity}LaTeX.txt");
     #print Dumper $result;
     my (@up, @down);
     for my $var_no (1..22) { 
-        push @up, UnfoldedResult->new("Plots/PDF_${var_no}_UP/combined/${quantity}LaTeX.txt");
-        push @down, UnfoldedResult->new("Plots/PDF_${var_no}_DOWN/combined/${quantity}LaTeX.txt");
+        push @up, UnfoldedResult->new("Plots/PDF_${var_no}_UP/$channel/${quantity}LaTeX.txt");
+        push @down, UnfoldedResult->new("Plots/PDF_${var_no}_DOWN/$channel/${quantity}LaTeX.txt");
     }
+    
+    my $filename = "$outputPath/$channel/${quantity}Results.txt";
+    open my $OUTFH, '>', $filename or die $!;
+    print "Writing to $filename\n";
     
     for my $bin (0..@{$nominal->{bins}}-1) {
         my $binNom = $nominal->{bins}->[$bin];
@@ -40,42 +47,48 @@ sub pdfSum {
         my $relUncDown = sqrt($downSUM2)/$nominalXsec;
 #         my $unc = 0.5 * ($relUncUp + $relUncDown);
         my $unc = max($relUncUp, $relUncDown);
-        print "XAxisbinCenters[bin]: $binNom->{-center} bin: $binNom->{-from} to $binNom->{-to} SystematicRelError: $unc (+$relUncUp -$relUncDown)\n";
+        #my $line = "XAxisbinCenters[bin]: $binNom->{-center} bin: $binNom->{-from} to $binNom->{-to} SystematicRelError: $unc (+$relUncUp -$relUncDown)\n";
+        my $line = "XAxisbinCenters[bin]: $binNom->{-center} bin: $binNom->{-from} to $binNom->{-to} SystematicRelError: $unc\n";
+        print $line;
+        print $OUTFH $line;
     }
     
 }
 
-for my $plot qw(
-HypLeptonBjetMass
-HypBJetpTLead
-HypBJetpTNLead
-HypBJetEtaLead
-HypBJetEtaNLead
-HypTopRapidityLead
-HypTopRapidityNLead
-HypToppTLead
-HypToppTNLead
-HypLeptonpTLead
-HypLeptonpTNLead
-HypLeptonEtaLead
-HypLeptonEtaNLead
-HypLeptonEta
-HypLeptonpT
-HypBJetEta
-HypBJetpT
-HypTopRapidity
-HypToppT
-HypTTBarRapidity
-HypTTBarpT
-HypTTBarMass
-HypLLBarpT
-HypLLBarMass
-HypNeutrinopT
-) 
-{
-    print "Unc for $plot:\n";
-    eval{ pdfSum($plot); };
-    print "\n";
+for my $channel qw(ee emu mumu combined) {
+    mkpath("$outputPath/$channel");
+    for my $plot qw(
+    HypLeptonBjetMass
+    HypBJetpTLead
+    HypBJetpTNLead
+    HypBJetEtaLead
+    HypBJetEtaNLead
+    HypTopRapidityLead
+    HypTopRapidityNLead
+    HypToppTLead
+    HypToppTNLead
+    HypLeptonpTLead
+    HypLeptonpTNLead
+    HypLeptonEtaLead
+    HypLeptonEtaNLead
+    HypLeptonEta
+    HypLeptonpT
+    HypBJetEta
+    HypBJetpT
+    HypTopRapidity
+    HypToppT
+    HypTTBarRapidity
+    HypTTBarpT
+    HypTTBarMass
+    HypLLBarpT
+    HypLLBarMass
+    HypNeutrinopT
+    ) 
+    {
+        print "Unc for $plot in channel $channel:\n";
+        eval{ pdfSum($plot, $channel); };
+        print "\n";
+    }
 }
 
 package UnfoldedResult;

@@ -17,8 +17,8 @@ runSpecificVariation() {
     mkdir -p Plots/combined
     ./Histo -t cp -p XSec -s Nominal
     # now calculate differential distributions
-    #for plot in `awk '{print $1}' HistoList | grep Hyp`; do
-    for plot in HypTTBarMass; do
+    for plot in `awk '{print $1}' HistoList | grep Hyp`; do
+    #for plot in HypTTBarMass; do
         ./Histo -t unfold -p +$plot -s Nominal &
     done
     wait

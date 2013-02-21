@@ -2553,13 +2553,33 @@ void Plotter::PlotDiffXSec(TString Channel){
         Kidoth1_Binned->Draw("SAME][");
     }
     
-    if(name.Contains("HypLeptonpTLead") || name.Contains("HypLeptonEta")){
+    if(name.Contains("HypBJetEtaLead") || name.Contains("HypBJetEtaNLead") || name.Contains("HypBJetpTLead") || name.Contains("HypLeptonBjetMass")){
+        GenPlotTheory->Rebin(2);
+        GenPlotTheory->Scale(1./GenPlotTheory->Integral("width"));
         TH1D *SmoothMadgraph =(TH1D*)GenPlotTheory->Clone("SmoothMadgraph");
         SmoothMadgraph->Smooth(10);
         SmoothMadgraph->Draw("SAME, L");
     }
-    else if(name.Contains("HypLeptonpTNLead") ){
+    else if(name.Contains("HypLeptonpTLead") || name.Contains("HypLeptonEta") || name.Contains("HypTopRapidity") || 
+            name.Contains("HypBJetEta") || name.Contains("HypBJetpTNLead") || name.Contains("HypTTBarRapidity")){
+        TH1D *SmoothMadgraph =(TH1D*)GenPlotTheory->Clone("SmoothMadgraph");
+        SmoothMadgraph->Smooth(10);
+        SmoothMadgraph->Draw("SAME, L");
+    }
+    else if (name.Contains("HypTTBarMass") || name.Contains("HypToppT")){
+        GenPlotTheory->Rebin(6);
+        GenPlotTheory->Scale(1./GenPlotTheory->Integral("width"));
+        TH1D *SmoothMadgraph =(TH1D*)GenPlotTheory->Clone("SmoothMadgraph");
+        SmoothMadgraph->Smooth(10);
+        SmoothMadgraph->Draw("SAME, L");
+    }
+    else if(name.Contains("HypLeptonpTNLead") || name.Contains("HypLeptonBjetMass")){
         GenPlotTheory->Rebin(2);
+        GenPlotTheory->Scale(1./GenPlotTheory->Integral("width"));
+        GenPlotTheory->Draw("same,c");
+    }
+    else if(name.Contains("HypTTBarpT") || name.Contains("HypLLBarMass")){
+        GenPlotTheory->Rebin(4);
         GenPlotTheory->Scale(1./GenPlotTheory->Integral("width"));
         GenPlotTheory->Draw("same,c");
     }

@@ -24,6 +24,13 @@ ls -1 --color=no /data/group/top/DiffXS/2013_01_25/*.root > selectionList.txt
 To compile the code:
 make -j8
 
+Make sure you have the triggerSummary_ee, emu, mumu in your diLeptonic directory.
+If not, get them via 
+    cvs up -r HEAD triggerSummary_ee.root
+    cvs up -r HEAD triggerSummary_emu.root
+    cvs up -r HEAD triggerSummary_mumu.root
+
+
 To run the analysis, do
 ./load_Analysis
 
@@ -38,12 +45,25 @@ where PATTERN is in the file name.
 The output produced is in selectionRoot, the files should be fully compatible with
 the old plotterclass.h
 
-For Nominal just do: ./runNominalParallel.sh
+Now, you need to calculate btag efficiencies. This works by running the ttbar sample:
 
-You also need to generate the signal variations with: ./runNominalVariations.sh
+  for c in ee emu mumu; do ./load_Analysis -f ttbarsignalplustau.root -c $c&;done;wait
+
+Then copy the created btag files:
+  
+  cp -r selectionRoot/BTagEff .
+
+Now you are ready to flood the workgroup server with a lot of jobs.
+
+To run the selection on the Nominal sample, just do: 
+  ./runNominalParallel.sh
+
+You also need to generate the signal variations with: 
+  ./runNominalVariations.sh
 
 In addition you can also run the theory variations (mass, match, scale) and other 
-generators (powheg, mcatnlo and madgraph with spin correlations): ./runTheoryVariations.sh
+generators (powheg, mcatnlo and madgraph with spin correlations): 
+  ./runTheoryVariations.sh
 
 This runs Analysis.C on each event in the root tuple for each sample. All analysis cuts are
 made in Analysis.C and the output are a bunch of user specified histograms. Except for adding 
@@ -82,6 +102,8 @@ it parses the content and for one specific systematic takes the average ('typica
 
 ========
 PDF:
+
+Requirement: you have already run the Nominal (i.e. ./runNominalParallel.sh)
 
 If you also need PDF variations, run ./runPDFVariations.sh - it will run load_Analysis
 over the ttbar signal sample for each PDF variation (currently 1 + 44 times). The PDF_CENTRAL

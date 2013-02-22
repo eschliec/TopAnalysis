@@ -1122,7 +1122,7 @@ void Plotter::write(TString Channel, TString Systematic) // do scaling, stacking
     DrawCMSLabels(1, 8);
     DrawDecayChLabel(channelLabel[channelType]);
     leg->Draw("SAME");
-    drawRatio(drawhists[0], stacksum, 0.5, 1.7);
+    //drawRatio(drawhists[0], stacksum, 0.5, 1.7);
 
     // Create Directory for Output Plots 
     gSystem->mkdir(outpathPlots+"/"+subfolderChannel+"/"+Systematic, true);
@@ -2556,7 +2556,14 @@ void Plotter::PlotDiffXSec(TString Channel){
         Kidoth1_Binned->Draw("SAME][");
     }
     
-    if(name.Contains("HypBJetEtaLead") || name.Contains("HypBJetEtaNLead") || name.Contains("HypBJetpTLead") || name.Contains("HypLeptonBjetMass")){
+    if( name.Contains("HypTTBarMass")){
+        GenPlotTheory->Rebin(15);
+        GenPlotTheory->Scale(1./GenPlotTheory->Integral("width"));
+        TH1D *SmoothMadgraph =(TH1D*)GenPlotTheory->Clone("SmoothMadgraph");
+        SmoothMadgraph->Smooth(10);
+        SmoothMadgraph->Draw("SAME, L");
+    }
+    else if(name.Contains("HypBJetEtaLead") || name.Contains("HypBJetEtaNLead") || name.Contains("HypBJetpTLead") || name.Contains("HypLeptonBjetMass")){
         GenPlotTheory->Rebin(2);
         GenPlotTheory->Scale(1./GenPlotTheory->Integral("width"));
         TH1D *SmoothMadgraph =(TH1D*)GenPlotTheory->Clone("SmoothMadgraph");
@@ -2569,22 +2576,29 @@ void Plotter::PlotDiffXSec(TString Channel){
         SmoothMadgraph->Smooth(10);
         SmoothMadgraph->Draw("SAME, L");
     }
-    else if (name.Contains("HypTTBarMass") || name.Contains("HypToppT")){
+    else if (name.Contains("HypToppT") || name.Contains("HypLeptonBjetMass")){
         GenPlotTheory->Rebin(6);
         GenPlotTheory->Scale(1./GenPlotTheory->Integral("width"));
         TH1D *SmoothMadgraph =(TH1D*)GenPlotTheory->Clone("SmoothMadgraph");
         SmoothMadgraph->Smooth(10);
         SmoothMadgraph->Draw("SAME, L");
     }
-    else if(name.Contains("HypLeptonpTNLead") || name.Contains("HypLeptonBjetMass")){
+    else if(name.Contains("HypLeptonpTNLead")){
         GenPlotTheory->Rebin(2);
         GenPlotTheory->Scale(1./GenPlotTheory->Integral("width"));
         GenPlotTheory->Draw("same,c");
     }
-    else if(name.Contains("HypTTBarpT") || name.Contains("HypLLBarMass")){
+    else if(name.Contains("HypTTBarpT")){
         GenPlotTheory->Rebin(4);
         GenPlotTheory->Scale(1./GenPlotTheory->Integral("width"));
         GenPlotTheory->Draw("same,c");
+    }
+    else if(name.Contains("HypLLBarMass")){
+        GenPlotTheory->Rebin(4);
+        GenPlotTheory->Scale(1./GenPlotTheory->Integral("width"));
+        TH1D *SmoothMadgraph =(TH1D*)GenPlotTheory->Clone("SmoothMadgraph");
+        SmoothMadgraph->Smooth(2);
+        SmoothMadgraph->Draw("same,l");
     }
     else {GenPlotTheory->Draw("SAME,C");} //### 150512 ### 
 

@@ -39,9 +39,9 @@ sub pdfSum {
         my ($upSUM2, $downSUM2) = (0,0);
         for my $no (0..21) {
             my $upMnom = $up[$no]{bins}[$bin]{-xsec} - $nominalXsec;
-            my $nomMdown = $nominalXsec - $down[$no]{bins}[$bin]{-xsec};
-            $upSUM2 += max(0, $upMnom, $nomMdown)**2;
-            $downSUM2 += max(0, -$upMnom, -$nomMdown)**2;
+            my $downMnom = $down[$no]{bins}[$bin]{-xsec} - $nominalXsec;
+            $upSUM2 += max(0, $upMnom, $downMnom)**2;
+            $downSUM2 += max(0, -$upMnom, -$downMnom)**2;
         }
         my $relUncUp = sqrt($upSUM2)/$nominalXsec;
         my $relUncDown = sqrt($downSUM2)/$nominalXsec;
@@ -66,10 +66,10 @@ sub pdfSumIncl {
     
     my ($upInclSUM2, $downInclSUM2) = (0,0);
     for my $no (0..21) {
-        my $upMnom = $upIncl[$no]->{-xsec} - $nominalIncl->{-xsec};
-        my $nomMdown = $nominalIncl->{-xsec} - $downIncl[$no]->{-xsec};
-        $upInclSUM2 += max(0, $upMnom, $nomMdown)**2;
-        $downInclSUM2 += max(0, -$upMnom, -$nomMdown)**2;
+        my $upMnom = $upIncl[$no]->{-xsec} - $nominalIncl->{-xsec}; 
+        my $downMnom = $downIncl[$no]->{-xsec} - $nominalIncl->{-xsec};
+        $upInclSUM2 += max(0, $upMnom, $downMnom)**2;
+        $downInclSUM2 += max(0, -$upMnom, -$downMnom)**2;
     }
 
     storeInclXsec("PDF_UP", $channel, $nominalIncl->{-xsec} + sqrt($upInclSUM2));

@@ -22,7 +22,7 @@ for sys in JES_UP JES_DOWN JER_UP JER_DOWN \
         ./load_Analysis -f ttbarsignalplustau.root -c $c -s $sys&
     done
 
-    for i in qcd single ttbarbg wtol ww wz zz; do
+    for i in qcd single ttbarbg.root wtol ww wz zz; do
         w
         ./load_Analysis -f $i -s $sys&
     done

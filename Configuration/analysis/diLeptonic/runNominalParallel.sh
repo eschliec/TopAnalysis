@@ -24,7 +24,7 @@ for c in ee emu mumu; do
     ./load_Analysis -f ${c}_run2012C -c $c &
 done 
 
-for i in zz qcd single ttbarbg wtol ww wz ; do
+for i in zz qcd single ttbarbg.root wtol ww wz ; do
     w
     ./load_Analysis -f $i -c ee&
     ./load_Analysis -f $i -c emu&

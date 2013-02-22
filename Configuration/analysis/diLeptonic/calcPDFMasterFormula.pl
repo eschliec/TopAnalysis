@@ -52,7 +52,39 @@ sub pdfSum {
         print $line;
         print $OUTFH $line;
     }
+
+}
+
+sub pdfSumIncl {
+    my ($channel) = @_;
+    my $nominalIncl = InclusiveResult->new("Plots/PDF_CENTRAL/Nominal/$channel/InclXSec.txt");
+    my (@upIncl, @downIncl);
+    for my $var_no (1..22) { 
+        push @upIncl, InclusiveResult->new("Plots/PDF_${var_no}_UP/Nominal/$channel/InclXSec.txt");
+        push @downIncl, InclusiveResult->new("Plots/PDF_${var_no}_DOWN/Nominal/$channel/InclXSec.txt");
+    }
     
+    my ($upInclSUM2, $downInclSUM2) = (0,0);
+    for my $no (0..21) {
+        my $upMnom = $upIncl[$no]->{-xsec} - $nominalIncl->{-xsec};
+        my $nomMdown = $nominalIncl->{-xsec} - $downIncl[$no]->{-xsec};
+        $upInclSUM2 += max(0, $upMnom, $nomMdown)**2;
+        $downInclSUM2 += max(0, -$upMnom, -$nomMdown)**2;
+    }
+
+    storeInclXsec("PDF_UP", $channel, $nominalIncl->{-xsec} + sqrt($upInclSUM2));
+    storeInclXsec("PDF_DOWN", $channel, $nominalIncl->{-xsec} - sqrt($downInclSUM2));    
+}
+
+sub storeInclXsec {
+    my ($syst, $channel, $xsec) = @_;
+    mkpath("Plots/$syst/$channel"); 
+    my $result = "Systematic: $syst Channel: /$channel InclXSection: $xsec AbsStatError: 0\n";
+    
+    print "Inclusive xsec:\n$result";
+    
+    open my $FH, '>', "Plots/$syst/$channel/InclXSec.txt" or die $!;
+    print $FH $result;
 }
 
 for my $channel qw(ee emu mumu combined) {
@@ -87,8 +119,10 @@ for my $channel qw(ee emu mumu combined) {
     {
         print "Unc for $plot in channel $channel:\n";
         eval{ pdfSum($plot, $channel); };
+        print $@ if $@;
         print "\n";
     }
+    pdfSumIncl($channel);
 }
 
 package UnfoldedResult;
@@ -104,7 +138,7 @@ sub new {
 
 sub readFile {
     my $self = shift;
-    open my $f, '<', $self->{filename} or die $!;
+    open my $f, '<', $self->{filename} or die "Opening $self->{filename}\n$!";
     scalar <$f> for (1..3); #skip first 3 lines
     my @bins;
     while (my $line = <$f>) {
@@ -117,5 +151,21 @@ sub readFile {
     return \@bins;
 }
 
+package InclusiveResult;
 
+sub new {
+    my ($class, $filename) = @_;
+    my $self = {};
+    $self->{filename} = $filename;
+    bless $self, $class;
+    $self->{-xsec} = $self->readFile();
+    return $self;
+}
+
+sub readFile {
+    my $self = shift;
+    open my $f, '<', $self->{filename} or die "Opening $self->{filename}\n$!";
+    my (undef, $syst, undef, $ch, undef, $xsec, undef, $xsecunc) = split / +/, <$f>;
+    return $xsec;
+}
 

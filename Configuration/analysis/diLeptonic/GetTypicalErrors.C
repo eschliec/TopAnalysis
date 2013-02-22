@@ -41,7 +41,7 @@ vector<TString> Systematics (){
   vector<TString> systematics {"BTAG_", "BTAG_LJET_", "BTAG_BEFF_",
                                  "BTAG_PT_", "BTAG_ETA_", "BTAG_LJET_PT_", "BTAG_LJET_ETA_", 
       "MASS_", "SCALE_", "MATCH_", "HAD_", "KIN_", "LEPT_",
-      "JES_", "JER_", "PU_", "TRIG_", "DY_", "BG_"
+      "JES_", "JER_", "PU_", "TRIG_", "DY_", "BG_", "PDF_"
                                 };
 
     return systematics;

@@ -29,6 +29,11 @@ void compare_free_fixed(TString quantity) {
     gStyle->SetOptStat(0);
     
     fvariation.cd();
+    int MaxBin = mc->GetMaximumBin();
+    int MinBin = mc->GetMinimumBin();
+    double Max = mc->GetBinContent(MaxBin);
+    double Min = mc->GetBinContent(MinBin);
+    mc->GetYaxis()->SetRangeUser(0.1*Min, 1.2*Max);
     mc->SetLineColor(kBlue);
     mc->SetMarkerSize(0);
     mc->Draw();

@@ -9,7 +9,6 @@ ee_Leptons_Pt_HypLeptonpT                                                       
 ee_LepPair_Mass_HypLLBarMass                                                                        3.76516     4   5   3   7
 ee_Leptons_Pt_HypLeptonpTLead                                                                       1.37999     5   6   3   7
 ee_BJets_Pt_HypBJetpTNLead                                                                          0.68925     5   6   4   7
-ee_TtBar_Mass_HypTTBarMass                                                                          2.36642     4   5   3   7
 ee_BJets_Eta_HypBJetEta                                                                             3.89357     6   7   6   8
 ee_BJets_Pt_HypBJetpTLead                                                                           1.24602     5   6   4   8
 ee_TtBar_Rapidity_HypTTBarRapidity                                                                  2.48435     4   5   5   8
@@ -32,7 +31,6 @@ ee_Leptons_Eta_HypLeptonEtaLead                                                 
 mumu_LepPair_Mass_HypLLBarMass                                                                      4.01385     4   5   4   7
 mumu_BJets_Pt_HypBJetpT                                                                             3.31632     5   6   2   7
 ee_BJets_Eta_HypBJetEtaLead                                                                         1.95099     8   9   6   10
-mumu_TtBar_Mass_HypTTBarMass                                                                        2.43897     4   5   2   7
 mumu_BJets_Pt_HypBJetpTNLead                                                                        1.13905     4   5   3   7
 mumu_BJets_Eta_HypBJetEta                                                                           4.49938     6   7   4   8
 emu_TtBar_Pt_HypTTBarpT                                                                             8.62455     3   4   3   6
@@ -47,7 +45,6 @@ emu_Leptons_Pt_HypLeptonpT                                                      
 emu_LepPair_Mass_HypLLBarMass                                                                       4.80530     5   6   4   7
 emu_Leptons_Pt_HypLeptonpTLead                                                                      2.88356     5   6   4   7
 emu_BJets_Pt_HypBJetpT                                                                              5.41566     4   5   3   7
-emu_TtBar_Mass_HypTTBarMass                                                                         4.26114     4   5   2   7
 emu_BJets_Pt_HypBJetpTNLead                                                                         2.05106     4   5   5   7
 mumu_LepPair_Pt_HypLLBarpT                                                                          2.74870     7   8   4   9
 mumu_TopQuarks_Rapidity_HypTopRapidity                                                              3.83397     6   7   5   10
@@ -73,3 +70,6 @@ emu_TopQuarks_Rapidity_HypTopRapidityLead                                       
 ee_LepPair__HypLLBarDPhi                                                                            1.27892     20  21  12  22
 mumu_LepPair__HypLLBarDPhi                                                                          1.54545     20  21  12  22
 emu_LepPair__HypLLBarDPhi                                                                           2.69741     20  21  15  22
+ee_TtBar_Mass_HypTTBarMass                                                                          1.17642     5   6   4   9
+mumu_TtBar_Mass_HypTTBarMass                                                                        1.38371     5   6   4   9
+emu_TtBar_Mass_HypTTBarMass                                                                         2.11627     5   6   3   9

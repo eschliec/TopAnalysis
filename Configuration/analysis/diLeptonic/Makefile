@@ -37,13 +37,13 @@ HistoListReader.o: HistoListReader.h HistoListReader.cpp
 
 Histo.o: Histo.C
 	g++ -c -o Histo.o $(COMPFLAGS) Histo.C
-	
+
 DilepSVDFunctions.o: DilepSVDFunctions.h DilepSVDFunctions.C 
 	g++ -c -o DilepSVDFunctions.o $(COMPFLAGS) DilepSVDFunctions.C 
 
 TopSVDFunctions.o: ../unfolding/TopSVDFunctions.C 
 	g++ -c -o TopSVDFunctions.o $(COMPFLAGS) ../unfolding/TopSVDFunctions.C 
-	
+
 TopSVDUnfold.o: ../unfolding/TopSVDUnfold.C
 	g++ -c -o TopSVDUnfold.o $(COMPFLAGS) ../unfolding/TopSVDUnfold.C
 

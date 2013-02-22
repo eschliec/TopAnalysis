@@ -25,12 +25,14 @@ vector<TString> Channels(){
 
 vector<TString> Variables(){
     
-    vector<TString> variables {"ToppTLead", "ToppTNLead",
-                               "TopEtaLead", "TopEtaNLead",
-                               "BJetpTLead", "BJetpTNLead",
-                               "BJetEtaLead", "BJetEtaNLead",
-                               "LeptonpTLead", "LeptonpTNLead", "LeptonEtaLead", "LeptonEtaNLead",
-                               "TTBarpT", "TTBarMass", "LLBarpT", "LLBarMass", 
+    vector<TString> variables {"ToppTLead", "ToppTNLead", "ToppT",
+                               "TopRapidityLead", "TopRapidityNLead", "TopRapidity",
+                               "BJetpTLead", "BJetpT",
+                               "BJetEtaLead", "BJetEtaNLead", "BJetEta",
+                               "LeptonpTLead", "LeptonpTNLead", "LeptonpT",
+                               "LeptonEtaLead", "LeptonEtaNLead", "LeptonEta",
+                               "TTBarpT", "TTBarRapidity", "TTBarMass", 
+                               "LLBarpT", "LLBarMass", 
                                "LeptonBjetMass"
                                };
     return variables;

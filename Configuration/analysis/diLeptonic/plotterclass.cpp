@@ -2652,6 +2652,9 @@ void Plotter::PlotDiffXSec(TString Channel){
     delete c;
     gStyle->SetEndErrorSize(0);
 
+    TH1D *dataHisto = TGraphToTH1(tga_DiffXSecPlotwithSys, h_GenDiffXSec);
+    cout<<"\nFor variable "<<name<<" in channel "<<subfolderChannel<< " the Chi2/ndof= "<<dataHisto->Chi2Test(h_GenDiffXSec, "WW,CHI2/NDF")<<"\n\n";
+    
     PrintResultTotxtFile(Channel, binCenters, tga_DiffXSecPlot, tga_DiffXSecPlotwithSys);
 
     TCanvas * c1 = new TCanvas("DiffXS","DiffXS");
@@ -2901,6 +2904,52 @@ TH1F* Plotter::ConvertGraphToHisto(TGraphErrors *pGraph){
     ThisHist->SetBinContent(i+1,y2);
   }
   return ThisHist;
+}
+
+
+TH1D* Plotter::TGraphToTH1(TGraphAsymmErrors *gr, TH1 *mc){
+    
+    if ( !gr || !mc){
+        cout<<"Not TGraph"<<std::endl;;
+        exit(34);
+    }
+    
+    vector<double> xBinLow, xBinHigh;
+    
+    for (int i=1; i<=(int) mc->GetNbinsX(); ++i){
+        xBinLow.push_back(mc->GetXaxis()->GetBinLowEdge(i));
+        xBinHigh.push_back(mc->GetXaxis()->GetBinUpEdge(i));
+    }
+
+    vector<double> xpoints, ypoints;
+    vector<double> yLError, yHError;
+    vector<double> xLError, xHError;
+    xpoints.clear(); xLError.clear(); xHError.clear();
+    ypoints.clear(); yLError.clear(); yHError.clear();
+    
+    for ( int i=0; i<(int) gr->GetN(); ++i ) {
+        xpoints.push_back(gr->GetX()[i]);
+        xHError.push_back(gr->GetErrorXhigh(i));
+        xLError.push_back(gr->GetErrorXlow(i));
+        
+        ypoints.push_back(gr->GetY()[i]);
+        yHError.push_back(gr->GetErrorYhigh(i));
+        yLError.push_back(gr->GetErrorYlow(i));
+    }
+    
+    TH1D * dataHisto = (TH1D*)mc ->Clone();
+    
+    for ( int i=0; i<(int) dataHisto->GetNbinsX(); ++i ) {
+        
+        if ( TMath::Abs(yHError.at(i)-yLError.at(i)) > 1e-6 ){
+            std::cout<<"Up and down error differents. Cannot proceed with the TGraphAsymmErrors -> TH1 conversion"<<std::endl;
+            exit(22);
+        }
+        dataHisto->SetBinContent(i, ypoints.at(i));
+        dataHisto->SetBinError(i, yHError.at(i));
+    }
+
+    return dataHisto;
 }
 
 //TH1F* Plotter::reBinTH1FIrregularNewBinning(TH1F *histoOldBinning, const std::vector<double> &vecBinning, TString plotname, bool rescale=1){

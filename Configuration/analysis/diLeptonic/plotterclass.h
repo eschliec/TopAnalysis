@@ -104,6 +104,7 @@ private:
     // DAVID
     bool doUnfolding; 
     bool doSystematics;
+    bool drawSmoothMadgraph;
     bool drawNLOCurves, drawMadSpinCorr, drawMCATNLO, drawKidonakis, drawPOWHEG;
     TString outpath;
     TString outpathPlots;

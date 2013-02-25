@@ -42,6 +42,7 @@ void Plotter::UnfoldingOptions(bool doSVD)
   doSystematics = true;
   drawNLOCurves = true; // boolean to draw/not-draw extra theory curves in the Diff.XSection plots
 
+  drawSmoothMadgraph = true;
   drawMadSpinCorr  = false;
   drawMCATNLO      = true;
   drawKidonakis    = true;
@@ -1896,7 +1897,15 @@ void Plotter::PlotDiffXSec(TString Channel){
     double Xbins[XAxisbins.size()];
     for(unsigned int i = 0; i<XAxisbins.size();i++){Xbins[i]=XAxisbins[i];}
     double binCenters[XAxisbinCenters.size()];
-    for(unsigned int i = 0; i<XAxisbinCenters.size();i++){binCenters[i]=XAxisbinCenters[i];}
+    if ( drawSmoothMadgraph ) {
+        for ( unsigned int i = 0; i<XAxisbinCenters.size();i++ ) {
+            binCenters[i] = XAxisbinCenters[i];
+        }
+    } else {
+        for ( unsigned int i = 0; i<XAxisbinCenters.size();i++ ) {
+            binCenters[i] = XAxisbins[i] + (XAxisbins[i+1]-XAxisbins[i])/2;
+        }
+    }
 
     double DataSum[XAxisbinCenters.size()];
     double GenSignalSum[XAxisbinCenters.size()];
@@ -2316,8 +2325,6 @@ void Plotter::PlotDiffXSec(TString Channel){
     
     bool binned_theory=true; //############
   
-    
-  
     TH1* mcnlohist=0, *mcnlohistup=0, *mcnlohistdown=0, *powheghist=0, *spincorrhist=0;
     TH1* mcnlohistnorm=0;
     TGraph *mcatnloBand=0;
@@ -2556,52 +2563,53 @@ void Plotter::PlotDiffXSec(TString Channel){
         Kidoth1_Binned->Draw("SAME][");
     }
     
-    if( name.Contains("HypTTBarMass")){
-        GenPlotTheory->Rebin(15);
-        GenPlotTheory->Scale(1./GenPlotTheory->Integral("width"));
-        TH1D *SmoothMadgraph =(TH1D*)GenPlotTheory->Clone("SmoothMadgraph");
-        SmoothMadgraph->Smooth(10);
-        SmoothMadgraph->Draw("SAME, L");
+    if (drawSmoothMadgraph){
+        if( name.Contains("HypTTBarMass")){
+            GenPlotTheory->Rebin(15);
+            GenPlotTheory->Scale(1./GenPlotTheory->Integral("width"));
+            TH1D *SmoothMadgraph =(TH1D*)GenPlotTheory->Clone("SmoothMadgraph");
+            SmoothMadgraph->Smooth(10);
+            SmoothMadgraph->Draw("SAME, L");
+        }
+        else if(name.Contains("HypBJetEtaLead") || name.Contains("HypBJetEtaNLead") || name.Contains("HypBJetpTLead") || name.Contains("HypLeptonBjetMass")){
+            GenPlotTheory->Rebin(2);
+            GenPlotTheory->Scale(1./GenPlotTheory->Integral("width"));
+            TH1D *SmoothMadgraph =(TH1D*)GenPlotTheory->Clone("SmoothMadgraph");
+            SmoothMadgraph->Smooth(10);
+            SmoothMadgraph->Draw("SAME, L");
+        }
+        else if(name.Contains("HypLeptonpTLead") || name.Contains("HypLeptonEta") || name.Contains("HypTopRapidity") || 
+                name.Contains("HypBJetEta") || name.Contains("HypBJetpTNLead") || name.Contains("HypTTBarRapidity")){
+            TH1D *SmoothMadgraph =(TH1D*)GenPlotTheory->Clone("SmoothMadgraph");
+            SmoothMadgraph->Smooth(10);
+            SmoothMadgraph->Draw("SAME, L");
+        }
+        else if (name.Contains("HypToppT") || name.Contains("HypLeptonBjetMass")){
+            GenPlotTheory->Rebin(6);
+            GenPlotTheory->Scale(1./GenPlotTheory->Integral("width"));
+            TH1D *SmoothMadgraph =(TH1D*)GenPlotTheory->Clone("SmoothMadgraph");
+            SmoothMadgraph->Smooth(10);
+            SmoothMadgraph->Draw("SAME, L");
+        }
+        else if(name.Contains("HypLeptonpTNLead")){
+            GenPlotTheory->Rebin(2);
+            GenPlotTheory->Scale(1./GenPlotTheory->Integral("width"));
+            GenPlotTheory->Draw("same,c");
+        }
+        else if(name.Contains("HypTTBarpT")){
+            GenPlotTheory->Rebin(4);
+            GenPlotTheory->Scale(1./GenPlotTheory->Integral("width"));
+            GenPlotTheory->Draw("same,c");
+        }
+        else if(name.Contains("HypLLBarMass")){
+            GenPlotTheory->Rebin(4);
+            GenPlotTheory->Scale(1./GenPlotTheory->Integral("width"));
+            TH1D *SmoothMadgraph =(TH1D*)GenPlotTheory->Clone("SmoothMadgraph");
+            SmoothMadgraph->Smooth(2);
+            SmoothMadgraph->Draw("same,l");
+        }
+        else {GenPlotTheory->Draw("SAME,C");} //### 150512 ### 
     }
-    else if(name.Contains("HypBJetEtaLead") || name.Contains("HypBJetEtaNLead") || name.Contains("HypBJetpTLead") || name.Contains("HypLeptonBjetMass")){
-        GenPlotTheory->Rebin(2);
-        GenPlotTheory->Scale(1./GenPlotTheory->Integral("width"));
-        TH1D *SmoothMadgraph =(TH1D*)GenPlotTheory->Clone("SmoothMadgraph");
-        SmoothMadgraph->Smooth(10);
-        SmoothMadgraph->Draw("SAME, L");
-    }
-    else if(name.Contains("HypLeptonpTLead") || name.Contains("HypLeptonEta") || name.Contains("HypTopRapidity") || 
-            name.Contains("HypBJetEta") || name.Contains("HypBJetpTNLead") || name.Contains("HypTTBarRapidity")){
-        TH1D *SmoothMadgraph =(TH1D*)GenPlotTheory->Clone("SmoothMadgraph");
-        SmoothMadgraph->Smooth(10);
-        SmoothMadgraph->Draw("SAME, L");
-    }
-    else if (name.Contains("HypToppT") || name.Contains("HypLeptonBjetMass")){
-        GenPlotTheory->Rebin(6);
-        GenPlotTheory->Scale(1./GenPlotTheory->Integral("width"));
-        TH1D *SmoothMadgraph =(TH1D*)GenPlotTheory->Clone("SmoothMadgraph");
-        SmoothMadgraph->Smooth(10);
-        SmoothMadgraph->Draw("SAME, L");
-    }
-    else if(name.Contains("HypLeptonpTNLead")){
-        GenPlotTheory->Rebin(2);
-        GenPlotTheory->Scale(1./GenPlotTheory->Integral("width"));
-        GenPlotTheory->Draw("same,c");
-    }
-    else if(name.Contains("HypTTBarpT")){
-        GenPlotTheory->Rebin(4);
-        GenPlotTheory->Scale(1./GenPlotTheory->Integral("width"));
-        GenPlotTheory->Draw("same,c");
-    }
-    else if(name.Contains("HypLLBarMass")){
-        GenPlotTheory->Rebin(4);
-        GenPlotTheory->Scale(1./GenPlotTheory->Integral("width"));
-        TH1D *SmoothMadgraph =(TH1D*)GenPlotTheory->Clone("SmoothMadgraph");
-        SmoothMadgraph->Smooth(2);
-        SmoothMadgraph->Draw("same,l");
-    }
-    else {GenPlotTheory->Draw("SAME,C");} //### 150512 ### 
-
 
     h_GenDiffXSec->Draw("SAME"); //### 150512 ###
     DrawCMSLabels(1, 8);

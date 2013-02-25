@@ -2558,8 +2558,8 @@ void Plotter::PlotDiffXSec(TString Channel){
     }
     if(drawNLOCurves && drawKidonakis && (name.Contains("TopRapidity") || name.Contains("ToppT")) && !name.Contains("Lead")){
         Kidoth1_Binned->SetLineWidth(2);
-        Kidoth1_Binned->SetLineColor(kOrange-3); //########################
-        Kidoth1_Binned->SetLineStyle(1);
+        Kidoth1_Binned->SetLineColor(kOrange+4);
+        Kidoth1_Binned->SetLineStyle(2);
         Kidoth1_Binned->Draw("SAME][");
     }
     

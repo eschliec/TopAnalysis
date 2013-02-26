@@ -2578,6 +2578,13 @@ void Plotter::PlotDiffXSec(TString Channel){
             SmoothMadgraph->Smooth(10);
             SmoothMadgraph->Draw("SAME, L");
         }
+        else if(name.Contains("HypLeptonEtaNLead")){
+            GenPlotTheory->Rebin(2);
+            GenPlotTheory->Scale(1./GenPlotTheory->Integral("width"));
+            TH1D *SmoothMadgraph =(TH1D*)GenPlotTheory->Clone("SmoothMadgraph");
+            SmoothMadgraph->Smooth(5);
+            SmoothMadgraph->Draw("SAME, L");
+        }
         else if(name.Contains("HypLeptonpTLead") || name.Contains("HypLeptonEta") || name.Contains("HypTopRapidity") || 
                 name.Contains("HypBJetEta") || name.Contains("HypBJetpTNLead") || name.Contains("HypTTBarRapidity")){
             TH1D *SmoothMadgraph =(TH1D*)GenPlotTheory->Clone("SmoothMadgraph");

@@ -2606,7 +2606,7 @@ void Plotter::PlotDiffXSec(TString Channel){
             SmoothMadgraph->Draw("SAME, L");
         }
         else if(name.Contains("HypLeptonpTNLead")){
-            GenPlotTheory->Rebin(2);
+            GenPlotTheory->Rebin(3);
             GenPlotTheory->Scale(1./GenPlotTheory->Integral("width"));
             GenPlotTheory->Draw("same,c");
         }

@@ -2615,6 +2615,11 @@ void Plotter::PlotDiffXSec(TString Channel){
             GenPlotTheory->Scale(1./GenPlotTheory->Integral("width"));
             GenPlotTheory->Draw("same,c");
         }
+        else if(name.Contains("HypLLBarpT")){
+            GenPlotTheory->Rebin(2);
+            GenPlotTheory->Scale(1./GenPlotTheory->Integral("width"));
+            GenPlotTheory->Draw("same,c");
+        }
         else if(name.Contains("HypLLBarMass")){
             GenPlotTheory->Rebin(4);
             GenPlotTheory->Scale(1./GenPlotTheory->Integral("width"));

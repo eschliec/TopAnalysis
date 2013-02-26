@@ -2633,7 +2633,7 @@ void Plotter::PlotDiffXSec(TString Channel){
     leg2.SetTextSize(0.04);
     leg2.Draw("same");
     if (drawNLOCurves && drawKidonakis &&  (name.Contains("ToppT") || name.Contains("TopRapidity")) && !name.Contains("Lead")){
-        DrawLabel("(arXiv:1210.7813v1)", leg2.GetX1NDC()+0.06, leg2.GetY1NDC()-0.025, leg2.GetX2NDC(), leg2.GetY1NDC(), 12, 0.025);
+        DrawLabel("(arXiv:1210.7813)", leg2.GetX1NDC()+0.06, leg2.GetY1NDC()-0.025, leg2.GetX2NDC(), leg2.GetY1NDC(), 12, 0.025);
     }
     h_GenDiffXSec->Draw("SAME");
     gStyle->SetEndErrorSize(10);

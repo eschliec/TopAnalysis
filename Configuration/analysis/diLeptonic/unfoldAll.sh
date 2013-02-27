@@ -18,6 +18,6 @@ echo ""
 
 for i in $unfoldList; do 
     echo -n "Unfolding $i - "
-    echo $HISTO -t unfold -s all -p +$i &
+    $HISTO -t unfold -s all -p +$i &
     w
 done

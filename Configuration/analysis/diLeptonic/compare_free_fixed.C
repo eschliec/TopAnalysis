@@ -17,8 +17,8 @@ void compare_free_fixed(TString quantity) {
 
 //     TFile ffixed("Plots_kinSF_173/combined/DiffXS_"+quantity+"_source.root");
 //     TFile ffree("Plots_kinSF_100300/combined/DiffXS_"+quantity+"_source.root");
-    TFile fvariation("Plots_fakedata_173/combined/DiffXS_"+quantity+"_source.root");
-    TFile fnominal("Plots_fakedata_100300/combined/DiffXS_"+quantity+"_source.root");
+    TFile fvariation("Plots_PU_0_to_12/combined/DiffXS_"+quantity+"_source.root");
+    TFile fnominal("Plots_PU_13_to_inf/combined/DiffXS_"+quantity+"_source.root");
 //     TFile ffixed("Plots/PDF_1_UP/combined/DiffXS_"+quantity+"_source.root");
 //     TFile ffree("Plots/combined/DiffXS_"+quantity+"_source.root");
 
@@ -37,42 +37,42 @@ void compare_free_fixed(TString quantity) {
     mc->SetLineColor(kBlue);
     mc->SetMarkerSize(0);
     mc->Draw();
-    data_staterror_only->SetMarkerColor(kBlue);
-    data_staterror_only->SetMarkerStyle(32);
-    data_staterror_only->SetLineColor(kWhite);
-    data_staterror_only->SetFillColor(kWhite);
-    TGraphAsymmErrors *fixed_data = data_staterror_only->Clone();
+    data->SetMarkerColor(kBlue);
+    data->SetMarkerStyle(32);
+    data->SetLineColor(kBlue);
+    data->SetFillColor(kWhite);
+    TGraphAsymmErrors *fixed_data = data->Clone();
     
-    data_staterror_only->Draw("p,same");
-    l.AddEntry(data_staterror_only, "Pseudo data (fixed m_t)");
-    l.AddEntry(mc, "MadGraph (fixed m_t)");
+    data->Draw("p,same,E1");
+    l.AddEntry(data, "Data (vertex<=12)");
+    l.AddEntry(mc, "MadGraph (vertex<=12)");
 
     fnominal.cd();
     mc->SetLineStyle(2);
     mc->SetMarkerSize(0);
     mc->Draw("same");
     double x,y,diff;
-//     data_staterror_only->SetLineWidth(2);
-    data_staterror_only->SetMarkerStyle(26);
-    data_staterror_only->SetMarkerColor(kRed);
-    data_staterror_only->SetLineColor(kWhite);
-    data_staterror_only->SetFillColor(kWhite);
-    data_staterror_only->GetPoint(1,diff,y);
-    data_staterror_only->GetPoint(0,x,y);
+//     data->SetLineWidth(2);
+    data->SetMarkerStyle(26);
+    data->SetMarkerColor(kRed);
+    data->SetLineColor(kRed);
+    data->SetFillColor(kWhite);
+    data->GetPoint(1,diff,y);
+    data->GetPoint(0,x,y);
     diff -= x;
     
-    for (int i = 0; i < data_staterror_only->GetN(); ++i) {
+    for (int i = 0; i < data->GetN(); ++i) {
         double fixed_y;
         fixed_data->GetPoint(i,x,fixed_y);
-        data_staterror_only->GetPoint(i,x,y);
-        data_staterror_only->SetPoint(i,x+diff/6,y);
+        data->GetPoint(i,x,y);
+        data->SetPoint(i,x+diff/6,y);
         cout << quantity << " " << i << " " << std::setprecision(2) << 100*(1-y/fixed_y) << " %\n";
     }
     
     
-    data_staterror_only->Draw("p,same");
-    l.AddEntry(data_staterror_only, "Pseudo data (default)");
-    l.AddEntry(mc, "MadGraph (default)");
+    data->Draw("p,same,E1");
+    l.AddEntry(data, "Data (vertex>=13)");
+    l.AddEntry(mc, "MadGraph (vertex>=13)");
     
     l.Draw();
     canvas.SaveAs("cmp_kinreco_" + quantity + ".eps");

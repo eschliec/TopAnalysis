@@ -1,5 +1,12 @@
 #!/bin/sh
 
+echo "Warning!"
+echo " - do not run any other unfolding code when unfoldPDF is running!"
+echo " - please set doSystematics to false in the plotterclass and recompile before unfoldPDF!"
+echo ""
+echo "Ctrl-C to cancel or any other key to continue"
+read -n 1 -s
+echo ""
 
 runSpecificVariation() {
     variation="$1"
@@ -44,4 +51,5 @@ done
 ./mk_HistoFileList.sh
 
 echo "Done"
+echo "Don't forget to switch doSystematics back to true and recompile"
 

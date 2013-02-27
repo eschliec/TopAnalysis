@@ -1,8 +1,6 @@
 #!/bin/sh
 
-w() { while [ `ps ax | grep load_Analysis | wc -l` -gt 10 ]; do sleep 1; done }
-
-# be careful when using this script, you will submit a lot of jobs at the same. You may slow down the work group server performance for a while
+source parallelTools.sh
 
 for sys in JES_UP JES_DOWN JER_UP JER_DOWN \
            PU_UP PU_DOWN \
@@ -16,15 +14,15 @@ for sys in JES_UP JES_DOWN JER_UP JER_DOWN \
 
     for c in ee emu mumu; do
         w
-        ./load_Analysis -f dy -d 11 -c $c -s $sys&
-        ./load_Analysis -f dy -d 13 -c $c -s $sys&
-        ./load_Analysis -f dy -d 15 -c $c -s $sys&
-        ./load_Analysis -f ttbarsignalplustau.root -c $c -s $sys&
+        $LA -f dy -d 11 -c $c -s $sys&
+        $LA -f dy -d 13 -c $c -s $sys&
+        $LA -f dy -d 15 -c $c -s $sys&
+        $LA -f ttbarsignalplustau.root -c $c -s $sys&
     done
 
     for i in qcd single ttbarbg.root wtol ww wz zz; do
         w
-        ./load_Analysis -f $i -s $sys&
+        $LA -f $i -s $sys&
     done
 
 done

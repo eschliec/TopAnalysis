@@ -51,7 +51,7 @@ public:
     TH1* GetNloCurve(const char *particle, const char *quantity, const char *generator);
     TH1* GetNloCurve(TString NewName, TString Generator);
     TH1F* ConvertGraphToHisto(TGraphErrors *pGraph);
-    TH1D* TGraphToTH1(TGraphAsymmErrors *gr, TH1 *mc);
+    double GetChi2 (TGraphAsymmErrors *data, TH1 *mc);
     TH1F* reBinTH1FIrregularNewBinning(TH1F *histoOldBinning, TString plotname, bool rescale);
 
     //IVAN's Scaling Code

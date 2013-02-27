@@ -2660,6 +2660,7 @@ void Plotter::PlotDiffXSec(TString Channel){
         DrawLabel("(arXiv:1210.7813)", leg2.GetX1NDC()+0.06, leg2.GetY1NDC()-0.025, leg2.GetX2NDC(), leg2.GetY1NDC(), 12, 0.025);
     }
     h_GenDiffXSec->Draw("SAME");
+    
     gStyle->SetEndErrorSize(10);
     tga_DiffXSecPlot->Draw("p, SAME");
     tga_DiffXSecPlotwithSys->Draw("p, SAME, Z");
@@ -2676,9 +2677,25 @@ void Plotter::PlotDiffXSec(TString Channel){
     delete c;
     gStyle->SetEndErrorSize(0);
 
-    TH1D *dataHisto = TGraphToTH1(tga_DiffXSecPlotwithSys, h_GenDiffXSec);
-    cout<<"\nFor variable "<<name<<" in channel "<<subfolderChannel<< " the Chi2/ndof= "<<dataHisto->Chi2Test(h_GenDiffXSec, "WW,CHI2/NDF")<<"\n\n";
-    
+    cout<<"-------------------------------------------------------------------"<<endl;
+    cout<<"Starting the calculation of Chi2/ndof\n"<<endl;
+    double chi2 = GetChi2 (tga_DiffXSecPlotwithSys, h_GenDiffXSec);
+    cout<<"The CHI2/ndof (vs Madgraph) value for '"<<name<<"' in channel '"<<subfolderChannel.Copy().Remove(0, 1)<<"' is "<<chi2<<endl;
+
+    if(drawPOWHEG && powheghistBinned->GetEntries()){
+        double chi2Powheg = GetChi2 (tga_DiffXSecPlotwithSys, powheghistBinned);
+        cout<<"The CHI2/ndof (vs POWHEG) value for '"<<name<<"' in channel '"<<subfolderChannel.Copy().Remove(0, 1)<<"' is "<<chi2Powheg<<endl;
+    }
+    if(drawMCATNLO && mcnlohistBinned->GetEntries()){
+        double chi2McAtNlo = GetChi2 (tga_DiffXSecPlotwithSys, mcnlohistBinned);
+        cout<<"The CHI2/ndof (vs MC@NLO) value for '"<<name<<"' in channel '"<<subfolderChannel.Copy().Remove(0, 1)<<"' is "<<chi2McAtNlo<<endl;
+    }
+    if(drawKidonakis && (name.Contains("ToppT") || name.Contains("TopRapidity")) && !name.Contains("Lead")){
+        double chi2Kidonakis = GetChi2 (tga_DiffXSecPlotwithSys, Kidoth1_Binned);
+        cout<<"The CHI2/ndof (vs Kidonakis) value for '"<<name<<"' in channel '"<<subfolderChannel.Copy().Remove(0, 1)<<"' is "<<chi2Kidonakis<<endl;
+    }
+    cout<<"-------------------------------------------------------------------"<<endl;
+
     PrintResultTotxtFile(Channel, binCenters, tga_DiffXSecPlot, tga_DiffXSecPlotwithSys);
 
     TCanvas * c1 = new TCanvas("DiffXS","DiffXS");
@@ -2930,51 +2947,21 @@ TH1F* Plotter::ConvertGraphToHisto(TGraphErrors *pGraph){
   return ThisHist;
 }
 
-
-TH1D* Plotter::TGraphToTH1(TGraphAsymmErrors *gr, TH1 *mc){
+double Plotter::GetChi2 (TGraphAsymmErrors *data, TH1 *mc){
     
-    if ( !gr || !mc){
-        cout<<"Not TGraph"<<std::endl;;
-        exit(34);
-    }
+    double chi2 = 0.0;
     
-    vector<double> xBinLow, xBinHigh;
-    
-    for (int i=1; i<=(int) mc->GetNbinsX(); ++i){
-        xBinLow.push_back(mc->GetXaxis()->GetBinLowEdge(i));
-        xBinHigh.push_back(mc->GetXaxis()->GetBinUpEdge(i));
-    }
-
-    vector<double> xpoints, ypoints;
-    vector<double> yLError, yHError;
-    vector<double> xLError, xHError;
-    xpoints.clear(); xLError.clear(); xHError.clear();
-    ypoints.clear(); yLError.clear(); yHError.clear();
-    
-    for ( int i=0; i<(int) gr->GetN(); ++i ) {
-        xpoints.push_back(gr->GetX()[i]);
-        xHError.push_back(gr->GetErrorXhigh(i));
-        xLError.push_back(gr->GetErrorXlow(i));
-        
-        ypoints.push_back(gr->GetY()[i]);
-        yHError.push_back(gr->GetErrorYhigh(i));
-        yLError.push_back(gr->GetErrorYlow(i));
-    }
-    
-    TH1D * dataHisto = (TH1D*)mc ->Clone();
-    
-    for ( int i=0; i<(int) dataHisto->GetNbinsX(); ++i ) {
-        
-        if ( TMath::Abs(yHError.at(i)-yLError.at(i)) > 1e-6 ){
-            std::cout<<"Up and down error differents. Cannot proceed with the TGraphAsymmErrors -> TH1 conversion"<<std::endl;
-            exit(22);
+    for ( int i=0; i<(int)data->GetN(); ++i ) {
+        if (data->GetErrorYhigh(i) == 0 || data->GetErrorYlow(i) == 0) {
+            cout<<"When calculating the Chi2 the DATA TGraph has error 0 in bin "<<i<<endl;
+            exit(42);
         }
-        dataHisto->SetBinContent(i, ypoints.at(i));
-        dataHisto->SetBinError(i, yHError.at(i));
+        chi2 += TMath::Abs( (data->GetY()[i]-mc->GetBinContent(mc->FindBin(data->GetX()[i])) ) * (data->GetY()[i]-mc->GetBinContent(mc->FindBin(data->GetX()[i])) ))/ (((data->GetErrorYhigh(i) + data->GetErrorYlow(i))/2) * (data->GetErrorYhigh(i) + data->GetErrorYlow(i))/2);
+//         cout<<"Data "<<data->GetY()[i]<<"  MC "<<mc->GetBinContent(mc->FindBin(data->GetX()[i]))<<"  DataErrorhigh "<<data->GetErrorYhigh(i)<<"  DataErrorlow "<<data->GetErrorYlow(i)<<"  Chi2 "<<chi2<<endl;
     }
-
-    return dataHisto;
+    return chi2/data->GetN();
 }
+
 
 //TH1F* Plotter::reBinTH1FIrregularNewBinning(TH1F *histoOldBinning, const std::vector<double> &vecBinning, TString plotname, bool rescale=1){
 TH1F* Plotter::reBinTH1FIrregularNewBinning(TH1F *histoOldBinning, TString plotname, bool rescale){

@@ -350,9 +350,9 @@ double DilepSVDFunctions::SVD_DoUnfoldSys(
     leg->Draw("same");
     c->Print(TString("Plots/").Copy().Append(channel).Append("/SystComparison_").Append(channel).Append("_").Append(particle).Append("_").Append(quantity).Append("_").Append(syst).Append(".eps"));
     leg->Clear();
-    Nominal->Clear();Nominal->Delete();
-    NominalUp->Clear();NominalUp->Delete();
-    NominalDown->Clear();NominalDown->Delete();
+    Nominal->Clear(); delete Nominal;
+    NominalUp->Clear(); delete NominalUp;
+    NominalDown->Clear(); delete NominalDown;
     c->Clear();
     
     

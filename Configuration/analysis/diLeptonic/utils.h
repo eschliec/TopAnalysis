@@ -87,7 +87,9 @@ public:
         T* result;
         Get(filename, histoname, result, allowNonexisting);
         if (!result && allowNonexisting) return nullptr;
-        return static_cast<T*>(result->Clone());
+        result = static_cast<T*>(result->Clone());
+        result->SetDirectory(0);
+        return result;
     }
 };
 
@@ -100,5 +102,7 @@ public:
 const TLorentzVector LVtoTLV(const LV& lv);
 const LV TLVtoLV(const TLorentzVector& lv);
 
+class THStack;
+TH1* SummedStackHisto(const THStack *stack);
 
 #endif

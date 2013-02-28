@@ -3,6 +3,7 @@
 #include <cmath>
 #include <string>
 #include <iostream>
+#include <algorithm>
 #include <stdlib.h>
 
 #include <TPad.h>
@@ -11,6 +12,7 @@
 #include <TMath.h>
 #include <TLorentzVector.h>
 #include <TFile.h>
+#include <THStack.h>
 
 void LVtod4(const LV lv, double *d) {
     d[0] = lv.E();
@@ -372,18 +374,26 @@ TObject *RootFileReader::GetObj(const char * filename, const char * histoname, b
                       << std::endl;
             exit(1);
         }
-        fileOrder.push_back(filename);
         ++opened[filename];
+    } else {
+        fileOrder.erase(std::remove_if(begin(fileOrder), end(fileOrder), 
+                                        [=](const TString &str){ return str == filename;}),
+                        end(fileOrder));
     }
+    
+    fileOrder.push_back(filename);
     ++accessed[filename];
     //at max, keep 20 files open
-    if (fileMap.size() > 60) {
+    if (fileMap.size() > 20) {
         //delete 0th element
         delete fileMap[fileOrder[0]];
         fileMap.erase(fileOrder[0]);
         fileOrder.erase(fileOrder.begin());
     }
-    return file->Get(histoname);
+    TObject* result = file->Get(histoname);
+    TH1* as_histo = dynamic_cast<TH1*>(result);
+    if (as_histo) as_histo->SetDirectory(file);
+    return result;
 }
    
 RootFileReader::~RootFileReader()
@@ -416,5 +426,19 @@ const TLorentzVector LVtoTLV(const LV& lv) {
 const LV TLVtoLV(const TLorentzVector& lv) {
     LV result; 
     result.SetXYZT(lv.X(), lv.Y(), lv.Z(), lv.T());
+    return result;
+}
+
+/** Sum the histograms in a stack and
+ * return the sum in a new TH1
+ */
+TH1* SummedStackHisto(const THStack *stack)
+{
+    TList *l { stack->GetHists() }; //the TList is owned by the stack
+    if (l->GetEntries() == 0) return 0;
+    TH1* result = (TH1*) l->At(0)->Clone();
+    for (int i = 1; i < l->GetEntries(); ++i) {
+        result->Add((TH1*)l->At(i));
+    }
     return result;
 }

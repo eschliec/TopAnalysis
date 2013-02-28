@@ -5,6 +5,7 @@
 #include <cstdio>
 #include <sstream>
 #include <cmath>
+#include <memory>
 
 #include <TCanvas.h>
 #include <TLegend.h>
@@ -18,6 +19,7 @@
 #include <TFile.h>
 #include <TString.h>
 #include <TH1.h>
+#include <TList.h>
 
 #include "utils.h"
   
@@ -60,18 +62,13 @@ void Plotter::SetOutpath(TString path)
 
 void Plotter::unfolding()
 {
-    TString sys_array[] = {"HAD_", "LEPT_", "KIN_", "DY_","BG_","PU_", "TRIG_","MASS_", "MATCH_", "SCALE_", "BTAG_ETA_","BTAG_PT_", "BTAG_LJET_ETA_", "BTAG_LJET_PT_", "JER_", "JES_"};
+    vector<TString> vec_systematic {"HAD_", "LEPT_", "KIN_", "DY_","BG_","PU_", "TRIG_","MASS_", "MATCH_", "SCALE_", "BTAG_ETA_","BTAG_PT_", "BTAG_LJET_ETA_", "BTAG_LJET_PT_", "JER_", "JES_"};
 
-    double sys_array_flat_value[]={0, 0, 0.02, 0, 0, 0, 0, 0, 0, 0, 0.0025, 0.0025, 0.0025, 0.0025, 0, 0};
+    vector<double> vec_flat_value {0, 0, 0.02, 0, 0, 0, 0, 0, 0, 0, 0.0025, 0.0025, 0.0025, 0.0025, 0, 0}; 
     //Right now BTAG = 0.5% = Sqrt(BTAG_ETA ** 2 + BTAG_PT ** 2 + BTAG_LJET_ETA ** 2 + BTAG_LJET_PT ** 2)
     //assumed  BTAG_ETA = BTAG_PT = BTAG_LJET_ETA = BTAG_LJET_PT = 0.25% so a total error of 0.5% comes up in BTag
     
-    
-    TString channel_array[] = {"ee","mumu","emu","combined"};
-
-    vector<TString> vec_systematic (sys_array, sys_array + sizeof(sys_array)/sizeof(sys_array[0]));
-    vector<double>  vec_flat_value (sys_array_flat_value, sys_array_flat_value +sizeof(sys_array_flat_value)/sizeof(sys_array_flat_value[0]));
-    vector<TString> vec_channel (channel_array, channel_array + sizeof(channel_array)/sizeof(channel_array[0]));
+    vector<TString> vec_channel {"ee","mumu","emu","combined"};
 
     if(vec_systematic.size() != vec_flat_value.size()){
         cout<<"WARNING (in unfolding)!!!\n You are using 2 different size vectors: 'vec_systematic' and 'vec_flat_value'.\n Fix this and rerun again"<<endl;
@@ -299,7 +296,7 @@ void Plotter::CalcDiffSystematics(TString Channel, TString Systematic, TString S
     ResultsFilestring.append(Systematic);
     ResultsFilestring.append("/");
     ResultsFilestring.append(Channel);
-    gSystem->mkdir((char*)ResultsFilestring.c_str(), true);
+    gSystem->mkdir(ResultsFilestring.c_str(), true);
     ResultsFilestring.append("/");
     ResultsFilestring.append(name);
     ResultsFilestring.append("Results.txt");
@@ -335,22 +332,22 @@ void Plotter::CalcDiffSystematics(TString Channel, TString Systematic, TString S
         mySVDFunctions.SetOutputPath(outpath);
                     
         // Variables for the needed histograms
-        TH1D* theDataHist = NULL;
-        TH1D* theBgrHist = NULL;
-        TH1D* theBgrHistUp = NULL;
-        TH1D* theBgrHistDown = NULL;
-        TH1D* theTtBgrHist = NULL;
-        TH1D* theTtBgrHistUp = NULL;
-        TH1D* theTtBgrHistDown = NULL;
-        TH1D* theRecHist = NULL;
-        TH1D* theRecHistUp = NULL;
-        TH1D* theRecHistDown = NULL;
-        TH1D* theGenHist = NULL;
-        TH1D* theGenHistUp = NULL;
-        TH1D* theGenHistDown = NULL;
-        TH2D* theRespHist = NULL;
-        TH2D* theRespHistUp = NULL;
-        TH2D* theRespHistDown = NULL; 
+        TH1D* theDataHist = nullptr;
+        TH1D* theBgrHist = nullptr;
+        TH1D* theBgrHistUp = nullptr;
+        TH1D* theBgrHistDown = nullptr;
+        TH1D* theTtBgrHist = nullptr;
+        TH1D* theTtBgrHistUp = nullptr;
+        TH1D* theTtBgrHistDown = nullptr;
+        TH1D* theRecHist = nullptr;
+        TH1D* theRecHistUp = nullptr;
+        TH1D* theRecHistDown = nullptr;
+        TH1D* theGenHist = nullptr;
+        TH1D* theGenHistUp = nullptr;
+        TH1D* theGenHistDown = nullptr;
+        TH2D* theRespHist = nullptr;
+        TH2D* theRespHistUp = nullptr;
+        TH2D* theRespHistDown = nullptr; 
 
         // DAVID:
         // Data, Signal and Background
@@ -490,6 +487,25 @@ void Plotter::CalcDiffSystematics(TString Channel, TString Systematic, TString S
                 ResultsFile<<"XAxisbinCenters[bin]: "<<XAxisbinCenters[bin]<<" bin: "<<Xbins[bin]<<" to "<<Xbins[bin+1]<<" SystematicRelError: "<<Sys_Error<<endl;
             }
         }
+        
+        //delete objects
+        delete symmSysErrors;
+        delete theDataHist;
+        delete theBgrHist;
+        delete theBgrHistUp;
+        delete theBgrHistDown;
+        delete theTtBgrHist;
+        delete theTtBgrHistUp;
+        delete theTtBgrHistDown;
+        delete theRecHist;
+        delete theRecHistUp;
+        delete theRecHistDown;
+        delete theGenHist;
+        delete theGenHistUp;
+        delete theGenHistDown;
+        delete theRespHist;
+        delete theRespHistUp;
+        delete theRespHistDown; 
     }
     
     
@@ -827,8 +843,8 @@ std::vector<TString> Plotter::InputFileList(TString mode, TString Systematic)
 
 bool Plotter::fillHisto()
 {   
-    if (initialized) { return true; }
     TH1::AddDirectory(kFALSE);
+    if (initialized) { return true; }
     hists.clear();
     for(unsigned int i=0; i<dataset.size(); i++){
         TH1D *hist = fileReader->GetClone<TH1D>(dataset.at(i), name, true);
@@ -855,6 +871,7 @@ bool Plotter::fillHisto()
         setHHStyle(*gStyle);
 
         hists.push_back(*hist);
+        delete hist;
     }
     if (doClosureTest) {
         for (size_t i = 1; i<dataset.size(); ++i) {
@@ -880,16 +897,15 @@ void Plotter::write(TString Channel, TString Systematic) // do scaling, stacking
 {
     setDataSet(Channel,Systematic);
     if (!fillHisto()) return;
-
     if (hists.size() == 0) { 
         cerr << "***ERROR! No histograms available! " << Channel << "/" << Systematic << endl; 
         exit(11); 
     }
         
-    TCanvas * c = new TCanvas("","");
+    std::unique_ptr<TCanvas> c { new TCanvas("","") };
+    std::unique_ptr<THStack> stack { new THStack("def", "def") };
+    TLegend *leg { new TLegend(0.70,0.55,0.98,0.85) };
 
-    THStack * stack=  new THStack("def", "def");
-    TLegend * leg =  new TLegend(0.70,0.55,0.98,0.85);
     leg->SetFillStyle(0);
     leg->SetBorderSize(0);
     leg->SetX1NDC(1.0 - gStyle->GetPadRightMargin() - gStyle->GetTickLength() - 0.25);
@@ -897,7 +913,9 @@ void Plotter::write(TString Channel, TString Systematic) // do scaling, stacking
     leg->SetX2NDC(1.0 - gStyle->GetPadRightMargin() - gStyle->GetTickLength());
     leg->SetY2NDC(1.0 - gStyle->GetPadTopMargin()  - gStyle->GetTickLength());
 
-    TH1 *drawhists[hists.size()];
+    std::vector<TH1*> drawhists;
+    drawhists.resize(hists.size());
+    
     std::stringstream ss;
     ss << DYScale[channelType];
     TString scale;
@@ -1040,18 +1058,19 @@ void Plotter::write(TString Channel, TString Systematic) // do scaling, stacking
         //  cout<<"Added data to aDataHist"<<endl;
 
         TFile *f15 = new TFile("preunfolded/"+Systematic+"/"+Channel+"/"+name+"_UnfoldingHistos.root","RECREATE");
-        aDataHist->Write("aDataHist");
-        aTtBgrHist->Write("aTtBgrHist");
-        aBgrHist->Write("aBgrHist");
-        aGenHist->Write("aGenHist");
-        aRespHist->Write("aRespHist");
-        aRecHist->Write("aRecHist");
+        aDataHist->Write("aDataHist"); delete aDataHist;
+        aTtBgrHist->Write("aTtBgrHist"); delete aTtBgrHist;
+        aBgrHist->Write("aBgrHist"); delete aBgrHist;
+        aGenHist->Write("aGenHist"); delete aGenHist;
+        aRespHist->Write("aRespHist"); delete aRespHist;
+        aRecHist->Write("aRecHist"); delete aRecHist;
 
         f15->Close();
         delete f15;
+        
     }
 
-    leg = ControlLegend(hists.size(), drawhists, legends, leg);
+    ControlLegend(drawhists, legends, leg);
 
     if(name.Contains("HypjetMultiXSec")){
 
@@ -1062,19 +1081,7 @@ void Plotter::write(TString Channel, TString Systematic) // do scaling, stacking
         if(channelType==3) PlotXSec();
     }
 
-
-    TList* l = stack->GetHists(); 
-    TH1D* stacksum = (TH1D*) l->At(0)->Clone();
-
-    for (int i = 1; i < l->GetEntries(); ++i) { stacksum->Add((TH1D*)l->At(i));}
-
-    TH1D* syshist =0;
-    syshist = (TH1D*)stacksum->Clone();
-    for(Int_t i=0; i<=syshist->GetNbinsX(); ++i){
-        Double_t binc = 0;
-        binc += stacksum->GetBinContent(i);
-        syshist->SetBinContent(i, binc);
-    }
+    std::unique_ptr<TH1D> syshist { (TH1D*) SummedStackHisto(stack.get()) };
 
     if(logY)c->SetLogy();
     syshist->SetFillStyle(3004);
@@ -1096,11 +1103,13 @@ void Plotter::write(TString Channel, TString Systematic) // do scaling, stacking
 
     //Removal of extra ticks in JetMult plots
 
-    if(name.Contains("jet") && name.Contains("Multi")){ drawhists[0]->GetXaxis()->SetNdivisions(drawhists[0]->GetNbinsX(),0,0, 1);}
+    if(name.Contains("jet") && name.Contains("Multi")) {
+        drawhists[0]->GetXaxis()->SetNdivisions(drawhists[0]->GetNbinsX(),0,0, 1);
+    }
 
     //Add the binwidth to the yaxis in yield plots
 
-    TString ytitle = TString(drawhists[0]->GetYaxis()->GetTitle()).Copy();
+    TString ytitle = drawhists[0]->GetYaxis()->GetTitle();
     double binwidth = drawhists[0]->GetXaxis()->GetBinWidth(1);
     std::ostringstream width;
     width<<binwidth;
@@ -1112,11 +1121,11 @@ void Plotter::write(TString Channel, TString Systematic) // do scaling, stacking
 
     stack->Draw("same HIST");
     gPad->RedrawAxis();
-    TExec *setex1 = new TExec("setex1","gStyle->SetErrorX(0.5)");//this is frustrating and stupid but apparently necessary...
+    TExec *setex1 { new TExec("setex1","gStyle->SetErrorX(0.5)") };//this is frustrating and stupid but apparently necessary...
     setex1->Draw();
     syshist->SetMarkerStyle(0);
     //syshist->Draw("same,E2");
-    TExec *setex2 = new TExec("setex2","gStyle->SetErrorX(0.)");
+    TExec *setex2 { new TExec("setex2","gStyle->SetErrorX(0.)") };
     setex2->Draw();
     drawhists[0]->Draw("same,e1");
 
@@ -1131,16 +1140,16 @@ void Plotter::write(TString Channel, TString Systematic) // do scaling, stacking
     //c->Print(outpathPlots+subfolderChannel+"/"+Systematic+"/"+name+".root");
     //c->Print(outpathPlots+subfolderChannel+"/"+Systematic+"/"+name+".C");
     
-    TH1 *sumMC = 0; 
-    TH1 *sumttbar = 0;
+    std::unique_ptr<TH1> sumMC;
+    std::unique_ptr<TH1> sumttbar;
     for (size_t i = 0; i < hists.size(); ++i) {
         if (legends.at(i) != "Data") {
-            if (sumMC) sumMC->Add(drawhists[i]);
-            else sumMC = static_cast<TH1*>(drawhists[i]->Clone());
+            if (sumMC.get()) sumMC->Add(drawhists[i]);
+            else sumMC = std::unique_ptr<TH1>{static_cast<TH1*>(drawhists[i]->Clone())};
         }
         if (legends.at(i) == "t#bar{t} Signal") {
-            if (sumttbar) sumttbar->Add(drawhists[i]);
-            else sumttbar = static_cast<TH1*>(drawhists[i]->Clone());
+            if (sumttbar.get()) sumttbar->Add(drawhists[i]);
+            else sumttbar = std::unique_ptr<TH1>{static_cast<TH1*>(drawhists[i]->Clone())};
         }
     }
     sumMC->SetName(name);
@@ -1154,9 +1163,9 @@ void Plotter::write(TString Channel, TString Systematic) // do scaling, stacking
     out_root.Close();
     
     c->Clear();
-    leg->Clear();
-    delete c;
-    delete leg;
+//     leg->Clear();
+    
+    for (TH1* h : drawhists) delete h;
 }
 
 void Plotter::setStyle(TH1 *hist, unsigned int i, bool isControlPlot)
@@ -1677,15 +1686,16 @@ void Plotter::CalcDiffXSec(TString Channel, TString Systematic){
     double GenSignalSum[XAxisbinCenters.size()];
 
     TString ftemp = "preunfolded/"+Systematic+"/"+Channel+"/"+name+"_UnfoldingHistos.root";
-    TH1* theDataHist =  fileReader->GetClone<TH1D>(ftemp, "aDataHist");
-    TH1* theBgrHist =  fileReader->GetClone<TH1D>(ftemp, "aBgrHist");
-    TH1* theTtBgrHist =  fileReader->GetClone<TH1D>(ftemp, "aTtBgrHist");
-    TH1* theRecHist =  fileReader->GetClone<TH1D>(ftemp, "aRecHist");
-    TH1* theGenHist =  fileReader->GetClone<TH1D>(ftemp, "aGenHist");
-    TH1* theRespHist =  fileReader->GetClone<TH2D>(ftemp, "aRespHist");
+    TH1D* theDataHist =  fileReader->GetClone<TH1D>(ftemp, "aDataHist");
+    TH1D* theBgrHist =  fileReader->GetClone<TH1D>(ftemp, "aBgrHist");
+    TH1D* theTtBgrHist =  fileReader->GetClone<TH1D>(ftemp, "aTtBgrHist");
+    TH1D* theRecHist =  fileReader->GetClone<TH1D>(ftemp, "aRecHist");
+    TH1D* theGenHist =  fileReader->GetClone<TH1D>(ftemp, "aGenHist");
+    TH2D* theRespHist =  fileReader->GetClone<TH2D>(ftemp, "aRespHist");
 
+    std::unique_ptr<TH1> theGenHistRebinned { theGenHist->Rebin(bins,"aDataHist",Xbins) };
     for (Int_t bin=0; bin<bins; ++bin) {//poor for loop placement, but needed because genplot is the sum of all signal histograms
-        GenSignalSum[bin] = theGenHist->Rebin(bins,"aDataHist",Xbins)->GetBinContent(bin+1);
+        GenSignalSum[bin] = theGenHistRebinned->GetBinContent(bin+1);
     }
 
     double GenDiffXSecVec[4][bins];
@@ -1729,11 +1739,11 @@ void Plotter::CalcDiffXSec(TString Channel, TString Systematic){
             //theSpecialPostfix = specialComment;
         }
 
-        double totalDataEventsNom[1]  = {TopSVDFunctions::SVD_Integral1D((TH1D*)theDataHist, 0, false)}; 
-        double totalBgrEventsNom[1]   = {TopSVDFunctions::SVD_Integral1D((TH1D*)theBgrHist, 0, false)};
-        double totalTtBgrEventsNom[1]   = {TopSVDFunctions::SVD_Integral1D((TH1D*)theTtBgrHist, 0, false)};
-        double totalRecEventsNom[1]   = {TopSVDFunctions::SVD_Integral1D((TH1D*)theRecHist, 0, false)};
-        double totalGenEventsNom[1]  = {TopSVDFunctions::SVD_Integral1D((TH1D*)theGenHist, 0, true)}; 
+        double totalDataEventsNom[1]  = {TopSVDFunctions::SVD_Integral1D(theDataHist, 0, false)}; 
+        double totalBgrEventsNom[1]   = {TopSVDFunctions::SVD_Integral1D(theBgrHist, 0, false)};
+        double totalTtBgrEventsNom[1]   = {TopSVDFunctions::SVD_Integral1D(theTtBgrHist, 0, false)};
+        double totalRecEventsNom[1]   = {TopSVDFunctions::SVD_Integral1D(theRecHist, 0, false)};
+        double totalGenEventsNom[1]  = {TopSVDFunctions::SVD_Integral1D(theGenHist, 0, true)}; 
 
         // UNFOLDING 
         // Retrieve a histogram with the unfolded quantities.
@@ -1743,12 +1753,12 @@ void Plotter::CalcDiffXSec(TString Channel, TString Systematic){
         TH1D* unfoldedDistributionNormalized = NULL;
         int numSystematics = 0;
         mySVDFunctions.SVD_DoUnfold(
-                                    (TH1D*) theDataHist, 
-                                    (TH1D*) theBgrHist, 
-                                    (TH1D*) theTtBgrHist, 
-                                    (TH1D*) theGenHist, 
-                                    (TH1D*) theRecHist, 
-                                    (TH2D*) theRespHist, 
+                                    theDataHist, 
+                                    theBgrHist, 
+                                    theTtBgrHist, 
+                                    theGenHist, 
+                                    theRecHist, 
+                                    theRespHist, 
                     totalDataEventsNom,
                     totalBgrEventsNom,
                     totalTtBgrEventsNom,
@@ -1876,6 +1886,14 @@ void Plotter::CalcDiffXSec(TString Channel, TString Systematic){
     }
     ResultsFile.close();
     ResultsLateX.close();
+    
+    //clean up
+    delete theDataHist;
+    delete theBgrHist;
+    delete theTtBgrHist;
+    delete theRecHist;
+    delete theGenHist;
+    delete theRespHist;
 }
 
 void Plotter::PlotDiffXSec(TString Channel){
@@ -1938,7 +1956,8 @@ void Plotter::PlotDiffXSec(TString Channel){
     THStack * stack=  new THStack("def", "def");
     TLegend *leg = getNewLegendpre();
     int legchange = 0;
-    TH1 *varhistsPlotting[hists.size()];
+    std::vector<TH1 *> varhistsPlotting;
+    varhistsPlotting.resize(hists.size());
 
 
     for(unsigned int i=0; i<hists.size() ; i++){ // prepare histos and leg
@@ -2732,7 +2751,7 @@ void Plotter::PlotDiffXSec(TString Channel){
       syshist->SetBinError(i, TMath::Sqrt(binerr2));
     }    
 
-    leg = ControlLegend(hists.size(), varhistsPlotting, legends, leg);
+    ControlLegend(varhistsPlotting, legends, leg);
     syshist->SetFillStyle(3004);
     syshist->SetFillColor(kBlack);
     //leg->AddEntry( syshist, "Uncertainty", "f" );
@@ -3008,7 +3027,7 @@ TH1F* Plotter::reBinTH1FIrregularNewBinning(TH1F *histoOldBinning, TString plotn
     double highEdge     = XAxisbins[vecIndex+1];
     double newBinWidth  = highEdge - lowEdge;
     double newBinCenter = 0.5*(highEdge+lowEdge);
-    double binSum       = 0.0;	    	  
+    double binSum       = 0.0;  
 	    
     for (int j=1; j<histoOldBinning->GetNbinsX(); j++){
 		
@@ -3027,7 +3046,7 @@ TH1F* Plotter::reBinTH1FIrregularNewBinning(TH1F *histoOldBinning, TString plotn
   return (TH1F*)histoNewBinning->Clone();
 }
 
-TLegend* Plotter::ControlLegend(int HistsSize, TH1* drawhists[], std::vector<TString> Legends, TLegend *leg){
+void Plotter::ControlLegend(std::vector< TH1* > drawhists, vector< TString > legends, TLegend* leg){
     //hardcoded ControlPlot legend
     std::vector<TString> OrderedLegends;    
     OrderedLegends.push_back("Data");
@@ -3050,9 +3069,9 @@ TLegend* Plotter::ControlLegend(int HistsSize, TH1* drawhists[], std::vector<TSt
     leg->SetFillStyle(0);
     leg->SetBorderSize(0);
     leg->SetTextAlign(12);
-    for(int i=0; i<(int)OrderedLegends.size(); ++i){
-        for(int j=0; j<HistsSize; ++j){
-            if (OrderedLegends[i] == Legends[j]){
+    for(size_t i=0; i<OrderedLegends.size(); ++i){
+        for(size_t j=0; j<drawhists.size(); ++j){
+            if (OrderedLegends[i] == legends[j]){
                 if( OrderedLegends[i] == "Data"){
                     leg->AddEntry(drawhists[j], OrderedLegends[i], "pe");
                     break;
@@ -3064,7 +3083,6 @@ TLegend* Plotter::ControlLegend(int HistsSize, TH1* drawhists[], std::vector<TSt
             }
         }
     }
-    return leg;
 }
 
 void Plotter::DrawLabel(TString text, const double x1, const double y1, const double x2, const double y2, int centering, double textSize){

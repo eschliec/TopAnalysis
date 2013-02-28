@@ -53,7 +53,9 @@ Then copy the created btag files:
   
   cp -r selectionRoot/BTagEff .
 
-Now you are ready to flood the workgroup server with a lot of jobs.
+Now you are ready to flood the workgroup server or the NAF with a lot of jobs. In case
+you are running on the NAF, the NTuples should be stored on the Sonas file system, i.e.
+under /scratch/hh/dust/naf/cms/... - and parallel access is amazingly fast. 
 
 To run the selection on the Nominal sample, just do: 
   ./runNominalParallel.sh
@@ -70,6 +72,18 @@ made in Analysis.C and the output are a bunch of user specified histograms. Exce
 histograms or changing analysis cuts, additions to this file should be made as separate 
 functions in the Analysis class.
 
+Differences between workgroup server and NAF:
+Workgroup server:
+ - the run*.sh scripts will run up to 10 load_Analysis and/or Histo jobs in parallel
+ - you share the workgroup server with colleagues, so if they are running
+   10 jobs, you'll have to wait.
+
+NAF:
+ - the run*.sh scripts will submit all jobs to the 1h queue on the NAF
+ - options for the submission are in qsubParams.txt
+ - the output of the jobs is stored in the batch_output/ folder
+   which you can clean up after running
+   
 ===== Histograms!
 Once this is finished, run the command:
 
@@ -77,6 +91,20 @@ Once this is finished, run the command:
 ./mk_HistoFileList.sh
 ./Histo (run ./Histo --help for options to create some of the plots, with or without unfolding etc.)
 
+You can run Histo with 3 different "types":
+./Histo -t cp          produces control plots
+./Histo -t unfold      unfolds and produces the diff. xsec
+./Histo -t plot        just plot the diff. xsec, use values from previous unfolding
+
+There are 3 more parameters:
+ -p Name   just produce the plot/xsection containing "Name" (use +Name for an exact match)
+ -c ee/emu/mumu/combined    
+           only one channel
+ -s systematic
+
+The -p, -c, and -s parameters can also take more than one argument.
+
+ 
 This runs Histo.C which essentially calls function from plotterclass.cpp.
 
 For each histogram you want

@@ -10,7 +10,7 @@ export NJS_QUEUE=12
 
 This creates a directory called NtupleDirectory which has the Ntuple root files and output txt files
 
-======Analysis
+====== Analysis (Selection)
 
 Current version of the NTuple is stored in:
 /data/group/top/DiffXS/<date>/
@@ -83,12 +83,22 @@ NAF:
  - options for the submission are in qsubParams.txt
  - the output of the jobs is stored in the batch_output/ folder
    which you can clean up after running
-   
-===== Histograms!
-Once this is finished, run the command:
+
+===== Preparation for histogramming
+
+Once the selection step is done, we need to setup our data such that the histogram
+tools know where to find which files. You need to run:
 
 ./lnData.sh
 ./mk_HistoFileList.sh
+
+Here, lnData.sh will create symlinks to the Nominal folder for all files which have
+not been varied in the systematics.
+After that, mk_HistoFileList.sh will create the directory FileLists/ and create
+input file lists per channel and systematic.
+
+===== Histograms!
+
 ./Histo (run ./Histo --help for options to create some of the plots, with or without unfolding etc.)
 
 You can run Histo with 3 different "types":
@@ -102,9 +112,14 @@ There are 3 more parameters:
            only one channel
  -s systematic
 
-The -p, -c, and -s parameters can also take more than one argument.
-
+The -p, -c, and -s parameters can also take more than one argument; they can also be
+omitted (-> use default values, i.e. all channels, all plots, Nominal systematic)
  
+To unfold all distributions from your HistoList in parallel, use the 
+ ./unfoldAll.sh 
+script. Again, on the workgroup server, it will run up to 10 jobs in parallel,
+while it will submit one job per distribution to the batch system if run on the NAF.
+
 This runs Histo.C which essentially calls function from plotterclass.cpp.
 
 For each histogram you want
@@ -147,8 +162,40 @@ PDF uncertainty are written out to UnfoldingResults/PDF_/channel/ and can then b
 plotterclass.
 
 
-========
+========================
+   Opimising the code
+========================
 
-Profiling the code:
-CPUPROFILE=test.prof LD_PRELOAD=/afs/desy.de/group/cms/perftool/v2.0/lib/libprofiler.so ./load_Analysis -f file
+Using google's performance tools, we can check which parts of our code need the longest
+time (i.e. making it slow). The identified parts can then be checked -- and very often
+it is easy to make them more efficient.
+
+Also we can check the code for memory leaks. If the code is using up the memory, run
+the heap checker and find the line numbers in your code where the memory isn't freed.
+
+Both, the profiling and the memory checking are done in two steps. The first step is to
+run the code using a preloaded library. This will produce some output file in binary
+format. This needs to be converted to PDF in a second step.
+
+=== PROFILING:
+Step 1: produce a file called test.prof (or whatever file name you choose)
+CPUPROFILE=test.prof LD_PRELOAD=/afs/desy.de/group/cms/perftool/v2.0/lib/libprofiler.so ./load_Analysis -f whatever
+
+Step 2: convert to pdf:
 /afs/desy.de/group/cms/perftool/v2.0/bin/pprof --pdf load_Analysis test.prof >| test.pdf
+
+The biggest boxes/arrows in the PDF is the one which takes most of your calculation time.
+
+=== MEMORY CHECKING:
+Warning: when checking for memory leaks, your code will be slowed down. Not as much
+as if you were using valgrind, but it is significant.
+
+Step 1: running the program with memory checks enabled
+HEAPCHECK=normal LD_PRELOAD=/afs/desy.de/group/cms/perftool/v2.0/lib/libtcmalloc.so ./Histo -t unfold -p +HypTTBarMass
+
+Step 2: convert to pdf (the commmand is also printed after step 1, filenames may differ)
+/afs/desy.de/group/cms/perftool/v2.0/bin/pprof ./Histo /tmp/Histo.26264._main_-end.heap --inuse_objects --lines --heapcheck --edgefraction=1e-10 --nodefraction=1e-10 --pdf >| memory.pdf
+
+In your memory.pdf, you will likely find the place in the code where you are leaking memory. Again,
+please look at the largest boxes/arrows.
+

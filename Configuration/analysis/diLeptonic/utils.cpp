@@ -395,7 +395,33 @@ TObject *RootFileReader::GetObj(const char * filename, const char * histoname, b
     if (as_histo) as_histo->SetDirectory(file);
     return result;
 }
-   
+
+
+std::vector<TString> RootFileReader::findHistos(const char* filename, const char* histonameBegin){
+    
+    TFile* file = TFile::Open(filename);
+    if (!file) {
+        std::cerr << "\n\n******************* ERROR ******************* ERROR ******************* ERROR *******************\n\n"
+                  << "The file " << filename << " does not exist, thus cannot search for histogram beginning with " << histonameBegin 
+                  << "\n\n******************* ERROR ******************* ERROR ******************* ERROR *******************\n"
+                  << std::endl;
+        exit(1);
+    }
+    std::vector<TString> result;
+    TList* histoList = file->GetListOfKeys();
+    for(int i=0; i<histoList->GetSize(); ++i){
+        TObject* i_histoList = histoList->At(i);
+        TString* histoName(0);
+        histoName = new TString(i_histoList->GetName());
+        if(histoName->BeginsWith(histonameBegin)){
+            //std::cout<<"\n\tName of object: "<<*histoName<<"\n\n";
+            result.push_back(*histoName);
+        }
+    }
+    return result;
+}
+
+
 RootFileReader::~RootFileReader()
 {
 //     std::cout << "Deleting RootFileReader\n";

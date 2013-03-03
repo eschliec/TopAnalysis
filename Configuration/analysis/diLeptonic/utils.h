@@ -46,6 +46,9 @@ public:
     //returns the singleton instnce
     static RootFileReader* getInstance();
     
+    // 
+    std::vector<TString> findHistos(const char* filename, const char* histonameBegin);
+    
     //need to put code for templated functions in the header file to allow compilation
     
     //get a histogram from the file

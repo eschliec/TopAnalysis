@@ -36,8 +36,90 @@ using namespace std; //yes, shouldnt be in the header...
 
 class Analysis : public TSelector
 {
-    TTree          *fChain;   //!pointer to the analyzed TTree or TChain
-    Int_t           EventCounter;
+public:
+    Analysis ( TTree * = 0 ) : unc {nullptr}, doJesJer {false},
+        checkZDecayMode {nullptr}, 
+        runViaTau {false}, pdf_no {-1}, pureweighter {nullptr}, kinRecoOnTheFly {false},
+        doClosureTest {false}, closureFunction {nullptr}
+        {};
+    virtual ~Analysis(){}
+    void SetBTagFile(TString btagFile);
+    void SetChannel(TString channel);
+    void SetSignal(bool isSignal);
+    void SetSystematic(TString systematic);
+    virtual void SetSamplename(TString samplename, TString systematic_from_file);
+    void SetOutputfilename(TString outputfilename);
+    void SetMC(bool isMC);
+    void SetTrueLevelDYChannel(int dy);
+    void SetWeightedEvents(TH1* weightedEvents);
+    void SetRunViaTau(bool runViaTau);
+    void SetPUReweighter(PUReweighter *pu);
+    void SetPDF(int pdf_no);
+    void SetClosureTest(TString closure, double slope);
+    ClassDef ( Analysis,0 );
+
+    
+protected:
+    
+    // store the object in the output list and return it
+    template<class T> T* store(T* obj);
+    
+    // Create Nbins control plots for the differential distribution h_differential
+    // Use h_control for the control plot name and binning
+    void CreateBinnedControlPlots(TH1* h_differential, TH1* h_control);
+    // h: differential distribution histogram
+    // binvalue: the value of the quantity in the differential distribution histogram
+    // the control plot histogram
+    // the value for the control plot
+    // weight: event weight
+    void FillBinnedControlPlot(TH1* h_differential, double binvalue, 
+                               TH1 *h_control, double value, double weight);
+    
+    // Methods already inherited from TSelector
+    virtual Int_t   Version() const {
+        return 3;
+    }
+    virtual void Begin ( TTree* );
+    virtual void SlaveBegin ( TTree* );
+    virtual void Init ( TTree *tree );
+    virtual Bool_t Notify();
+    virtual Bool_t Process ( Long64_t entry );
+    virtual Int_t GetEntry ( Long64_t entry, Int_t getall = 0 ) {
+        return fChain ? fChain->GetTree()->GetEntry ( entry, getall ) : 0;
+    }
+    virtual void SetOption ( const char *option ) {
+        fOption = option;
+    }
+    virtual void SetObject ( TObject *obj ) {
+        fObject = obj;
+    }
+    virtual void SetInputList ( TList *input ) {
+        fInput = input;
+    }
+    virtual TList *GetOutputList() const {
+        return fOutput;
+    }
+    virtual void SlaveTerminate();
+    virtual void Terminate();
+    
+    // Methods which need to be overwritable
+    virtual bool produceBtagEfficiencies();
+    
+    // Other methods which need to be protected
+    Int_t getTopDecayMode(Long64_t& entry){
+        return b_TopDecayMode->GetEntry(entry);
+    }
+    void GetRecoBranches ( Long64_t & );
+    
+    void cleanJetCollection();
+    int NumberOfBJets(vector<double>* bjets);
+    bool calculateKinReco(const LV &leptonMinus, const LV &leptonPlus);
+    
+    double getTriggerSF(const LV& lep1, const LV& lep2);
+    double getLeptonIDSF(const LV& lep1, const LV& lep2, int x, int y);
+    
+    
+    // Variables for accessing the nTuple branches
     VLV             *leptons;
     vector<int>     *lepPdgId;
     vector<double>  *lepPfIso;
@@ -66,7 +148,11 @@ class Analysis : public TSelector
 
     JetCorrectionUncertainty *unc;
     bool            doJesJer;
-
+    
+#ifndef __CINT__   
+    std::function<bool(Long64_t)> checkZDecayMode;
+#endif
+    
     LV              *GenWPlus;
     LV              *GenWMinus;
     LV              *GenNeutrino;
@@ -106,6 +192,94 @@ class Analysis : public TSelector
     vector<int>     *HypJet1index;
     Int_t           topDecayMode;
     vector<int>     *ZDecayMode;
+    
+    
+    // Further variables added from the outside
+    TString btagFile;
+    TString channel;
+    int channelPdgIdProduct;
+    TString systematic;
+    TString samplename;
+    bool isTtbarPlusTauSample;
+    bool correctMadgraphBR;
+    TString outputfilename;
+    bool isSignal;
+    bool isMC;
+    bool getLeptonPair(size_t& LeadLeptonNumber, size_t& NLeadLeptonNumber);
+    bool runViaTau;
+    int pdf_no;
+    int trueDYchannelCut;
+    TH1* weightedEvents;
+    PUReweighter *pureweighter;
+    
+    
+    //binnedControlPlots contains:
+    //map of name of differential distribution
+    // -> pair( histogram with the binning of the differential distribution,
+    //          vector(bin) -> map( control plot name -> TH1*))
+    std::map<std::string, std::pair<TH1*, std::vector<std::map<std::string, TH1*> > > > *binnedControlPlots_;
+    
+    
+    // Event counter
+    Int_t           EventCounter;
+    
+    
+private:
+    
+    void GetSignalBranches ( Long64_t & );
+    
+    const std::string topDecayModeString();
+    
+    double calculateBtagSF();
+    double getJetHT(const VLV& jet, int pt_cut);
+    
+    //order two LorentzVectors by transverse momentum
+    //first two parameters are output, 3rd and 4th input
+    void orderLVByPt(LV &leading, LV &Nleading, const LV &lv1, const LV &lv2);
+    
+    double calculateClosureTestWeight();
+    
+    void applyJER_JES();
+    
+    
+    // Methods for trigger and lepton SF
+    void prepareTriggerSF();
+    void prepareBtagSF();
+    void prepareLeptonIDSF();
+    void prepareKinRecoSF();
+    void prepareJER_JES();
+    double get2DSF(TH2* histo, double x, double y);
+    
+    // Methods for b-tag SF
+    double Median(TH1 *); 
+    double BJetSF ( double, double );
+    double CJetSF ( double, double );
+    double LJetSF ( double , double , TString );
+    double BJetSFAbsErr ( double );
+    double CJetSFAbsErr ( double );
+    
+    
+    // Data for b-tag SF
+    double btag_ptmedian, btag_etamedian;
+    
+    //Data for other SF
+    double lumiWeight; //needed while using old plotterclass
+    double weightKinFit; //this is per channel and does not need to be calculated inside the event loop
+    
+    // For kinematic reconstruction
+    bool kinRecoOnTheFly;
+    
+    
+    bool doClosureTest;
+#ifndef __CINT__
+    std::function<double()> closureFunction;
+#endif
+    int closureMaxEvents;
+        
+
+    
+    
+    TTree          *fChain;   //!pointer to the analyzed TTree or TChain
 
     // List of branches
     TBranch        *b_lepton;   //!
@@ -156,9 +330,8 @@ class Analysis : public TSelector
     TBranch        *b_BHadronVsJet;   //!
     TBranch        *b_AntiBHadronVsJet;   //!
 
-    /*   TBranch	  *b_BHadronJet_;   //!
-    TBranch	  *b_AntiBHadronJet_;   //!
-    */
+    //TBranch        *b_BHadronJet_;   //!
+    //TBranch        *b_AntiBHadronJet_;   //!
 
     TBranch        *b_HypTop;   //!
     TBranch        *b_HypAntiTop;   //!
@@ -175,42 +348,8 @@ class Analysis : public TSelector
     TBranch        *b_TopDecayMode;   //!
     TBranch        *b_ZDecayMode;
     
-#ifndef __CINT__   
-    std::function<bool(Long64_t)> checkZDecayMode;
-#endif
 
-    virtual ~Analysis() { }
-    virtual Int_t   Version() const {
-        return 3;
-    }
-    virtual void    Begin ( TTree* );
-    virtual void    SlaveBegin ( TTree* );
-    virtual void    Init ( TTree *tree );
-    virtual Bool_t  Notify();
-    virtual Bool_t  Process ( Long64_t entry );
-    virtual Int_t   GetEntry ( Long64_t entry, Int_t getall = 0 ) {
-        return fChain ? fChain->GetTree()->GetEntry ( entry, getall ) : 0;
-    }
-    virtual void    SetOption ( const char *option ) {
-        fOption = option;
-    }
-    virtual void    SetObject ( TObject *obj ) {
-        fObject = obj;
-    }
-    virtual void    SetInputList ( TList *input ) {
-        fInput = input;
-    }
-    virtual TList  *GetOutputList() const {
-        return fOutput;
-    }
-    virtual void    SlaveTerminate();
-    virtual void    Terminate();
-    
-    virtual bool produceBtagEfficiencies();
-
-    void GetRecoBranches ( Long64_t & );
-    void GetSignalBranches ( Long64_t & );
-
+    // Histograms
     TH2 *h_GenRecoLeptonpT,*h_GenRecoAntiLeptonpT,*h_GenRecoLeptonEta,*h_GenRecoAntiLeptonEta, *h_GenRecoLLBarMass, *h_GenRecoLLBarpT;
     TH2 *h_GenRecoBJetpT,*h_GenRecoAntiBJetpT, *h_GenRecoBJetEta,*h_GenRecoAntiBJetEta, *h_GenRecoBJetRapidity, *h_GenRecoAntiBJetRapidity;//, *h_GenRecoBJetE, *h_GenRecoAntiBJetE;;
     TH2 *h_GenRecoToppT,*h_GenRecoAntiToppT,*h_GenRecoTopRapidity,*h_GenRecoAntiTopRapidity, *h_GenRecoTTBarMass, *h_GenRecoTTBarpT, *h_GenRecoTTBarRapidity;
@@ -375,115 +514,10 @@ class Analysis : public TSelector
     TH1 *h_LeptonMult_step6, *h_JetsMult_step6, *h_BJetsMult_step6;
     TH1 *h_LeptonMult_step7, *h_JetsMult_step7, *h_BJetsMult_step7;
     TH1 *h_LeptonMult_step8, *h_JetsMult_step8, *h_BJetsMult_step8;
-    int NumberOfBJets(vector<double>* bjets);
-    
-    
-    double Median(TH1 *); 
-    double BJetSF ( double, double );
-    double CJetSF ( double, double );
-    double LJetSF ( double , double , TString );
-    double BJetSFAbsErr ( double );
-    double CJetSFAbsErr ( double );
-    double btag_ptmedian, btag_etamedian;
     // END of btag SF stuff
     
-    //other SF
-    double lumiWeight; //needed while using old plotterclass
-    double weightKinFit; //this is per channel and does not need to be calculated inside the event loop
-    
+    // Trigger and lepton SF
     TH2 *h_TrigSFeta, *h_MuonIDSFpteta, *h_ElectronIDSFpteta;
-    
-    void prepareTriggerSF();
-    void prepareBtagSF();
-    void prepareLeptonIDSF();
-    void prepareKinRecoSF();
-    void prepareJER_JES();
-    double getTriggerSF(const LV& lep1, const LV& lep2);
-    double getLeptonIDSF(const LV& lep1, const LV& lep2, int x, int y);
-    double get2DSF(TH2* histo, double x, double y);
-    
-    // store the object in the output list and return it
-    template<class T> T* store(T* obj);
-    
-    // Variables added from the outside
-    TString btagFile;
-    TString channel;
-    int channelPdgIdProduct;
-    TString systematic;
-    TString samplename;
-    bool isTtbarPlusTauSample;
-    bool correctMadgraphBR;
-    TString outputfilename;
-    bool isSignal;
-    bool isMC;
-    bool getLeptonPair(size_t& LeadLeptonNumber, size_t& NLeadLeptonNumber);
-    bool runViaTau;
-    int pdf_no;
-    int trueDYchannelCut;
-    TH1* weightedEvents;
-    PUReweighter *pureweighter;
-    
-    
-    const std::string topDecayModeString();
-    
-    double calculateBtagSF();
-    double getJetHT(const VLV& jet, int pt_cut);
-    
-    //order two LorentzVectors by transverse momentum
-    //first two parameters are output, 3rd and 4th input
-    void orderLVByPt(LV &leading, LV &Nleading, const LV &lv1, const LV &lv2);
-    
-    //binnedControlPlots contains:
-    //map of name of differential distribution
-    // -> pair( histogram with the binning of the differential distribution,
-    //          vector(bin) -> map( control plot name -> TH1*))
-    std::map<std::string, std::pair<TH1*, std::vector<std::map<std::string, TH1*> > > > *binnedControlPlots;
-    
-    // Create Nbins control plots for the differential distribution h_differential
-    // Use h_control for the control plot name and binning
-    void CreateBinnedControlPlots(TH1* h_differential, TH1* h_control);
-    
-    // h: differential distribution histogram
-    // binvalue: the value of the quantity in the differential distribution histogram
-    // the control plot histogram
-    // the value for the control plot
-    // weight: event weight
-    void FillBinnedControlPlot(TH1* h_differential, double binvalue, 
-                               TH1 *h_control, double value, double weight);
-    
-    bool kinRecoOnTheFly;
-    bool calculateKinReco(const LV &leptonMinus, const LV &leptonPlus);
-    double calculateClosureTestWeight();
-    
-    void cleanJetCollection();
-    void applyJER_JES();
-    
-    bool doClosureTest;
-#ifndef __CINT__   
-    std::function<double()> closureFunction;
-#endif
-    int closureMaxEvents;
-        
-public:
-    Analysis ( TTree * = 0 ) : unc {nullptr}, doJesJer {false},
-        checkZDecayMode {nullptr}, 
-        runViaTau {false}, pdf_no {-1}, pureweighter {nullptr}, kinRecoOnTheFly {false},
-        doClosureTest {false}, closureFunction {nullptr}
-        {};
-    void SetBTagFile(TString btagFile);
-    void SetChannel(TString channel);
-    void SetSignal(bool isSignal);
-    void SetSystematic(TString systematic);
-    virtual void SetSamplename(TString samplename, TString systematic_from_file);
-    void SetOutputfilename(TString outputfilename);
-    void SetMC(bool isMC);
-    void SetTrueLevelDYChannel(int dy);
-    void SetWeightedEvents(TH1* weightedEvents);
-    void SetRunViaTau(bool runViaTau);
-    void SetPUReweighter(PUReweighter *pu);
-    void SetPDF(int pdf_no);
-    void SetClosureTest(TString closure, double slope);
-    ClassDef ( Analysis,0 );
 };
 
 
@@ -502,4 +536,8 @@ inline T* Analysis::store(T* obj)
     return obj;
 }
 
+
+
 #endif
+
+

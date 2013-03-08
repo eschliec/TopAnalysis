@@ -107,7 +107,7 @@ void Analysis::Begin ( TTree * )
  */
 void Analysis::SlaveBegin ( TTree * )
 {
-    binnedControlPlots_ = new std::map<std::string, std::pair<TH1*, std::vector<std::map<std::string, TH1*> > > >;
+    binnedControlPlots = new std::map<std::string, std::pair<TH1*, std::vector<std::map<std::string, TH1*> > > >;
     
     h_step4 = store(new TH1D ( "step4", "event count at after 2lepton", 10, 0, 10 ));       h_step4->Sumw2();
     h_step5 = store(new TH1D ( "step5", "event count at after Zcut", 10, 0, 10 ));          h_step5->Sumw2();
@@ -1972,10 +1972,10 @@ void Analysis::SlaveTerminate()
     // The SlaveTerminate() function is called after all entries or objects
     // have been processed. When running with PROOF SlaveTerminate() is called
     // on each slave server.
-    for (auto it = binnedControlPlots_->begin(); it != binnedControlPlots_->end(); ++it) {
+    for (auto it = binnedControlPlots->begin(); it != binnedControlPlots->end(); ++it) {
         delete (*it).second.first;
     }
-    delete binnedControlPlots_;
+    delete binnedControlPlots;
 }
 
 void Analysis::Terminate()
@@ -2919,7 +2919,7 @@ void Analysis::prepareBtagSF()
 void Analysis::FillBinnedControlPlot(TH1* h_differential, double binvalue, 
                                      TH1* h_control, double value, double weight)
 {
-    auto pair = (*binnedControlPlots_)[h_differential->GetName()];
+    auto pair = (*binnedControlPlots)[h_differential->GetName()];
     auto bin = pair.first->FindBin(binvalue);
     auto m = pair.second.at(bin);
     TH1* h = m[h_control->GetName()];
@@ -2936,7 +2936,7 @@ void Analysis::CreateBinnedControlPlots(TH1* h_differential, TH1* h_control)
 {
     HistoListReader histoList("HistoList");
     if (histoList.IsZombie()) { cout << "Need a HistoList to create binned control plots!\n"; exit(273); }
-    auto &pair = (*binnedControlPlots_)[h_differential->GetName()];
+    auto &pair = (*binnedControlPlots)[h_differential->GetName()];
     pair.first = histoList.getPlotProperties(h_differential->GetName()).getClonedHistogram();
     std::string name = "bcp_";
     name.append(h_differential->GetName()).append("_bin_");

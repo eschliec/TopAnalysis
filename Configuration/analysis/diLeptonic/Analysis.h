@@ -217,7 +217,7 @@ protected:
     //map of name of differential distribution
     // -> pair( histogram with the binning of the differential distribution,
     //          vector(bin) -> map( control plot name -> TH1*))
-    std::map<std::string, std::pair<TH1*, std::vector<std::map<std::string, TH1*> > > > *binnedControlPlots_;
+    std::map<std::string, std::pair<TH1*, std::vector<std::map<std::string, TH1*> > > > *binnedControlPlots;
     
     
     // Event counter

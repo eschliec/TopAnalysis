@@ -66,7 +66,7 @@ protected:
     
     // Create Nbins control plots for the differential distribution h_differential
     // Use h_control for the control plot name and binning
-    void CreateBinnedControlPlots(TH1* h_differential, TH1* h_control);
+    void CreateBinnedControlPlots(TH1* h_differential, TH1* h_control, const bool fromHistoList =true);
     // h: differential distribution histogram
     // binvalue: the value of the quantity in the differential distribution histogram
     // the control plot histogram

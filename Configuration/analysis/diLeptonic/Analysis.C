@@ -2932,12 +2932,15 @@ void Analysis::FillBinnedControlPlot(TH1* h_differential, double binvalue,
 }
 
 ///create control plots for the h_control distribution in bins of h_differential
-void Analysis::CreateBinnedControlPlots(TH1* h_differential, TH1* h_control)
+void Analysis::CreateBinnedControlPlots(TH1* h_differential, TH1* h_control, const bool fromHistoList)
 {
-    HistoListReader histoList("HistoList");
-    if (histoList.IsZombie()) { cout << "Need a HistoList to create binned control plots!\n"; exit(273); }
     auto &pair = (*binnedControlPlots)[h_differential->GetName()];
-    pair.first = histoList.getPlotProperties(h_differential->GetName()).getClonedHistogram();
+    if(fromHistoList){
+        HistoListReader histoList("HistoList");
+        if(histoList.IsZombie()) { cout << "Need a HistoList to create binned control plots!\n"; exit(273); }
+        pair.first = histoList.getPlotProperties(h_differential->GetName()).getClonedHistogram();
+    }
+    else pair.first = (TH1*) h_differential->Clone();
     std::string name = "bcp_";
     name.append(h_differential->GetName()).append("_bin_");
     //create maps if we are called for the first time with a certain h_differential

@@ -380,6 +380,11 @@ process.goodIdJets.version = cms.string('FIRSTDATA')
 process.goodIdJets.quality = cms.string('LOOSE')
 
 process.hardJets = selectedPatJets.clone(src = 'goodIdJets', cut = 'pt > 5 & abs(eta) < 2.4') 
+
+# Additional properties for jets like jet charges
+process.load("TopAnalysis.HiggsUtils.producers.JetPropertiesProducer_cfi")
+process.jetProperties.src = jetCollection
+
 #WARNING! The jet.pt > 30 cut is currently hardcoded in the NTupleWriter.cc file
 #adding a collections like
 #    process.jetsForKinReco = process.hardJets.clone(src = 'hardJets', cut = 'pt > 30')
@@ -387,7 +392,8 @@ process.hardJets = selectedPatJets.clone(src = 'goodIdJets', cut = 'pt > 5 & abs
 process.buildJets = cms.Sequence(
             process.scaledJetEnergy * process.selectedPatElectronsAfterScaling *
             process.goodIdJets * 
-            process.hardJets
+            process.hardJets *
+            process.jetProperties
             #process.jetsForKinReco
             )
 

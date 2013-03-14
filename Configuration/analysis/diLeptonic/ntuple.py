@@ -575,11 +575,16 @@ if topfilter:
     process.load("TopAnalysis.TopUtils.GenLevelBJetProducer_cfi")
     process.produceGenLevelBJets.deltaR = 5.0
     process.produceGenLevelBJets.noBBbarResonances = True
+    process.produceGenLevelBJets.doImprovedHadronMatching = False
+    process.produceGenLevelBJets.doValidationPlotsForImprovedHadronMatching = False
+
+    process.load("TopAnalysis.TopUtils.sequences.improvedBHadronMatching_cff")
 
     process.decaySubset.fillMode = "kME" # Status3, use kStable for Status2
     if signal:
         process.topsequence = cms.Sequence(
             process.makeGenEvt *
+	    process.improvedHadronMatchingSequence *
             process.generatorTopFilter *
             process.produceGenLevelBJets)
     else:

@@ -13,7 +13,7 @@ Implementation:
 //
 // Original Author:  Jan Kieseler,,,DESY
 //         Created:  Thu Aug 11 16:37:05 CEST 2011
-// $Id: NTupleWriter.cc,v 1.30.2.15 2013/03/13 15:17:16 hauk Exp $
+// $Id: NTupleWriter.cc,v 1.30.2.16 2013/03/14 16:59:50 nbartosi Exp $
 //
 //
 
@@ -116,6 +116,7 @@ private:
 
 		edm::InputTag bHadMothers_, bHadMothersIndices_;
 		edm::InputTag bHadIndex_, bHadFlavour_, bHadJetIndex_;
+		bool saveHadronMothers;
 
     bool includeTrig_;
     bool isTtBarSample_, isHiggsSample_;
@@ -315,6 +316,8 @@ NTupleWriter::NTupleWriter(const edm::ParameterSet& iConfig):
     bHadIndex_(iConfig.getParameter<edm::InputTag> ("bHadIndex")),
     bHadFlavour_(iConfig.getParameter<edm::InputTag> ("bHadFlavour")),
     bHadJetIndex_(iConfig.getParameter<edm::InputTag> ("bHadJetIndex")),
+
+    saveHadronMothers(iConfig.getParameter<bool>("saveHadronMothers")),
 
     includeTrig_(iConfig.getParameter<bool>("includeTrigger")),
     isTtBarSample_(iConfig.getParameter<bool>("isTtBarSample")),
@@ -650,37 +653,53 @@ NTupleWriter::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup )
             }
 
 
+						edm::Handle<std::vector<int> > bHadIndex;
+						iEvent.getByLabel(bHadIndex_, bHadIndex);
+						if(!bHadIndex.failedToGet()) {
+							for (std::vector<int>::const_iterator it=bHadIndex->begin(); it!=bHadIndex->end(); ++it) {
+								VbHadIndex.push_back(*it);
+							}
+						}
 
             edm::Handle<std::vector<reco::GenParticle> > bHadMothers;
             iEvent.getByLabel(bHadMothers_, bHadMothers);
 						if(!bHadMothers.failedToGet()) {
-							for (std::vector<reco::GenParticle>::const_iterator it=bHadMothers->begin(); it!=bHadMothers->end(); ++it){
-								VbHadMothers.push_back(it->polarP4());
-								VbHadMothersPdg.push_back(it->pdgId());
-								VbHadMothersStatus.push_back(it->status());
+							if(saveHadronMothers) {			// If all particles have to be stored
+								for (std::vector<reco::GenParticle>::const_iterator it=bHadMothers->begin(); it!=bHadMothers->end(); ++it){
+									VbHadMothers.push_back(it->polarP4());
+									VbHadMothersPdg.push_back(it->pdgId());
+									VbHadMothersStatus.push_back(it->status());
+								}		// End of loop over all particles
+							}	else {		// If only hadrons have to be stored
+								for (unsigned int i=0; i<bHadIndex->size(); ++i) {
+									VbHadMothers.push_back(bHadMothers->at(VbHadIndex[i]).polarP4());
+									VbHadIndex[i]=i;
+								}		// End of loop over hadrons
 							}
-						}
+						}		// If bHadMothers is not empty
+
 
             edm::Handle<std::vector<std::vector<int> > > bHadMothersIndices;
             iEvent.getByLabel(bHadMothersIndices_, bHadMothersIndices);
-						if(!bHadMothersIndices.failedToGet()) {
-							for (unsigned int i=0; i<bHadMothersIndices->size(); ++i) { VbHadMothersIndices.push_back(bHadMothersIndices->at(i));}
+						if(!bHadMothersIndices.failedToGet() && saveHadronMothers) {			// Only if all hadron mothers have to be stored
+							for (std::vector<std::vector<int> >::const_iterator it=bHadMothersIndices->begin(); it!=bHadMothersIndices->end(); ++it) {
+								VbHadMothersIndices.push_back(*it);
+							}
 						}
 
-						edm::Handle<std::vector<int> > bHadIndex;
-						iEvent.getByLabel(bHadIndex_, bHadIndex);
-						if(!bHadIndex.failedToGet()) {
-							for (int i=0; i<(int) bHadIndex->size(); ++i) { VbHadIndex.push_back(bHadIndex->at(i));}
-						}
             edm::Handle<std::vector<int> > bHadFlavour;
 						iEvent.getByLabel(bHadFlavour_, bHadFlavour);
 						if(!bHadFlavour.failedToGet()) {
-							for (int i=0; i<(int) bHadFlavour->size(); ++i) { VbHadFlavour.push_back(bHadFlavour->at(i));}
+							for (std::vector<int>::const_iterator it=bHadFlavour->begin(); it!=bHadFlavour->end(); ++it) {
+								VbHadFlavour.push_back(*it);
+							}
 						}
 						edm::Handle<std::vector<int> > bHadJetIndex;
 						iEvent.getByLabel(bHadJetIndex_, bHadJetIndex);
 						if(!bHadJetIndex.failedToGet()) {
-							for (int i=0; i<(int) bHadJetIndex->size(); ++i) { VbHadJetIndex.push_back(bHadJetIndex->at(i));}
+							for (std::vector<int>::const_iterator it=bHadJetIndex->begin(); it!=bHadJetIndex->end(); ++it) {
+								VbHadJetIndex.push_back(*it);
+							}
 						}
 
         }

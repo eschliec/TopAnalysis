@@ -41,7 +41,6 @@ cvs update -r Oct2012-Rewritten-Analysis TopAnalysis/TopAnalyzer/python
 cvs update -r Oct2012-Rewritten-Analysis TopAnalysis/TopAnalyzer/plugins
 cvs update -r B_5_2_X TopAnalysis/TopAnalyzer/python/FullLepGenAnalyzer_cfi.py
 cvs update -r B_5_2_X TopAnalysis/TopFilter/python/filters/GeneratorTtDileptonFilter_cfi.py
-cvs update -r B_5_2_X TopAnalysis/TopUtils/python/GenLevelBJetProducer_cfi.py
 cvs update -r B_5_2_X TopAnalysis/TopUtils/python/genlevelbjetproducer_cfi.py
 cvs update -r B_5_2_X TopAnalysis/TopUtils/python/HadronLevelBJetProducer_cfi.py
 cvs update -r B_5_2_X TopAnalysis/TopUtils/python/usePatTupleWithParticleFlow_cff.py

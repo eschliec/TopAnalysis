@@ -460,6 +460,7 @@ writeNTuple.isHiggsSample = higgsSignal
 writeNTuple.includePDFWeights = options.includePDFWeights
 writeNTuple.pdfWeights = "pdfWeights:cteq66"
 writeNTuple.includeZdecay = zproducer
+writeNTuple.saveHadronMothers = False
 
 process.writeNTuple = writeNTuple.clone(
     muons=isolatedMuonCollection,
@@ -578,13 +579,13 @@ if topfilter:
     process.produceGenLevelBJets.doImprovedHadronMatching = False
     process.produceGenLevelBJets.doValidationPlotsForImprovedHadronMatching = False
 
-    process.load("TopAnalysis.TopUtils.sequences.improvedBHadronMatching_cff")
+    process.load("TopAnalysis.TopUtils.sequences.improvedJetHadronQuarkMatching_cff")
 
     process.decaySubset.fillMode = "kME" # Status3, use kStable for Status2
     if signal:
         process.topsequence = cms.Sequence(
             process.makeGenEvt *
-	    process.improvedHadronMatchingSequence *
+	    process.improvedJetHadronQuarkMatchingSequence *
             process.generatorTopFilter *
             process.produceGenLevelBJets)
     else:

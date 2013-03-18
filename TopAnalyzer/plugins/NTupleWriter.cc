@@ -13,7 +13,7 @@ Implementation:
 //
 // Original Author:  Jan Kieseler,,,DESY
 //         Created:  Thu Aug 11 16:37:05 CEST 2011
-// $Id: NTupleWriter.cc,v 1.30.2.16 2013/03/14 16:59:50 nbartosi Exp $
+// $Id: NTupleWriter.cc,v 1.30.2.17 2013/03/15 16:10:12 nbartosi Exp $
 //
 //
 
@@ -1142,10 +1142,13 @@ NTupleWriter::beginJob()
         Ntuple->Branch("BHadronVsJet", &VBHadVsJet);
         Ntuple->Branch("AntiBHadronVsJet", &VAntiBHadVsJet);
 
+				if(saveHadronMothers) {
+					Ntuple->Branch("genParticlePdg", &VbHadMothersPdg);
+					Ntuple->Branch("genParticleStatus", &VbHadMothersStatus);
+					Ntuple->Branch("genParticleIndices", &VbHadMothersIndices);
+				}
+
 				Ntuple->Branch("genParticle", &VbHadMothers);
-				Ntuple->Branch("genParticlePdg", &VbHadMothersPdg);
-				Ntuple->Branch("genParticleStatus", &VbHadMothersStatus);
-				Ntuple->Branch("genParticleIndices", &VbHadMothersIndices);
 				Ntuple->Branch("bHadIndex", &VbHadIndex);
 				Ntuple->Branch("bHadFlavour", &VbHadFlavour);
 				Ntuple->Branch("bHadJetIndex", &VbHadJetIndex);

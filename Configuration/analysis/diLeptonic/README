@@ -161,6 +161,52 @@ into one, calculated using the "master formula" as explained in AN2009-048. File
 PDF uncertainty are written out to UnfoldingResults/PDF_/channel/ and can then be used in the 
 plotterclass.
 
+========================
+  Use of std::vectors 
+========================
+
+All over the code, we use std::vectors, please do not use plain C arrays. The main advantage
+is that the size of the vector is always known and associated to the vector. In addition,
+using the "at" function, you get range checks for free. 
+
+So always use myvector.at(index) instead of myvector[index]!
+
+If you index is out of bounds, you will get:
+terminate called after throwing an instance of 'std::out_of_range'
+  what():  vector::_M_range_check
+
+If you were using [] instead, the behaviour would be undefined. You might get a seg violation
+or just a random result. To find out where the code is crashing, you need to run it in a 
+debugger.
+
+So do on command line (% indicates the prompt):
+% gdb the_executabe -parameters
+Then, in the gdb prompt (indicated by (gdb)), enter
+(gdb) run
+The program will run until the out_of_range exception is raised. Now type
+(gdb) backtrace
+Now you will get the line number in which the problem is happening. In case it is a strange
+part of the code which you haven't touched at all, consider a "make clean" first.
+
+
+========================
+  Debug code in the IDE
+========================
+
+In modern IDEs like Eclipse or KDevelop you can debug your code, i.e. run it step by step
+and inspect all variables.
+
+As an example, in KDevelop go to "Run -> Configure Launches" and select your executable on
+the right side under "Program file". Now you can run your program step-by-step with F10/F11.
+Hover your mouse over a variable to inspect its value.
+
+As poor man's solution (which will also work on the workgroup server), you can also use 
+the ddd (data display debugger) program to debug. Just run 
+ddd executable parameters
+(where executable could be Histo)
+Right click on the white space of a given line to set a break point. Then click on "run".
+Your program will run up to the given line. Then you can click on a variable to inspect/modify
+its value.
 
 ========================
    Opimising the code

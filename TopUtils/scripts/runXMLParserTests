@@ -1,7 +1,0 @@
-#! /usr/bin/env python
-import unittest
-import pyexpat
-import TopAnalysis.TopUtils.tools.testXMLParser as test
-test.setCurrentDir("")
-s = test.suite()
-unittest.TextTestRunner(verbosity=2).run(s)

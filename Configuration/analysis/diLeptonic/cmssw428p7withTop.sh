@@ -45,12 +45,9 @@ addpkg SimDataFormats/PileupSummaryInfo V00-02-04
 
 ###### Hamburg TOP package (plus dependencies) #####
 
-cvs co -r Final-Paper-Version -d TopAnalysis UserCode/Bromo/TopAnalysis
+cvs co -d TopAnalysis UserCode/Bromo/TopAnalysis
 addpkg TopQuarkAnalysis/Configuration V06-01-04
 addpkg TopQuarkAnalysis/TopEventSelection V06-07-13
-
-rm -rf TopAnalysis/TopAnalyzer/src/FullHadQCDEstimation.cc
-rm -rf TopAnalysis/TopAnalyzer/src/FullHadEventMixer.cc
 
 ### instead of deleting TopAnalysis/TopAnalyzer/src/FullHadQCDEstimation.cc
 ### in order to get the user code compiling, you could also do:

@@ -7,7 +7,12 @@ use Getopt::Std;
 my %arg;
 getopts('d:c:r:sj:m:f:R:x:', \%arg);
 
-unless ($arg{d} && ($arg{R} || $arg{r} || !-e $arg{d}) && $arg{c} && -f $arg{c}) {
+unless ($arg{R} || $arg{r} || !-e $arg{d}) {
+    print "********\n$arg{d} exists! - please remove it before running runall!\n" .
+        " as an alternative, you can use the -r and/or -R parameter to write into $arg{d}\n";
+    exit;
+}
+unless ($arg{d} && $arg{c} && -f $arg{c}) {
     print <<'USAGE';
 Syntax:
  $ runall.pl -d directoryName -c configFile.py [-r regexp] [-s]
@@ -106,28 +111,14 @@ sub prepare {
     my ($self, $NJobs, $inputSample, $outputFile, $samplename) = @_;
     $samplename ||= 'standard';
     $inputSample =~ s/\.py$//;
-    my $mode;
-    if ($outputFile =~ /^(\w{2,4})_/) {
-        $mode = $1;
-    } else {
-        die "Mode missing in outputFile!\n";
-    }
     (my $outputFileWithoutRoot = $outputFile) =~ s/\.root$//;
-    my $cmsRunCmdLine;
-    if ($inputSample =~ s/^\.\.//) {
-        $cmsRunCmdLine = "outputFile=$outputFile,".
-            "inputScript=TopAnalysis.Configuration.$inputSample,".
-            "mode=$mode,".
-            "samplename=$samplename";
-    } else {
-        $cmsRunCmdLine = "outputFile=$outputFile,".
-            "inputScript=TopAnalysis.Configuration.$inputSample,".
-            "mode=$mode,".
-            "samplename=$samplename";
-    }
+    my $cmsRunCmdLine = "outputFile=$outputFile,".
+        "inputScript=TopAnalysis.Configuration.$inputSample,".
+        "samplename=$samplename";
     $self->createConfig($inputSample, $outputFile, $cmsRunCmdLine);
     push @{$self->{commands}}, [$self->{path},
         "-m $self->{maxEventsPerJob} -d $outputFileWithoutRoot ".
+	"-M ".($cmsRunCmdLine =~ /PDFWeight/i ? 8000 : 3700)." ".
         "-c '$cmsRunCmdLine' ".
         "$NJobs $self->{configFile}_for_$outputFileWithoutRoot.py"];
 }

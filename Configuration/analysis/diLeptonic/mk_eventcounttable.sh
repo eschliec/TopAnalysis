@@ -1,27 +1,37 @@
 #!/bin/zsh
-#this must be run inside of Plots/Nominal
+#this must be run inside of Plots
 for sample in ee emu mumu combined
-  do
+do
   for step in 5 6 7 8 9
   do
+    #data
     tempdata=`grep Data $sample/Events$step.txt | awk -F : '{print $2;}'`
     let "data$sample$step=$tempdata"
-    temptau=`grep tau $sample/Events$step.txt | awk -F : '{print $2;}'`
+    #DY via tau
+    temptau=`grep Z $sample/Events$step.txt |grep \#tau | awk -F : '{print $2;}'`
     let "tau$sample$step=$temptau"
-    tempmu=`grep mu $sample/Events$step.txt | awk -F : '{print $2;}'`
+    #DY
+    tempmu=`grep Z $sample/Events$step.txt |grep \#mu | awk -F : '{print $2;}'`
     let "mu$sample$step=$tempmu"
+    #diboson
     tempVV=`grep Diboson $sample/Events$step.txt | awk -F : '{print $2;}'`
     let "VV$sample$step=$tempVV"
+    #wtolnu
     tempnu=`grep W+ $sample/Events$step.txt | awk -F : '{print $2;}'`
     let "nu$sample$step=$tempnu"
-    temptW=`grep tW $sample/Events$step.txt | awk -F : '{print $2;}'`
+    #single top
+    temptW=`grep Single $sample/Events$step.txt | awk -F : '{print $2;}'`
     let "tW$sample$step=$temptW"
+    #ttbar bg
     tempttbg=`grep Other $sample/Events$step.txt | awk -F : '{print $2;}'`
     let "ttbg$sample$step=$tempttbg"
+    # ttbar signal
     tempttsig=`grep Signal $sample/Events$step.txt | awk -F : '{print $2;}'`
     let "ttsig$sample$step=$tempttsig"
+    # QCD multijet
     tempQCD=`grep QCD $sample/Events$step.txt | awk -F : '{print $2;}'`
     let "QCD$sample$step=$tempQCD"
+    #Total Bg
     temptotal=`grep Total $sample/Events$step.txt | awk -F : '{print $2;}'`
     let "bgtotal$sample$step=$temptotal"
   done
@@ -81,8 +91,10 @@ echo "           \\\ttbar\\\ other  &     $ttbgcombined5   &       $ttbgcombined
 echo "           tW                 &     $tWcombined5   &       $tWcombined6    &       $tWcombined7    &       $tWcombined8    &       $tWcombined9   \\\\\\"
 echo "           diboson            &     $VVcombined5   &       $VVcombined6    &       $VVcombined7    &       $VVcombined8    &       $VVcombined9   \\\\\\"
 echo "           W                  &     $nucombined5   &       $nucombined6    &       $nucombined7    &       $nucombined8    &       $nucombined9   \\\\\\"
-echo "           DY$\\\rightarrow\\\tau\\\tau$ &     $tauee5   &       $taucombined6    &       $taucombined7    &       $taucombined8    &       $taucombined9\\\\\\"
-echo "           DY$\\\rightarrow\\\ell^+\\\ell^-$ &     $muee5   &       $mucombined6    &       $mucombined7    &       $mucombined8    &       $mucombined9\\\\\\"
+echo "           DY$\\\rightarrow\\\tau\\\tau$ &     $taucombined5   &       $taucombined6    &       $taucombined7    &       $taucombined8    &       
+$taucombined9\\\\\\"
+echo "           DY$\\\rightarrow\\\ell^+\\\ell^-$ &     $mucombined5   &       $mucombined6    &       $mucombined7    &       $mucombined8    &       
+$mucombined9\\\\\\"
 echo "           QCD                  &   $QCDcombined5   &       $QCDcombined6    &       $QCDcombined7    &       $QCDcombined8    &      $QCDcombined9\\\\\\"
 echo "\\\hline"
 echo "           Sum MC             &     $bgtotalcombined5   &       $bgtotalcombined6    &       $bgtotalcombined7    &       $bgtotalcombined8    &       $bgtotalcombined9   \\\\\\"

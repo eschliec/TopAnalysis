@@ -21,13 +21,6 @@ analyzeSemiLepBJets = cms.EDAnalyzer("SemiLepBjetAnalyzer",
                                      # NOTE: the assumed ordering within the collection is:
                                      #       1st entry=b-jet, 2nd entry=anti-bjet
                                      bJetCollection = cms.bool(False),
-                                     # choose recojet collection
-                                     # NOTE: for useRecBjetsKinematicsBeforeFit=true this collection
-                                     # is used to identify the b-jets before the kinematic fit. Hence,
-                                     # the same jet collection as for the KinFit setup has to be specified
-                                     recoJets = cms.InputTag('selectedPatJets'),
-                                     # use b-jet kinematics as before the kinematic fit?
-                                     useRecBjetsKinematicsBeforeFit= cms.bool(False),
                                      # output manager:
                                      # 0: no output, 1: info, >=2: debug
                                      output = cms.int32(0),

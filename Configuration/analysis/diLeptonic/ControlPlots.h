@@ -1,5 +1,5 @@
-#ifndef Histo_h
-#define Histo_h
+#ifndef ControlPlots_h
+#define ControlPlots_h
 
 #include "THStack.h"
 #include "TFile.h"
@@ -11,15 +11,16 @@
 #include "TCanvas.h"
 #include "TLegend.h"
 #include <sstream>
-#include "plotterclass.h"
+#include "plotterclass_ControlPlots.h"   //modify if new controlplot ploterclass is defined
+#include "plotterclass_ControlPlots.C"
 #include "HHStyle.h"
 #include "basicFunctions.h"
 
-class Histo {
+class ControlPlots {
 
  public:
-  Histo();
-  ~Histo();
+  ControlPlots();
+  ~ControlPlots();
   void MakePlots();
 
  private:

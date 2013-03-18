@@ -1,4 +1,5 @@
 # include "DilepSVDFunctions.h"
+#include <TSystem.h>
 
 ////////////////////////////////////////////////////////////////////////////////////////////
 //////////////////////    Function Definitions  ////////////////////////////////////////////
@@ -331,9 +332,15 @@ double DilepSVDFunctions::SVD_DoUnfoldSys(
     TH1 *NominalUp= (TH1*)unfUp->Clone("NominalUp");
     TH1 *NominalDown= (TH1*)unfDown->Clone("NominalDown");
     Nominal->SetLineColor(kBlack);
+    Nominal->SetMarkerStyle(20);
+    Nominal->SetMarkerColor(kBlack);
     NominalUp->SetLineColor(kRed);
+    NominalUp->SetMarkerStyle(22);
+    NominalUp->SetMarkerColor(kRed);
     NominalDown->SetLineColor(kBlue);
     NominalDown->SetLineStyle(2);
+    NominalDown->SetMarkerColor(kBlue);
+    NominalDown->SetMarkerStyle(23);
     leg->AddEntry(Nominal, "Nominal", "p");
     leg->AddEntry(NominalUp, "Up", "lp");
     leg->AddEntry(NominalDown, "Down", "lp");
@@ -343,9 +350,9 @@ double DilepSVDFunctions::SVD_DoUnfoldSys(
     leg->Draw("same");
     c->Print(TString("Plots/").Copy().Append(channel).Append("/SystComparison_").Append(channel).Append("_").Append(particle).Append("_").Append(quantity).Append("_").Append(syst).Append(".eps"));
     leg->Clear();
-    Nominal->Clear();Nominal->Delete();
-    NominalUp->Clear();NominalUp->Delete();
-    NominalDown->Clear();NominalDown->Delete();
+    Nominal->Clear(); delete Nominal;
+    NominalUp->Clear(); delete NominalUp;
+    NominalDown->Clear(); delete NominalDown;
     c->Clear();
     
     
@@ -377,6 +384,16 @@ double DilepSVDFunctions::SVD_DoUnfoldSys(
         shifts->SetBinError(i, 0.);
     }
       
+    delete[] arrData;
+    delete[] arrBgr;
+    delete[] arrGen;
+    delete[] arrRec;
+    delete[] arrResp;
+    delete[] arrTtBgr;
+    delete[] arrUnfolded;
+    delete[] arrUnfoldedNorm;
+    delete leg;
+    delete c;
     
     // return best tau value
     return bestTau;

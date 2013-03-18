@@ -2,4 +2,5 @@
 
 ./lnData.sh
 ./mk_HistoFileList.sh
-root -l -b -q Histo.C++
+root -l -b -q ControlPlots.C++
+

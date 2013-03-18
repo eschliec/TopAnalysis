@@ -17,13 +17,11 @@ def prependPF2PATSequence(process, pathnames = [''], options = dict()):
     options.setdefault('cutsMuon', 'pt > 10. & abs(eta) < 2.5')
     options.setdefault('cutsElec', 'et > 20. & abs(eta) < 2.5')
     options.setdefault('cutsJets', 'pt > 10. & abs(eta) < 5.0')
-    options.setdefault('electronIDs', 'CiC') ## can be set to CiC, classical, MVA
+    options.setdefault('electronIDs', 'CiC') ## can be set to CiC, classical
     options.setdefault('pfIsoConeMuon', 0.4)
     options.setdefault('pfIsoConeElec', 0.4)
     options.setdefault('pfIsoValMuon', 0.2)
     options.setdefault('pfIsoValElec', 0.2)
-    options.setdefault('doDeltaBetaCorrMuon', False)
-    options.setdefault('doDeltaBetaCorrElec', False)
     options.setdefault('skipIfNoPFMuon', False)
     options.setdefault('skipIfNoPFElec', False)
     options.setdefault('addNoCutPFMuon', False)
@@ -34,9 +32,6 @@ def prependPF2PATSequence(process, pathnames = [''], options = dict()):
     options.setdefault('analyzersBeforeElecIso', cms.Sequence())
     options.setdefault('excludeElectronsFromWsFromGenJets', False)
     options.setdefault('METCorrectionLevel', 0)
-    options.setdefault('JECEra' , '')
-    options.setdefault('JECFile', '')
-    options.setdefault('additionalJECLevels', [])
 
     if 'applyMETCorrections' in options:
         raise KeyError, "The option 'applyMETCorrections' is not supported anymore by prependPF2PATSequence, please use 'METCorrectionLevel'! 'METCorrectionLevel' may be set to 0,1,2 (no correction, TypeI, TypeI+TypeII corrections)"
@@ -74,36 +69,11 @@ def prependPF2PATSequence(process, pathnames = [''], options = dict()):
                                                            , src          = cms.InputTag('offlinePrimaryVerticesWithBS')
                                                            )
 
-    ## read JEC from local SQLite file if given
-    if not options['JECEra'] == '' or not options['JECFile'] == '':
-        if not options['JECEra'] == '' and not options['JECFile'] == '':
-            #process.load("CondCore.DBCommon.CondDBCommon_cfi")
-            #from CondCore.DBCommon.CondDBSetup_cfi import CondDBSetup
-            process.jec = cms.ESSource( "PoolDBESSource"
-                                      , DBParameters = cms.PSet(messageLevel = cms.untracked.int32(0))
-                                      , timetype = cms.string('runnumber')
-                                      , toGet = cms.VPSet(cms.PSet( record = cms.string('JetCorrectionsRecord')
-                                                                  , tag    = cms.string('JetCorrectorParametersCollection_'+options['JECEra']+'_AK5PFchs')
-                                                                  , label  = cms.untracked.string('AK5PFchs')
-                                                                  )
-                                                          ## here you add as many jet types as you need
-                                                          ## note that the tag name is specific for the particular sqlite file 
-                                                         )
-                                      , connect = cms.string('sqlite:'+options['JECFile'])
-                                      )
-            ## add an es_prefer statement to resolve a possible conflict from simultaneous connection to a global tag
-            process.es_prefer_jec = cms.ESPrefer('PoolDBESSource','jec')
-        else:
-            raise ValueError, "The options 'JECEra' and 'JECFile' may only be set both (using the give SQLite file and JEC era) or none (taking the JEC from the global tag) and not only one of them!"
-            
     ## choose correct set of jec levels for MC and data
     if options['runOnMC']:
         jecLevels = ['L1FastJet', 'L2Relative', 'L3Absolute']
     else:
         jecLevels = ['L1FastJet', 'L2Relative', 'L3Absolute','L2L3Residual']
-
-    ## add additional JEC levels after recommended minimum of JECs
-    jecLevels += options['additionalJECLevels']
 
     ## run the full PF2PAT sequence
     from PhysicsTools.PatAlgos.tools.pfTools import usePF2PAT
@@ -124,7 +94,7 @@ def prependPF2PATSequence(process, pathnames = [''], options = dict()):
     #??? ??? ??? STILL NEEDED ??? ??? ???
     #????????????????????????????????????
     process.pfPileUp.checkClosestZVertex = False
-    process.pfPileUpIso.checkClosestZVertex = True
+    process.pfPileUpIso.checkClosestZVertex = False
 
     ## remove taus and photons from pat sequence
     from PhysicsTools.PatAlgos.tools.coreTools import removeSpecificPATObjects, removeCleaning
@@ -255,7 +225,6 @@ def prependPF2PATSequence(process, pathnames = [''], options = dict()):
     getattr(process,'pfIsolatedMuons'+postfix).deltaBetaIsolationValueMap =  'muPFIsoValuePU'+postfix
     getattr(process,'pfIsolatedMuons'+postfix).isolationValueMapsNeutral  = ['muPFIsoValueNeutral'+postfix,'muPFIsoValueGamma'+postfix]
     getattr(process,'pfIsolatedMuons'+postfix).isolationCut = options['pfIsoValMuon']
-    getattr(process,'pfIsolatedMuons'+postfix).doDeltaBetaCorrection = options['doDeltaBetaCorrMuon']
 
     ## adapt isolation src for pat muons
     getattr(process,'patMuons'+postfix).isolationValues.pfNeutralHadrons   = 'muPFIsoValueNeutral'   +postfix
@@ -431,18 +400,18 @@ def prependPF2PATSequence(process, pathnames = [''], options = dict()):
     getattr(process,'elPFIsoDepositPU'        +postfix).src = 'pfSelectedElectrons'+postfix
 
     ## we want out own isolation cones:
-    getattr(process,'patPF2PATSequence'+postfix).remove(getattr(process,'elPFIsoValueCharged04PFId'   +postfix))
-    getattr(process,'patPF2PATSequence'+postfix).remove(getattr(process,'elPFIsoValueChargedAll04PFId'+postfix))
-    getattr(process,'patPF2PATSequence'+postfix).remove(getattr(process,'elPFIsoValueGamma04PFId'     +postfix))
-    getattr(process,'patPF2PATSequence'+postfix).remove(getattr(process,'elPFIsoValueNeutral04PFId'   +postfix))
-    getattr(process,'patPF2PATSequence'+postfix).remove(getattr(process,'elPFIsoValuePU04PFId'        +postfix))
+    getattr(process,'patPF2PATSequence'+postfix).remove(getattr(process,'elPFIsoValueCharged04'   +postfix))
+    getattr(process,'patPF2PATSequence'+postfix).remove(getattr(process,'elPFIsoValueChargedAll04'+postfix))
+    getattr(process,'patPF2PATSequence'+postfix).remove(getattr(process,'elPFIsoValueGamma04'     +postfix))
+    getattr(process,'patPF2PATSequence'+postfix).remove(getattr(process,'elPFIsoValueNeutral04'   +postfix))
+    getattr(process,'patPF2PATSequence'+postfix).remove(getattr(process,'elPFIsoValuePU04'        +postfix))
 
     ## adapt isolation cone for electrons
-    setattr(process,'elPFIsoValueCharged'             +postfix, getattr(process, 'elPFIsoValueCharged03PFId'   +postfix).clone())
-    setattr(process,'elPFIsoValueChargedAll'          +postfix, getattr(process, 'elPFIsoValueChargedAll03PFId'+postfix).clone())
-    setattr(process,'elPFIsoValueGamma'               +postfix, getattr(process, 'elPFIsoValueGamma03PFId'     +postfix).clone())
-    setattr(process,'elPFIsoValueNeutral'             +postfix, getattr(process, 'elPFIsoValueNeutral03PFId'   +postfix).clone())
-    setattr(process,'elPFIsoValuePU'                  +postfix, getattr(process, 'elPFIsoValuePU03PFId'        +postfix).clone())
+    setattr(process,'elPFIsoValueCharged'             +postfix, getattr(process, 'elPFIsoValueCharged03'   +postfix).clone())
+    setattr(process,'elPFIsoValueChargedAll'          +postfix, getattr(process, 'elPFIsoValueChargedAll03'+postfix).clone())
+    setattr(process,'elPFIsoValueGamma'               +postfix, getattr(process, 'elPFIsoValueGamma03'     +postfix).clone())
+    setattr(process,'elPFIsoValueNeutral'             +postfix, getattr(process, 'elPFIsoValueNeutral03'   +postfix).clone())
+    setattr(process,'elPFIsoValuePU'                  +postfix, getattr(process, 'elPFIsoValuePU03'        +postfix).clone())
 
     getattr(process,'elPFIsoValueCharged'             +postfix).deposits[0].deltaR = cms.double(options['pfIsoConeElec'])
     getattr(process,'elPFIsoValueChargedAll'          +postfix).deposits[0].deltaR = cms.double(options['pfIsoConeElec'])
@@ -450,11 +419,11 @@ def prependPF2PATSequence(process, pathnames = [''], options = dict()):
     getattr(process,'elPFIsoValueNeutral'             +postfix).deposits[0].deltaR = cms.double(options['pfIsoConeElec'])
     getattr(process,'elPFIsoValuePU'                  +postfix).deposits[0].deltaR = cms.double(options['pfIsoConeElec'])
 
-    getattr(process,'patPF2PATSequence'+postfix).replace(getattr(process,'elPFIsoValueCharged03PFId'   +postfix),getattr(process,'elPFIsoValueCharged'             +postfix))
-    getattr(process,'patPF2PATSequence'+postfix).replace(getattr(process,'elPFIsoValueChargedAll03PFId'+postfix),getattr(process,'elPFIsoValueChargedAll'          +postfix))
-    getattr(process,'patPF2PATSequence'+postfix).replace(getattr(process,'elPFIsoValueGamma03PFId'     +postfix),getattr(process,'elPFIsoValueGamma'               +postfix))
-    getattr(process,'patPF2PATSequence'+postfix).replace(getattr(process,'elPFIsoValueNeutral03PFId'   +postfix),getattr(process,'elPFIsoValueNeutral'             +postfix))
-    getattr(process,'patPF2PATSequence'+postfix).replace(getattr(process,'elPFIsoValuePU03PFId'        +postfix),getattr(process,'elPFIsoValuePU'                  +postfix))
+    getattr(process,'patPF2PATSequence'+postfix).replace(getattr(process,'elPFIsoValueCharged03'   +postfix),getattr(process,'elPFIsoValueCharged'             +postfix))
+    getattr(process,'patPF2PATSequence'+postfix).replace(getattr(process,'elPFIsoValueChargedAll03'+postfix),getattr(process,'elPFIsoValueChargedAll'          +postfix))
+    getattr(process,'patPF2PATSequence'+postfix).replace(getattr(process,'elPFIsoValueGamma03'     +postfix),getattr(process,'elPFIsoValueGamma'               +postfix))
+    getattr(process,'patPF2PATSequence'+postfix).replace(getattr(process,'elPFIsoValueNeutral03'   +postfix),getattr(process,'elPFIsoValueNeutral'             +postfix))
+    getattr(process,'patPF2PATSequence'+postfix).replace(getattr(process,'elPFIsoValuePU03'        +postfix),getattr(process,'elPFIsoValuePU'                  +postfix))
 
     ## adapt isolation cut
     getattr(process,'pfElectrons'+postfix).isolationValueMapsCharged  = ['elPFIsoValueCharged'+postfix]
@@ -464,7 +433,6 @@ def prependPF2PATSequence(process, pathnames = [''], options = dict()):
     getattr(process,'pfIsolatedElectrons'+postfix).deltaBetaIsolationValueMap =  'elPFIsoValuePU'+postfix
     getattr(process,'pfIsolatedElectrons'+postfix).isolationValueMapsNeutral  = ['elPFIsoValueNeutral'+postfix,'elPFIsoValueGamma'+postfix]
     getattr(process,'pfIsolatedElectrons'+postfix).isolationCut = options['pfIsoValElec']
-    getattr(process,'pfIsolatedElectrons'+postfix).doDeltaBetaCorrection = options['doDeltaBetaCorrElec']
 
     ## adapt isolation src for pat electrons
     getattr(process,'patElectrons'+postfix).isolationValues.pfNeutralHadrons   = 'elPFIsoValueNeutral'   +postfix
@@ -537,23 +505,8 @@ def prependPF2PATSequence(process, pathnames = [''], options = dict()):
         for name in eleIDsClassical.parameterNames_():
             setattr(eleIDs,name,getattr(eleIDsClassical,name))
 
-    ## add MVA electron ID
-    if options['electronIDs'].count('MVA') > 0 :
-        process.load("EGamma.EGammaAnalysisTools.electronIdMVAProducer_cfi")
-        process.eidMVASequence = cms.Sequence( process.mvaTrigV0
-                                             * process.mvaNonTrigV0
-                                             )
-
-        ## embed MVA electron ID into patElectrons
-        eleIDsMVA = cms.PSet( mvaTrigV0    = cms.InputTag("mvaTrigV0")
-                            , mvaNonTrigV0 = cms.InputTag("mvaNonTrigV0")
-                            )
-
-        for name in eleIDsMVA.parameterNames_():
-            setattr(eleIDs,name,getattr(eleIDsMVA,name))
-
     ## if no electronID is needed, don't try to add it to pat Electron
-    if options['electronIDs'].count('classical') == 0 and options['electronIDs'].count('CiC') == 0 and options['electronIDs'].count('MVA') == 0 :
+    if options['electronIDs'].count('classical') == 0 and options['electronIDs'].count('CiC') == 0 :
         getattr(process,'patElectrons'+postfix).addElectronID = False
 
     ## add all eleIDs to the pat electron
@@ -781,16 +734,16 @@ def prependPF2PATSequence(process, pathnames = [''], options = dict()):
     getattr(process,'patPF2PATSequence'+postfix).remove(getattr(process,'phPFIsoDepositGamma'+postfix))
     getattr(process,'patPF2PATSequence'+postfix).remove(getattr(process,'phPFIsoDepositNeutral'+postfix))
     getattr(process,'patPF2PATSequence'+postfix).remove(getattr(process,'phPFIsoDepositPU'+postfix))
-    getattr(process,'patPF2PATSequence'+postfix).remove(getattr(process,'phPFIsoValueCharged03PFId'+postfix))
-    getattr(process,'patPF2PATSequence'+postfix).remove(getattr(process,'phPFIsoValueChargedAll03PFId'+postfix))
-    getattr(process,'patPF2PATSequence'+postfix).remove(getattr(process,'phPFIsoValueGamma03PFId'+postfix))
-    getattr(process,'patPF2PATSequence'+postfix).remove(getattr(process,'phPFIsoValueNeutral03PFId'+postfix))
-    getattr(process,'patPF2PATSequence'+postfix).remove(getattr(process,'phPFIsoValuePU03PFId'+postfix))
-    getattr(process,'patPF2PATSequence'+postfix).remove(getattr(process,'phPFIsoValueCharged04PFId'+postfix))
-    getattr(process,'patPF2PATSequence'+postfix).remove(getattr(process,'phPFIsoValueChargedAll04PFId'+postfix))
-    getattr(process,'patPF2PATSequence'+postfix).remove(getattr(process,'phPFIsoValueGamma04PFId'+postfix))
-    getattr(process,'patPF2PATSequence'+postfix).remove(getattr(process,'phPFIsoValueNeutral04PFId'+postfix))
-    getattr(process,'patPF2PATSequence'+postfix).remove(getattr(process,'phPFIsoValuePU04PFId'+postfix))
+    getattr(process,'patPF2PATSequence'+postfix).remove(getattr(process,'phPFIsoValueCharged03'+postfix))
+    getattr(process,'patPF2PATSequence'+postfix).remove(getattr(process,'phPFIsoValueChargedAll03'+postfix))
+    getattr(process,'patPF2PATSequence'+postfix).remove(getattr(process,'phPFIsoValueGamma03'+postfix))
+    getattr(process,'patPF2PATSequence'+postfix).remove(getattr(process,'phPFIsoValueNeutral03'+postfix))
+    getattr(process,'patPF2PATSequence'+postfix).remove(getattr(process,'phPFIsoValuePU03'+postfix))
+    getattr(process,'patPF2PATSequence'+postfix).remove(getattr(process,'phPFIsoValueCharged04'+postfix))
+    getattr(process,'patPF2PATSequence'+postfix).remove(getattr(process,'phPFIsoValueChargedAll04'+postfix))
+    getattr(process,'patPF2PATSequence'+postfix).remove(getattr(process,'phPFIsoValueGamma04'+postfix))
+    getattr(process,'patPF2PATSequence'+postfix).remove(getattr(process,'phPFIsoValueNeutral04'+postfix))
+    getattr(process,'patPF2PATSequence'+postfix).remove(getattr(process,'phPFIsoValuePU04'+postfix))
     getattr(process,'patPF2PATSequence'+postfix).remove(getattr(process,'pfIsolatedPhotons'+postfix))
 
     ##
@@ -839,6 +792,7 @@ def prependPF2PATSequence(process, pathnames = [''], options = dict()):
     massSearchReplaceAnyInputTag(getattr(process,'patPF2PATSequence'+postfix),'pfNoTau'+postfix,'pfJets'+postfix)
 
     ## remove soft lepton taggers, which would have needed more RECO collections as input
+    getattr(process,'patPF2PATSequence'+postfix).remove(getattr(process,'softMuonTagInfosAOD'+postfix))
     getattr(process,'patPF2PATSequence'+postfix).remove(getattr(process,'softMuonBJetTagsAOD'+postfix))
     getattr(process,'patPF2PATSequence'+postfix).remove(getattr(process,'softMuonByPtBJetTagsAOD'+postfix))
     getattr(process,'patPF2PATSequence'+postfix).remove(getattr(process,'softMuonByIP3dBJetTagsAOD'+postfix))
@@ -854,9 +808,6 @@ def prependPF2PATSequence(process, pathnames = [''], options = dict()):
         getattr(process,'patJets'+postfix).resolutions = cms.PSet( default = cms.string("udscResolutionPF")
                                                                  , bjets = cms.string("bjetResolutionPF")
                                                                  )
-
-    ## when flavor corrections are needed use the ones derived from top events
-    getattr(process,'patJetCorrFactors'+postfix).flavorType = 'T'
 
     ## remove obsolte genJet clustering sequences
     getattr(process,'patPF2PATSequence'+postfix).remove(getattr(process,'genParticlesForJetsNoNu'+postfix))
@@ -1027,8 +978,6 @@ def prependPF2PATSequence(process, pathnames = [''], options = dict()):
         process.pf2pat += process.eidCiCSequence
     if options['electronIDs'].count('classical') > 0 :
         process.pf2pat += process.simpleEleIdSequence
-    if options['electronIDs'].count('MVA') > 0 :
-        process.pf2pat += process.eidMVASequence
 
     ## run PF2PAT sequence
     process.pf2pat += getattr(process,'patPF2PATSequence'+postfix)
@@ -1063,8 +1012,6 @@ def prependPF2PATSequence(process, pathnames = [''], options = dict()):
     print 'pfIsoConeElec:', options['pfIsoConeElec']
     print 'pfIsoValMuon:', options['pfIsoValMuon']
     print 'pfIsoValElec:', options['pfIsoValElec']
-    print 'doDeltaBetaCorrMuon:', options['doDeltaBetaCorrMuon']
-    print 'doDeltaBetaCorrElec:', options['doDeltaBetaCorrElec']
     print 'skipIfNoPFMuon:', options['skipIfNoPFMuon']
     print 'skipIfNoPFElec:', options['skipIfNoPFElec']
     print 'addNoCutPFMuon:', options['addNoCutPFMuon']
@@ -1075,9 +1022,6 @@ def prependPF2PATSequence(process, pathnames = [''], options = dict()):
     print 'analyzersBeforeElecIso:', options['analyzersBeforeElecIso']
     print 'excludeElectronsFromWsFromGenJets:', options['excludeElectronsFromWsFromGenJets']
     print 'METCorrectionLevel:', options['METCorrectionLevel']
-    print 'JECEra:', options['JECEra']
-    print 'JECFile:', options['JECFile']
-    print 'additionalJECLevels:', options['additionalJECLevels']
     print '==================================================='
     print '|||||||||||||||||||||||||||||||||||||||||||||||||||'
     print '==================================================='

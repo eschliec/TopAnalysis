@@ -9,16 +9,8 @@ writeFullHadTree = cms.EDAnalyzer("FullHadTreeWriter",
                                   MuonSrc = cms.InputTag('selectedPatMuons'),
                                   ## electrons
                                   ElectronSrc = cms.InputTag('selectedPatElectrons'),
-                                  ## gluon tag
-                                  GluonTagSrc = cms.InputTag("GluonTagProducer","GluonTag"),
-                                  ### genJets
-                                  #GenJetSrc = cms.InputTag('ak5GenJets','','FullHadTreeWriter'), 
-                                  ### genPartons
-                                  #GenPartonSrc = cms.InputTag('genParticles'), 
                                   ## kinematic fit result
                                   FitSrc = cms.InputTag("ttFullHadEvent"),
-                                  ## second genMatch
-                                  GenMatch2Src = cms.InputTag("ttFullHadEvent2"),
                                   ## GenEventInfoProduct for PDF uncertainties
                                   GenSrc = cms.InputTag("generator"),
                                   ## multi-jet MVA discriminator

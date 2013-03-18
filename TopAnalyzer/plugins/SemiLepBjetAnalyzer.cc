@@ -14,13 +14,11 @@ SemiLepBjetAnalyzer::SemiLepBjetAnalyzer(const edm::ParameterSet& cfg):
   semiLepEvt_(cfg.getParameter<edm::InputTag>("semiLepEvent")),
   hypoKey_   (cfg.getParameter<std::string>  ("hypoKey"     )),
   genJets_   (cfg.getParameter<edm::InputTag>("genJets"     )),
-  bJetCollection_(cfg.getParameter<bool>     ("bJetCollection")),
-  recoJets_  (cfg.getParameter<edm::InputTag>("recoJets"    )),
+  bJetCollection_(cfg.getParameter<bool>   ("bJetCollection")),
   verbose    (cfg.getParameter<int>          ("output"      )),
   weight_    (cfg.getParameter<edm::InputTag>("weight"      )),
   genPlots_  (cfg.getParameter<bool>         ("genPlots"    )),
   recPlots_  (cfg.getParameter<bool>         ("recPlots"    )),
-  preBjets   (cfg.getParameter<bool>         ("useRecBjetsKinematicsBeforeFit")),
   bHadJetIdx_    (cfg.getParameter<edm::InputTag> ("BHadJetIndex"    )),
   antibHadJetIdx_(cfg.getParameter<edm::InputTag> ("AntiBHadJetIndex")),
   useClosestDrBs_(cfg.getParameter<bool>   ("useClosestDrBs")),
@@ -29,8 +27,6 @@ SemiLepBjetAnalyzer::SemiLepBjetAnalyzer(const edm::ParameterSet& cfg):
   valueBqPtGen(-999),
   valueLeadBqPtRec(-999),
   valueLeadBqPtGen(-999),
-  valueSubLeadBqPtRec(-999),
-  valueSubLeadBqPtGen(-999),
   valueBqEtaRec(-999),
   valueBqEtaGen(-999),
   valueBqYRec(-999),
@@ -88,17 +84,12 @@ SemiLepBjetAnalyzer::analyze(const edm::Event& event, const edm::EventSetup& set
   if(verbose>1) std::cout << "b) TtSemiLepEvent" << std::endl;
   edm::Handle<TtSemiLeptonicEvent> semiLepEvt;
   if(recPlots_) event.getByLabel(semiLepEvt_, semiLepEvt);
-  // c1) get a handle for genjet collection
-  if(verbose>1) std::cout << "c1) genJetCollection" << std::endl;
+  // c) get a handle for genjet collection
+  if(verbose>1) std::cout << "c) genJetCollection" << std::endl;
   // get jet collection
   edm::Handle<reco::GenJetCollection> genJets;
   if(genPlots_) event.getByLabel(genJets_, genJets);
-  // c2) get a handle for reco jet collection
-  if(verbose>1) std::cout << "c2) recoJetCollection" << std::endl;
-  if(!recPlots_) preBjets=false;
-  edm::Handle<pat::JetCollection> recoJets;
-  if(recPlots_) event.getByLabel(recoJets_, recoJets);
-  // d) position of the jet within genjet collection identified as b-hadron jet
+  // d) position of the jet identified as b-hadron jet
   if(verbose>1) std::cout << "d) b-jet indices produced by TopAnalysis/TopUtils/GenLevelBJetProducer" << std::endl;
   int bIX   =-1;
   int bbarIX=-1;
@@ -146,8 +137,6 @@ SemiLepBjetAnalyzer::analyze(const edm::Event& event, const edm::EventSetup& set
   // get rec b and bbar (from kinfit hypothesis)
   const reco::Candidate* zero=0;
   std::pair<const reco::Candidate*,const reco::Candidate*> recBJets = recPlots_ ? getbJets(semiLepEvt, hypoKey_) : std::make_pair(zero,zero);
-  // get rec b and bbar (assignment from kinfit hypothesis but no shifted kinematics)
-  if(preBjets) recBJets = recPlots_ ? getPreBJets(semiLepEvt, hypoKey_, recoJets) : std::make_pair(zero,zero);
   const reco::Candidate* b   = recBJets.first ;
   const reco::Candidate* bbar= recBJets.second;
   // fill rec histograms
@@ -155,8 +144,7 @@ SemiLepBjetAnalyzer::analyze(const edm::Event& event, const edm::EventSetup& set
     // fill tree variables   
     if(useTree_){
       valueBqPtRec =b->pt();
-      valueLeadBqPtRec    = b->pt()>bbar->pt() ? b->pt() : bbar->pt();
-      valueSubLeadBqPtRec = b->pt()<bbar->pt() ? b->pt() : bbar->pt();
+      valueLeadBqPtRec = b->pt()>bbar->pt() ? b->pt() : bbar->pt();
       valueBqEtaRec=b->eta();
       valueBqYRec  =b->rapidity(); 
       valueBbarqPtRec =bbar->pt();
@@ -172,8 +160,7 @@ SemiLepBjetAnalyzer::analyze(const edm::Event& event, const edm::EventSetup& set
     // fill plots
     bqPtRec ->Fill( b->pt()         , weight);
     bqPtRec ->Fill( bbar->pt()      , weight);
-    bqPtLeadRec    ->Fill( (b->pt()>bbar->pt() ? b->pt() : bbar->pt()), weight);
-    bqPtSubLeadRec ->Fill( (b->pt()<bbar->pt() ? b->pt() : bbar->pt()), weight);
+    leadbqPtRec ->Fill( (b->pt()>bbar->pt() ? b->pt() : bbar->pt()), weight);
     bqEtaRec->Fill( b->eta()        , weight);
     bqEtaRec->Fill( bbar->eta()     , weight);
     bqYRec  ->Fill( b->rapidity()   , weight);
@@ -202,8 +189,7 @@ SemiLepBjetAnalyzer::analyze(const edm::Event& event, const edm::EventSetup& set
     // fill tree variables   
     if(useTree_){
       valueBqPtGen =genb->pt();
-      valueLeadBqPtGen    = genb->pt()>genbbar->pt() ? genb->pt() : genbbar->pt();
-      valueSubLeadBqPtGen = genb->pt()<genbbar->pt() ? genb->pt() : genbbar->pt();
+      valueLeadBqPtGen = genb->pt()>genbbar->pt() ? genb->pt() : genbbar->pt();
       valueBqEtaGen=genb->eta();
       valueBqYGen  =genb->rapidity();
       valueBbarqPtGen =genbbar->pt();
@@ -224,8 +210,7 @@ SemiLepBjetAnalyzer::analyze(const edm::Event& event, const edm::EventSetup& set
     // fill plots
     bqPtGen ->Fill( genb->pt()         , weight);
     bqPtGen ->Fill( genbbar->pt()      , weight);
-    bqPtLeadGen    ->Fill( (genb->pt()>genbbar->pt() ? genb->pt() : genbbar->pt()), weight);
-    bqPtSubLeadGen ->Fill( (genb->pt()<genbbar->pt() ? genb->pt() : genbbar->pt()), weight);
+    leadbqPtGen ->Fill( (genb->pt()>genbbar->pt() ? genb->pt() : genbbar->pt()), weight);
     bqEtaGen->Fill( genb->eta()        , weight);
     bqEtaGen->Fill( genbbar->eta()     , weight);
     bqYGen  ->Fill( genb->rapidity()   , weight);
@@ -246,8 +231,7 @@ SemiLepBjetAnalyzer::analyze(const edm::Event& event, const edm::EventSetup& set
     if(verbose>1) std::cout << "do filling" << std::endl;
     // fill lead b-jet and bbbar correlation histograms 
     // (those have only one entry per event and are independend of the rec-gen b-jet association)
-    bqPtLead_ ->Fill((genb->pt()>genbbar->pt() ? genb->pt() : genbbar->pt()), (b->pt()>bbar->pt() ? b->pt() : bbar->pt()), weight);
-    bqPtSubLead_ ->Fill((genb->pt()<genbbar->pt() ? genb->pt() : genbbar->pt()), (b->pt()<bbar->pt() ? b->pt() : bbar->pt()), weight);
+    leadbqPt_ ->Fill((genb->pt()>genbbar->pt() ? genb->pt() : genbbar->pt()), (b->pt()>bbar->pt() ? b->pt() : bbar->pt()), weight);
     bbbarPt_  ->Fill( (genb->p4()+genbbar->p4()).pt()      , (b->p4()+bbar->p4()).pt()      , weight);
     bbbarEta_ ->Fill( (genb->p4()+genbbar->p4()).eta()     , (b->p4()+bbar->p4()).eta()     , weight);
     bbbarY_   ->Fill( (genb->p4()+genbbar->p4()).Rapidity(), (b->p4()+bbar->p4()).Rapidity(), weight);
@@ -332,10 +316,8 @@ SemiLepBjetAnalyzer::beginJob()
   // pt
   if(recPlots_) bqPtRec  = fs->make<TH1F>("bqPtRec" , "p_{t}^{b and #bar{b}} (rec) [GeV]", 1200, 0., 1200.);
   if(genPlots_) bqPtGen  = fs->make<TH1F>("bqPtGen" , "p_{t}^{b and #bar{b}} (gen) [GeV]", 1200, 0., 1200.);
-  if(recPlots_) bqPtLeadRec  = fs->make<TH1F>("bqPtLeadRec" , "p_{t}^{lead b} (rec) [GeV]", 1200, 0., 1200.);
-  if(genPlots_) bqPtLeadGen  = fs->make<TH1F>("bqPtLeadGen" , "p_{t}^{lead b} (gen) [GeV]", 1200, 0., 1200.);
-  if(recPlots_) bqPtSubLeadRec  = fs->make<TH1F>("bqPtSubLeadRec" , "p_{t}^{sublead b} (rec) [GeV]", 1200, 0., 1200.);
-  if(genPlots_) bqPtSubLeadGen  = fs->make<TH1F>("bqPtSubLeadGen" , "p_{t}^{sublead b} (gen) [GeV]", 1200, 0., 1200.);
+  if(recPlots_) leadbqPtRec  = fs->make<TH1F>("leadbqPtRec" , "p_{t}^{lead b}} (rec) [GeV]", 1200, 0., 1200.);
+  if(genPlots_) leadbqPtGen  = fs->make<TH1F>("leadbqPtGen" , "p_{t}^{lead b}} (gen) [GeV]", 1200, 0., 1200.);
   // eta
   if(recPlots_) bqEtaRec = fs->make<TH1F>("bqEtaRec", "#eta^{b and #bar{b}} (rec)"       , 100, -5., 5.);
   if(genPlots_) bqEtaGen = fs->make<TH1F>("bqEtaGen", "#eta^{b and #bar{b}} (gen)"       , 100, -5., 5.);
@@ -360,9 +342,8 @@ SemiLepBjetAnalyzer::beginJob()
   // 2D correlation
   if(recPlots_&&genPlots_){
     // A) b-jet quantities
-    bqPt_       = fs->make<TH2F>("bqPt_" , "p_{t}^{b and #bar{b}} (gen vs rec) [GeV]", 1200, 0., 1200., 1200, 0., 1200.);
-    bqPtLead_   = fs->make<TH2F>("bqPtLead_" , "p_{t}^{lead b} (gen vs rec) [GeV]"   , 1200, 0., 1200., 1200, 0., 1200.);
-    bqPtSubLead_= fs->make<TH2F>("bqPtSubLead_" , "p_{t}^{lead b} (gen vs rec) [GeV]", 1200, 0., 1200., 1200, 0., 1200.);
+    bqPt_    = fs->make<TH2F>("bqPt_" , "p_{t}^{b and #bar{b}} (gen vs rec) [GeV]", 1200,  0., 1200., 1200,  0., 1200.);
+    leadbqPt_= fs->make<TH2F>("leadbqPt_" , "p_{t}^{lead b} (gen vs rec) [GeV]", 1200,  0., 1200., 1200,  0., 1200.);
     bqEta_ = fs->make<TH2F>("bqEta_", "#eta^{b and #bar{b}} (gen vs rec)"       ,  100, -5.,    5.,  100, -5.,    5.);
     bqY_   = fs->make<TH2F>("bqY_"  , "y^{b and #bar{b}} (gen vs rec)"          ,  100, -5.,    5.,  100, -5.,    5.);
     // B) bbbar-system quantities
@@ -399,10 +380,6 @@ SemiLepBjetAnalyzer::beginJob()
     tree->Branch("bbarqEtaGen", &valueBbarqEtaGen, "bbarqEtaGen/F");
     tree->Branch("bbarqYRec"  , &valueBbarqYRec  , "bbarqYRec/F"  );
     tree->Branch("bbarqYGen"  , &valueBbarqYGen  , "bbarqYGen/F"  );
-    tree->Branch("bqPtLeadRec"  , &valueLeadBqPtRec   , "bqPtLeadRec/F");
-    tree->Branch("bqPtLeadGen"  , &valueLeadBqPtGen   , "bqPtLeadGen/F");
-    tree->Branch("bqPtSubLeadRec"  , &valueSubLeadBqPtRec, "bqPtSubLeadRec/F");
-    tree->Branch("bqPtSubLeadGen"  , &valueSubLeadBqPtGen, "bqPtSubLeadGen/F");
     // boolean = true if swapping gives better results
     tree->Branch("bbSwapBetter"  , &bbSwapBetter  , "bbSwapBetter/O"  );
   }
@@ -445,31 +422,6 @@ SemiLepBjetAnalyzer::getbJets(const edm::Handle<TtSemiLeptonicEvent> semiLepEvt,
   }
   // otherwise: return NULL
   if(verbose>0) std::cout << "no rec bjets found" << std::endl;
-  return std::make_pair(zero,zero);
-}
-
-std::pair<const reco::Candidate*,const reco::Candidate*> 
-SemiLepBjetAnalyzer::getPreBJets(const edm::Handle<TtSemiLeptonicEvent> semiLepEvt, const std::string hypoKey_, const edm::Handle<std::vector<pat::Jet> > jets){
-  const reco::Candidate* zero=0;
-  if(verbose>1) std::cout << "get b jet candidate kinematics before KinFit" << std::endl;
-  // check if kinfit information is available
-  if(semiLepEvt.isValid()&&semiLepEvt->isHypoValid(hypoKey_)){
-    if(verbose>0) std::cout << "Hypothesis is valid" << std::endl;
-    // get indices
-    int hadBIndex=semiLepEvt->jetLeptonCombination(hypoKey_)[TtSemiLepEvtPartons::HadB];
-    int lepBIndex=semiLepEvt->jetLeptonCombination(hypoKey_)[TtSemiLepEvtPartons::LepB];
-    if(verbose>1) std::cout << "recoLepBIX: " << lepBIndex << ", recoHadBIX: " << hadBIndex << std::endl;
-    // get jets before the fit
-    const reco::Candidate* bhad = &(jets->at(hadBIndex));
-    const reco::Candidate* blep = &(jets->at(lepBIndex));
-    // get charge of lepton 
-    bool lminus = ((reco::LeafCandidate*)(semiLepEvt->singleLepton(hypoKey_)))->charge()<0 ? true : false;
-    // return candidates
-    if(bhad&&blep){
-      if(verbose>0) std::cout << "rec bjet candidates before KinFit found!" << std::endl;
-      return std::make_pair((lminus ? bhad : blep),(lminus ? blep : bhad));
-    }
-  }
   return std::make_pair(zero,zero);
 }
 

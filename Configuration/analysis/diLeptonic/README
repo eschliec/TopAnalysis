@@ -3,41 +3,124 @@ How to measure a Differential Cross-Section DESY Ntuple-style
 ========Preselection
 This is pretty automatic. A command like:
 
-runall2.pl -d NtupleDirectory -c pf2pat_ntuple2.py -s -x 0.3
+runall2.pl -d NtupleDirectory -c ntuple.py -s
 
-will run on all jobs. Usually the specified number of jobs  should be multiplied by about 0.3 and run on the 12 hour queue
-
+will run on all jobs. Usually you should use the 12 hour queue:
 export NJS_QUEUE=12
 
-After all jobs have finished run:
+This creates a directory called NtupleDirectory which has the Ntuple root files and output txt files
 
-./mk_lumiList
+====== Analysis (Selection)
 
-to make calculate the number of events per sample that will be used for the lumi reweighting (right now it assumes the output directories from the queue start with naf_)
+Current version of the NTuple is stored in:
+/data/group/top/DiffXS/<date>/
 
-This creates a directory called OriginalRoot which has the Ntuple root files and output txt files
+The file /data/group/top/DiffXS/README contains a description of the NTuples, i.e.
+what was new, which <date> to use...
 
-In a Root session then run
+The input files need to be listed in selectionList.txt as before, so do:
+ls -1 --color=no /data/group/top/DiffXS/2013_01_25/*.root > selectionList.txt
 
-.L merge_mc.C++
-merge()
+To compile the code:
+make -j8
 
-And this will add SF branches including the lumi weight and branches with the sample name and channel in a directory called mergedRoot
+Make sure you have the triggerSummary_ee, emu, mumu in your diLeptonic directory.
+If not, get them via 
+    cvs up -r HEAD triggerSummary_ee.root
+    cvs up -r HEAD triggerSummary_emu.root
+    cvs up -r HEAD triggerSummary_mumu.root
 
-========Selection
 
+To run the analysis, do
+./load_Analysis
 
-Now runn the command root -l load_Analysis.C
+See
+./loadAnalysis --help
+for a list of command line options.
 
-This runs Analysis.C on each event in the root tuple for each sample. All analysis cuts are made in Analysis.C and the output are a bunch of user specified histograms.
-Except for adding histograms or changing analysis cuts, additions to this file should be made as separate functions in the Analysis class.
+To run only over a specific dataset, you can do
+./loadAnalysis -f PATTERN
+where PATTERN is in the file name.
 
-Once this is finished, run the command:
+The output produced is in selectionRoot, the files should be fully compatible with
+the old plotterclass.h
 
-.L Histo.C++
-Histo()
+Now, you need to calculate btag efficiencies. This works by running the ttbar sample:
 
-This runs Histo.C which is essentially a wrapper class using plotterclass.h. 
+  for c in ee emu mumu; do ./load_Analysis -f ttbarsignalplustau.root -c $c&;done;wait
+
+Then copy the created btag files:
+  
+  cp -r selectionRoot/BTagEff .
+
+Now you are ready to flood the workgroup server or the NAF with a lot of jobs. In case
+you are running on the NAF, the NTuples should be stored on the Sonas file system, i.e.
+under /scratch/hh/dust/naf/cms/... - and parallel access is amazingly fast. 
+
+To run the selection on the Nominal sample, just do: 
+  ./runNominalParallel.sh
+
+You also need to generate the signal variations with: 
+  ./runNominalVariations.sh
+
+In addition you can also run the theory variations (mass, match, scale) and other 
+generators (powheg, mcatnlo and madgraph with spin correlations): 
+  ./runTheoryVariations.sh
+
+This runs Analysis.C on each event in the root tuple for each sample. All analysis cuts are
+made in Analysis.C and the output are a bunch of user specified histograms. Except for adding 
+histograms or changing analysis cuts, additions to this file should be made as separate 
+functions in the Analysis class.
+
+Differences between workgroup server and NAF:
+Workgroup server:
+ - the run*.sh scripts will run up to 10 load_Analysis and/or Histo jobs in parallel
+ - you share the workgroup server with colleagues, so if they are running
+   10 jobs, you'll have to wait.
+
+NAF:
+ - the run*.sh scripts will submit all jobs to the 1h queue on the NAF
+ - options for the submission are in qsubParams.txt
+ - the output of the jobs is stored in the batch_output/ folder
+   which you can clean up after running
+
+===== Preparation for histogramming
+
+Once the selection step is done, we need to setup our data such that the histogram
+tools know where to find which files. You need to run:
+
+./lnData.sh
+./mk_HistoFileList.sh
+
+Here, lnData.sh will create symlinks to the Nominal folder for all files which have
+not been varied in the systematics.
+After that, mk_HistoFileList.sh will create the directory FileLists/ and create
+input file lists per channel and systematic.
+
+===== Histograms!
+
+./Histo (run ./Histo --help for options to create some of the plots, with or without unfolding etc.)
+
+You can run Histo with 3 different "types":
+./Histo -t cp          produces control plots
+./Histo -t unfold      unfolds and produces the diff. xsec
+./Histo -t plot        just plot the diff. xsec, use values from previous unfolding
+
+There are 3 more parameters:
+ -p Name   just produce the plot/xsection containing "Name" (use +Name for an exact match)
+ -c ee/emu/mumu/combined    
+           only one channel
+ -s systematic
+
+The -p, -c, and -s parameters can also take more than one argument; they can also be
+omitted (-> use default values, i.e. all channels, all plots, Nominal systematic)
+ 
+To unfold all distributions from your HistoList in parallel, use the 
+ ./unfoldAll.sh 
+script. Again, on the workgroup server, it will run up to 10 jobs in parallel,
+while it will submit one job per distribution to the batch system if run on the NAF.
+
+This runs Histo.C which essentially calls function from plotterclass.cpp.
 
 For each histogram you want
 
@@ -49,3 +132,116 @@ plotDiffXsec also does
 write writes the histogram
 
 the plots will be put into a directory called Plots according to the channel in .eps format which is the best
+
+
+Once the plots has been created you can get the typical systematic errors for the Diff. XSection via:
+
+./TypicalError
+
+This runs GetTypicalErrors.C which checks for one specific systematic variation, and one specific
+channel (ee, emu, mumu) in all files 
+    Plots/channel/*Systematics.txt
+it parses the content and for one specific systematic takes the average ('typical') systematic error.
+
+========
+PDF:
+
+Requirement: you have already run the Nominal (i.e. ./runNominalParallel.sh)
+
+If you also need PDF variations, run ./runPDFVariations.sh - it will run load_Analysis
+over the ttbar signal sample for each PDF variation (currently 1 + 44 times). The PDF_CENTRAL
+should be exactly equal to the Nominal, it is used as cross check.
+
+To unfold with the specific PDF variations, run ./unfoldPDF.sh --- this will unfold all 
+differential quantities in parallel - and this will be done 1+44 times. While this script is running,
+please do not touch your Plots/ directory and don't do anything to Plots_temp.
+
+After running the script, run ./calcPDFMasterFormula.pl to join the 44 different PDF systematics
+into one, calculated using the "master formula" as explained in AN2009-048. Files with the combined
+PDF uncertainty are written out to UnfoldingResults/PDF_/channel/ and can then be used in the 
+plotterclass.
+
+========================
+  Use of std::vectors 
+========================
+
+All over the code, we use std::vectors, please do not use plain C arrays. The main advantage
+is that the size of the vector is always known and associated to the vector. In addition,
+using the "at" function, you get range checks for free. 
+
+So always use myvector.at(index) instead of myvector[index]!
+
+If you index is out of bounds, you will get:
+terminate called after throwing an instance of 'std::out_of_range'
+  what():  vector::_M_range_check
+
+If you were using [] instead, the behaviour would be undefined. You might get a seg violation
+or just a random result. To find out where the code is crashing, you need to run it in a 
+debugger.
+
+So do on command line (% indicates the prompt):
+% gdb the_executabe -parameters
+Then, in the gdb prompt (indicated by (gdb)), enter
+(gdb) run
+The program will run until the out_of_range exception is raised. Now type
+(gdb) backtrace
+Now you will get the line number in which the problem is happening. In case it is a strange
+part of the code which you haven't touched at all, consider a "make clean" first.
+
+
+========================
+  Debug code in the IDE
+========================
+
+In modern IDEs like Eclipse or KDevelop you can debug your code, i.e. run it step by step
+and inspect all variables.
+
+As an example, in KDevelop go to "Run -> Configure Launches" and select your executable on
+the right side under "Program file". Now you can run your program step-by-step with F10/F11.
+Hover your mouse over a variable to inspect its value.
+
+As poor man's solution (which will also work on the workgroup server), you can also use 
+the ddd (data display debugger) program to debug. Just run 
+ddd executable parameters
+(where executable could be Histo)
+Right click on the white space of a given line to set a break point. Then click on "run".
+Your program will run up to the given line. Then you can click on a variable to inspect/modify
+its value.
+
+========================
+   Opimising the code
+========================
+
+Using google's performance tools, we can check which parts of our code need the longest
+time (i.e. making it slow). The identified parts can then be checked -- and very often
+it is easy to make them more efficient.
+
+Also we can check the code for memory leaks. If the code is using up the memory, run
+the heap checker and find the line numbers in your code where the memory isn't freed.
+
+Both, the profiling and the memory checking are done in two steps. The first step is to
+run the code using a preloaded library. This will produce some output file in binary
+format. This needs to be converted to PDF in a second step.
+
+=== PROFILING:
+Step 1: produce a file called test.prof (or whatever file name you choose)
+CPUPROFILE=test.prof LD_PRELOAD=/afs/desy.de/group/cms/perftool/v2.0/lib/libprofiler.so ./load_Analysis -f whatever
+
+Step 2: convert to pdf:
+/afs/desy.de/group/cms/perftool/v2.0/bin/pprof --pdf load_Analysis test.prof >| test.pdf
+
+The biggest boxes/arrows in the PDF is the one which takes most of your calculation time.
+
+=== MEMORY CHECKING:
+Warning: when checking for memory leaks, your code will be slowed down. Not as much
+as if you were using valgrind, but it is significant.
+
+Step 1: running the program with memory checks enabled
+HEAPCHECK=normal LD_PRELOAD=/afs/desy.de/group/cms/perftool/v2.0/lib/libtcmalloc.so ./Histo -t unfold -p +HypTTBarMass
+
+Step 2: convert to pdf (the commmand is also printed after step 1, filenames may differ)
+/afs/desy.de/group/cms/perftool/v2.0/bin/pprof ./Histo /tmp/Histo.26264._main_-end.heap --inuse_objects --lines --heapcheck --edgefraction=1e-10 --nodefraction=1e-10 --pdf >| memory.pdf
+
+In your memory.pdf, you will likely find the place in the code where you are leaking memory. Again,
+please look at the largest boxes/arrows.
+

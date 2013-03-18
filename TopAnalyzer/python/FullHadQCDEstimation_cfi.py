@@ -1,7 +1,6 @@
 import FWCore.ParameterSet.Config as cms
 
-#from TopQuarkAnalysis.TopObjectResolutions.stringResolutions_etEtaPhi_cff import *
-from TopAnalysis.Configuration.stringResolutions_etEtaPhi_Fall11_cff import *
+from TopQuarkAnalysis.TopObjectResolutions.stringResolutions_etEtaPhi_cff import *
 
 analyzeFullHadQCDEstimation = cms.EDAnalyzer("FullHadQCDEstimation",
     ## input collection                             
@@ -28,8 +27,8 @@ analyzeFullHadQCDEstimation = cms.EDAnalyzer("FullHadQCDEstimation",
     # ------------------------------------------------
     # resolutions used for the kinematic fit
     # ------------------------------------------------
-    udscResolutions = udscResolutionPF.functions,
-    bResolutions    = bjetResolutionPF.functions,
+    udscResolutions = udscResolution.functions,
+    bResolutions    = bjetResolution.functions,
     ## resolution scale factors
     jetEnergyResolutionScaleFactors = cms.vdouble(1.0),
     jetEnergyResolutionEtaBinning = cms.vdouble(0.0,-1.0)                                          

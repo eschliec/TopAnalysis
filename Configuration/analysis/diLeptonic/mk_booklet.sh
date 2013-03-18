@@ -139,7 +139,7 @@ echo "\begin{titlepage}" >> $BOOKLETSRC
 echo "" >> $BOOKLETSRC
 echo "\begin{center}" >> $BOOKLETSRC
 echo "\vspace{6cm}" >> $BOOKLETSRC
-echo "	\LARGE{Histogram plots -- current}\\[5cm]" >> $BOOKLETSRC
+echo "  \LARGE{Histogram plots -- current}\\\\" >> $BOOKLETSRC
 echo "  \vspace{5cm}" >> $BOOKLETSRC
 echo "  \large{Booklet filename -- "$BSN"}" >> $BOOKLETSRC
 echo "\end{center}" >> $BOOKLETSRC

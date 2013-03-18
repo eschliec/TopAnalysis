@@ -3,7 +3,6 @@
 
 // Include parent class
 #include "../unfolding/TopSVDFunctions.h"
-#include "../unfolding/TopSVDFunctions.C"
 
 
 // Namespaces

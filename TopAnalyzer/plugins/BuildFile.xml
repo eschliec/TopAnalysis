@@ -1,4 +1,5 @@
 <use   name="TopAnalysis/TopUtils"/>
+<use   name="TopAnalysis/HiggsUtils"/>
 <use   name="TopAnalysis/TopAnalyzer"/>
 <use   name="FWCore/MessageLogger"/>
 <use   name="FWCore/ParameterSet"/>
